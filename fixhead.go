@@ -1,5 +1,7 @@
 package mqtt
 
+// 2.1.1 Fixed Header
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader []byte
 
 func (h FixedHeader) Name() string {
