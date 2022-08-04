@@ -1,24 +1,5 @@
 package mqtt
 
-var controlPacketTypeName = map[byte]string{
-	FORBIDDEN:   "FORBIDDEN",
-	CONNECT:     "CONNECT",
-	CONNACK:     "CONNACK",
-	PUBLISH:     "PUBLISH",
-	PUBACK:      "PUBACK",
-	PUBREC:      "PUBREC",
-	PUBREL:      "PUBREL",
-	PUBCOMP:     "PUBCOMP",
-	SUBSCRIBE:   "SUBSCRIBE",
-	SUBACK:      "SUBACK",
-	UNSUBSCRIBE: "UNSUBSCRIBE",
-	UNSUBACK:    "UNSUBACK",
-	PINGREQ:     "PINGREQ",
-	PINGRESP:    "PINGRESP",
-	DISCONNECT:  "DISCONNECT",
-	AUTH:        "AUTH",
-}
-
 // 2.1.2 MQTT Control Packet type
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 const (
@@ -40,6 +21,25 @@ const (
 	AUTH                           // 15 Client to Server or Server to Client Authentication exchange
 )
 
+var controlPacketTypeName = map[byte]string{
+	FORBIDDEN:   "FORBIDDEN",
+	CONNECT:     "CONNECT",
+	CONNACK:     "CONNACK",
+	PUBLISH:     "PUBLISH",
+	PUBACK:      "PUBACK",
+	PUBREC:      "PUBREC",
+	PUBREL:      "PUBREL",
+	PUBCOMP:     "PUBCOMP",
+	SUBSCRIBE:   "SUBSCRIBE",
+	SUBACK:      "SUBACK",
+	UNSUBSCRIBE: "UNSUBSCRIBE",
+	UNSUBACK:    "UNSUBACK",
+	PINGREQ:     "PINGREQ",
+	PINGRESP:    "PINGRESP",
+	DISCONNECT:  "DISCONNECT",
+	AUTH:        "AUTH",
+}
+
 // FixedHeader flags
 const (
 	DUP    byte = 0b0000_1000
@@ -50,3 +50,12 @@ const (
 	QoS2 byte = 0b0000_0100
 	//QoS3 FixedHeader = 0b0000_0110   malformed!
 )
+
+var fixedHeaderFlagNames = map[byte]string{
+	DUP:    "DUP",
+	RETAIN: "RETAIN",
+
+	QoS0: "QoS0",
+	QoS1: "QoS1",
+	QoS2: "QoS2",
+}
