@@ -19,6 +19,7 @@ var controlPacketTypeName = map[byte]string{
 	AUTH:        "AUTH",
 }
 
+// 2.1.2 MQTT Control Packet type
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 const (
 	FORBIDDEN   byte = (iota << 4) // 0 Forbidden Reserved
