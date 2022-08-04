@@ -1,10 +1,23 @@
 package mqtt
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
 )
+
+func ExampleParseVarInt() {
+	fmt.Println(ParseVarInt(bytes.NewReader([]byte{})))
+	fmt.Println(ParseVarInt(bytes.NewReader([]byte{128, 128, 1})))
+	fmt.Println(ParseVarInt(bytes.NewReader([]byte{128, 128, 128, 127, 1})))
+	fmt.Println(ParseVarInt(bytes.NewReader([]byte{128, 128, 128, 128, 1})))
+	// output:
+	// 0 EOF
+	// 16384 <nil>
+	// 266338304 <nil>
+	// 0 malformed variable byte integer
+}
 
 func ExampleNewVarInt() {
 	fmt.Println(NewVarInt(16_384))
