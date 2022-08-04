@@ -10,20 +10,31 @@ import (
 type FixedHeader []byte
 
 func (h FixedHeader) String() string {
-	// todo flags by packet type
-	f := make([]byte, 0, 4) // max four
-	if h.HasFlag(DUP) {
-		f = append(f, DUP)
-	}
-	if h.HasFlag(RETAIN) {
-		f = append(f, RETAIN)
-	}
-
-	str := flags.Join("-", f)
+	str := FlagNames.Join("-", h.FlagsByValue())
 	if len(str) > 0 {
 		return fmt.Sprintf("%s-%s", h.Name(), str)
 	}
 	return fmt.Sprintf("%s", h.Name())
+}
+
+func (h FixedHeader) FlagsByValue() []byte {
+	flags := make([]byte, 0, 4) // max four
+	add := func(f ...byte) {
+		if len(f) == 1 && h.HasFlag(f[0]) {
+			flags = append(flags, f[0])
+			return
+		}
+		if f, ok := h.HasOneFlag(f...); ok {
+			flags = append(flags, f)
+		}
+	}
+	builders := map[byte]func(){
+		PUBLISH: func() { add(DUP); add(QoS2, QoS1); add(RETAIN) },
+	}
+	if build, found := builders[h.Value()]; found {
+		build()
+	}
+	return flags
 }
 
 func (h FixedHeader) Name() string {
@@ -34,6 +45,16 @@ func (h FixedHeader) Value() byte {
 	return byte(h[0]) & 0b1111_0000
 }
 
+func (h FixedHeader) HasOneFlag(flags ...byte) (byte, bool) {
+	for _, f := range flags {
+		if !h.HasFlag(f) {
+			continue
+		}
+		return f, true
+	}
+	return 0, false
+}
+
 func (h FixedHeader) HasFlag(f byte) bool {
 	return h.Flags()&f == f
 }
@@ -42,25 +63,23 @@ func (h FixedHeader) Flags() byte {
 	return byte(h[0]) & 0b0000_1111
 }
 
-// FixedHeader flags
+// Fixed header flags
 const (
-	DUP    byte = 0b0000_1000
 	RETAIN byte = 0b0000_0001
-
-	QoS0 byte = 0b0000_0000
-	QoS1 byte = 0b0000_0010
-	QoS2 byte = 0b0000_0100
+	QoS0   byte = 0b0000_0000
+	QoS1   byte = 0b0000_0010
+	QoS2   byte = 0b0000_0100
 	//QoS3 FixedHeader = 0b0000_0110   malformed!
+	DUP byte = 0b0000_1000
 )
 
-var flags = ByteNames{
+var FlagNames = ByteNames{
 	names: map[byte]string{
 		DUP:    "DUP",
+		QoS0:   "QoS0",
+		QoS1:   "QoS1",
+		QoS2:   "QoS2",
 		RETAIN: "RETAIN",
-
-		QoS0: "QoS0",
-		QoS1: "QoS1",
-		QoS2: "QoS2",
 	},
 }
 

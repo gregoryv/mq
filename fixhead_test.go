@@ -6,10 +6,12 @@ func ExampleFixedHeader_String() {
 	fmt.Println(FixedHeader{PUBLISH})
 	fmt.Println(FixedHeader{PUBLISH | DUP})
 	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})
+	fmt.Println(FixedHeader{PUBLISH | QoS2})
 	//output:
 	// PUBLISH
 	// PUBLISH-DUP
 	// PUBLISH-DUP-RETAIN
+	// PUBLISH-QoS2
 }
 
 func ExampleFixedHeader_HasFlag() {
