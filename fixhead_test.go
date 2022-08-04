@@ -2,6 +2,16 @@ package mqtt
 
 import "fmt"
 
+func ExampleFixedHeader_String() {
+	fmt.Println(FixedHeader{PUBLISH})
+	fmt.Println(FixedHeader{PUBLISH | DUP})
+	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})
+	//output:
+	// PUBLISH
+	// PUBLISH-DUP
+	// PUBLISH-DUP-RETAIN
+}
+
 func ExampleFixedHeader_HasFlag() {
 	a := FixedHeader{DUP}
 	fmt.Printf("%08b %v\n", a[0], a.HasFlag(DUP))
