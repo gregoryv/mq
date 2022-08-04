@@ -2,6 +2,16 @@ package mqtt
 
 import "fmt"
 
+func ExampleFixedHeader_HasFlag() {
+	a := FixedHeader{DUP}
+	fmt.Printf("%08b %v\n", a[0], a.HasFlag(DUP))
+	b := FixedHeader{0x00}
+	fmt.Printf("%08b %v\n", b[0], b.HasFlag(DUP))
+	// output:
+	// 00001000 true
+	// 00000000 false
+}
+
 func ExampleFixedHeader_Name() {
 	all := []FixedHeader{
 		FixedHeader{FORBIDDEN},
