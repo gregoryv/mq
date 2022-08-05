@@ -50,6 +50,11 @@ func (h FixedHeader) Name() string {
 	return controlPacketTypeName[byte(h.byte1())&0b1111_0000]
 }
 
+// Is is the same as h.Value() == v
+func (h FixedHeader) Is(v byte) bool {
+	return h.Value() == v
+}
+
 func (h FixedHeader) Value() byte {
 	return byte(h.byte1()) & 0b1111_0000
 }

@@ -21,10 +21,10 @@ func ParseVarInt(r io.Reader) (uint, error) {
 		if multiplier > 128*128*128 {
 			return 0, ErrMalformedVarInt
 		}
-		multiplier = multiplier * 128
 		if encodedByte&128 == 0 {
 			break
 		}
+		multiplier = multiplier * 128
 	}
 	return value, nil
 }

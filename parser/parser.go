@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/gregoryv/mqtt"
 )
@@ -19,14 +20,25 @@ type Parser struct {
 }
 
 func (p *Parser) Parse(ctx Context, c chan<- *mqtt.ControlPacket) error {
+loop:
 	for {
 		next, err := ParseControlPacket(ctx, p.r)
 		if err != nil {
 			return err
 		}
-		c <- next
+		log.Print("DEBUG ", next)
+		// The parsing can only be interrupted between two packet
+		// reads or if the reader is closed.
+		select {
+		case c <- next:
+			// coverage thing
+			_ = 1
+
+		case <-ctx.Done():
+			break loop
+		}
 	}
-	return fmt.Errorf(": todo")
+	return ctx.Err()
 }
 
 func ParseControlPacket(_ Context, r io.Reader) (*mqtt.ControlPacket, error) {
@@ -45,16 +57,27 @@ type Context = context.Context
 
 func ParseFixedHeader(r io.Reader) (mqtt.FixedHeader, error) {
 	buf := make([]byte, 1)
-	header := make([]byte, 0, 5) // max 5
+	header := make(mqtt.FixedHeader, 0, 5) // max 5
 
 	if _, err := r.Read(buf); err != nil {
 		return header, err
 	}
 	header = append(header, buf[0])
+	if header.Is(mqtt.UNDEFINED) {
+		return nil, MalformedPacket(
+			fmt.Sprintf("undefined %v control packet type", mqtt.UNDEFINED),
+		)
+	}
 	v, err := mqtt.ParseVarInt(r)
 	if err != nil {
 		return header, err
 	}
 	header = append(header, mqtt.NewVarInt(v)...)
 	return header, nil
+}
+
+type MalformedPacket string
+
+func (e MalformedPacket) Error() string {
+	return string(e)
 }
