@@ -10,7 +10,7 @@ type ControlPacket struct {
 }
 
 func (p *ControlPacket) String() string {
-	return fmt.Sprintf("%s", p.FixedHeader.Name())
+	return fmt.Sprintf("%s", p.FixedHeader.String())
 }
 
 // 2.1.2 MQTT Control Packet type

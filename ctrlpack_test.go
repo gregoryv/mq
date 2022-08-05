@@ -6,9 +6,9 @@ import (
 
 func ExampleControlPacket_String() {
 	p := ControlPacket{
-		FixedHeader: []byte{CONNECT, 0x00},
+		FixedHeader: []byte{CONNECT, 2},
 	}
 	fmt.Println(p.String())
 	// output:
-	// CONNECT
+	// CONNECT 2
 }
