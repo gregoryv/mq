@@ -1,20 +1,46 @@
 package mqtt
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"strings"
 )
+
+func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
+	buf := make([]byte, 1)
+	header := make([]byte, 0, 5) // max 5
+
+	if _, err := r.Read(buf); err != nil {
+		return header, err
+	}
+	header = append(header, buf[0])
+	v, err := ParseVarInt(r)
+	if err != nil {
+		return header, err
+	}
+	header = append(header, NewVarInt(v)...)
+	return header, nil
+}
 
 // 2.1.1 Fixed Header
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader []byte
 
+// String returns a string TYPE-FLAGS REMAINING_LENGTH
 func (h FixedHeader) String() string {
-	str := FlagNames.Join("-", h.FlagsByValue())
-	if len(str) > 0 {
-		return fmt.Sprintf("%s-%s", h.Name(), str)
+	var sb strings.Builder
+	sb.WriteString(h.Name())
+
+	if flags := FlagNames.Join("-", h.FlagsByValue()); len(flags) > 0 {
+		sb.WriteString("-")
+		sb.WriteString(flags)
 	}
-	return fmt.Sprintf("%s", h.Name())
+	if rem := h.RemLen(); rem > 1 {
+		sb.WriteString(" ")
+		fmt.Fprint(&sb, rem)
+	}
+	return sb.String()
 }
 
 func (h FixedHeader) FlagsByValue() []byte {
@@ -38,11 +64,11 @@ func (h FixedHeader) FlagsByValue() []byte {
 }
 
 func (h FixedHeader) Name() string {
-	return controlPacketTypeName[byte(h[0])&0b1111_0000]
+	return controlPacketTypeName[byte(h.byte1())&0b1111_0000]
 }
 
 func (h FixedHeader) Value() byte {
-	return byte(h[0]) & 0b1111_0000
+	return byte(h.byte1()) & 0b1111_0000
 }
 
 func (h FixedHeader) HasOneFlag(flags ...byte) (byte, bool) {
@@ -55,12 +81,28 @@ func (h FixedHeader) HasOneFlag(flags ...byte) (byte, bool) {
 	return 0, false
 }
 
+// RemLen returns the remaining length
+func (h FixedHeader) RemLen() uint {
+	if len(h) < 2 {
+		return 0
+	}
+	v, _ := ParseVarInt(bytes.NewReader(h[1:]))
+	return v
+}
+
 func (h FixedHeader) HasFlag(f byte) bool {
 	return h.Flags()&f == f
 }
 
 func (h FixedHeader) Flags() byte {
-	return byte(h[0]) & 0b0000_1111
+	return byte(h.byte1()) & 0b0000_1111
+}
+
+func (h FixedHeader) byte1() byte {
+	if len(h) == 0 {
+		return 0
+	}
+	return h[0]
 }
 
 // Fixed header flags
