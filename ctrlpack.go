@@ -6,17 +6,11 @@ import (
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type ControlPacket struct {
-	data []byte
-
-	endFixedHeader int
+	FixedHeader
 }
 
 func (p *ControlPacket) String() string {
-	return fmt.Sprintf("%s", p.FixedHeader().Name())
-}
-
-func (p *ControlPacket) FixedHeader() FixedHeader {
-	return FixedHeader(p.data[0:p.endFixedHeader])
+	return fmt.Sprintf("%s", p.FixedHeader.Name())
 }
 
 // 2.1.2 MQTT Control Packet type

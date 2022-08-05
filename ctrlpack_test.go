@@ -4,12 +4,11 @@ import (
 	"fmt"
 )
 
-func ExampleControlPacket() {
-	p := &ControlPacket{
-		data:           []byte{0x10, 0x00},
-		endFixedHeader: 1,
+func ExampleControlPacket_String() {
+	p := ControlPacket{
+		FixedHeader: []byte{CONNECT, 0x00},
 	}
-	fmt.Println(p)
+	fmt.Println(p.String())
 	// output:
 	// CONNECT
 }
