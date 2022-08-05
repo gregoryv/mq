@@ -3,25 +3,8 @@ package mqtt
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"strings"
 )
-
-func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
-	buf := make([]byte, 1)
-	header := make([]byte, 0, 5) // max 5
-
-	if _, err := r.Read(buf); err != nil {
-		return header, err
-	}
-	header = append(header, buf[0])
-	v, err := ParseVarInt(r)
-	if err != nil {
-		return header, err
-	}
-	header = append(header, NewVarInt(v)...)
-	return header, nil
-}
 
 // 2.1.1 Fixed Header
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet

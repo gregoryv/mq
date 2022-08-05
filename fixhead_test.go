@@ -1,54 +1,8 @@
 package mqtt
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"reflect"
-	"testing"
 )
-
-func ExampleParseFixedHeader() {
-	r := bytes.NewReader([]byte{PUBLISH | DUP, 4, 0, 0, 0, 0})
-	h, _ := ParseFixedHeader(r)
-	fmt.Print(h)
-	// output:
-	// PUBLISH-DUP 4
-}
-
-func TestParseFixedHeader(t *testing.T) {
-	cases := []struct {
-		in  []byte
-		exp []byte
-		err error
-	}{
-		{
-			in:  []byte{PUBLISH | DUP, 4, 0, 0, 0, 0},
-			exp: []byte{PUBLISH | DUP, 4},
-			err: nil,
-		},
-		{
-			in:  []byte{},
-			exp: []byte{},
-			err: io.EOF,
-		},
-		{
-			in:  []byte{CONNECT},
-			exp: []byte{CONNECT},
-			err: io.EOF,
-		},
-	}
-	for i, c := range cases {
-		r := bytes.NewReader(c.in)
-		h, err := ParseFixedHeader(r)
-		if err != c.err {
-			t.Fatal(i, err)
-		}
-		if !reflect.DeepEqual([]byte(h), c.exp) {
-			t.Error("got", h, "exp", c.exp)
-		}
-	}
-}
 
 func ExampleFixedHeader_String() {
 	fmt.Println(new(FixedHeader).String())

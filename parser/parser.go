@@ -30,8 +30,7 @@ func (p *Parser) Parse(ctx Context, c chan<- *mqtt.ControlPacket) error {
 }
 
 func ParseControlPacket(_ Context, r io.Reader) (*mqtt.ControlPacket, error) {
-
-	h, err := mqtt.ParseFixedHeader(r)
+	h, err := ParseFixedHeader(r)
 	if err != nil {
 		return nil, err
 	}
@@ -43,3 +42,19 @@ func ParseControlPacket(_ Context, r io.Reader) (*mqtt.ControlPacket, error) {
 }
 
 type Context = context.Context
+
+func ParseFixedHeader(r io.Reader) (mqtt.FixedHeader, error) {
+	buf := make([]byte, 1)
+	header := make([]byte, 0, 5) // max 5
+
+	if _, err := r.Read(buf); err != nil {
+		return header, err
+	}
+	header = append(header, buf[0])
+	v, err := mqtt.ParseVarInt(r)
+	if err != nil {
+		return header, err
+	}
+	header = append(header, mqtt.NewVarInt(v)...)
+	return header, nil
+}
