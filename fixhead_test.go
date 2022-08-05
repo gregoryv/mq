@@ -57,7 +57,7 @@ func ExampleFixedHeader_String() {
 	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})
 	fmt.Println(FixedHeader{PUBLISH | QoS2, 2})
 	//output:
-	// FORBIDDEN
+	// UNDEFINED
 	// PUBLISH
 	// PUBLISH-DUP
 	// PUBLISH-DUP-RETAIN
@@ -76,7 +76,7 @@ func ExampleFixedHeader_HasFlag() {
 
 func ExampleFixedHeader_Name() {
 	all := []FixedHeader{
-		FixedHeader{FORBIDDEN},
+		FixedHeader{0},
 		FixedHeader{CONNECT},
 		FixedHeader{CONNACK},
 		FixedHeader{PUBLISH},
@@ -97,7 +97,7 @@ func ExampleFixedHeader_Name() {
 		fmt.Printf("%08b 0x%02x %s\n", h.Value(), h.Value(), h.Name())
 	}
 	// output:
-	// 00000000 0x00 FORBIDDEN
+	// 00000000 0x00 UNDEFINED
 	// 00010000 0x10 CONNECT
 	// 00100000 0x20 CONNACK
 	// 00110000 0x30 PUBLISH

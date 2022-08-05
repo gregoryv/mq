@@ -16,7 +16,7 @@ func (p *ControlPacket) String() string {
 // 2.1.2 MQTT Control Packet type
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 const (
-	FORBIDDEN   byte = (iota << 4) // 0 Forbidden Reserved
+	UNDEFINED   byte = (iota << 4) // 0 Forbidden Reserved
 	CONNECT                        // 1 Client to Server Connection request
 	CONNACK                        // 2 Server to Client Connect acknowledgment
 	PUBLISH                        // 3 Client to Server or Publish message
@@ -35,7 +35,7 @@ const (
 )
 
 var controlPacketTypeName = map[byte]string{
-	FORBIDDEN:   "FORBIDDEN",
+	UNDEFINED:   "UNDEFINED",
 	CONNECT:     "CONNECT",
 	CONNACK:     "CONNACK",
 	PUBLISH:     "PUBLISH",
