@@ -94,6 +94,8 @@ func (h FixedHeader) byte1() byte {
 }
 
 // Fixed header flags
+type Flag byte // todo use
+
 const (
 	RETAIN byte = 0b0000_0001
 	QoS0   byte = 0b0000_0000
