@@ -6,7 +6,7 @@ import (
 )
 
 func ExampleFixedHeader_String() {
-	fmt.Println(new(FixedHeader).String())
+	fmt.Println(FixedHeader{UNDEFINED, 0})
 	fmt.Println(FixedHeader{PUBLISH, 39})
 	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})
 	fmt.Println(FixedHeader{PUBLISH | QoS2, 2})

@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// FixedHeader represents the first 1..5 bytes of a control packet.
+// It's an error if len(FixedHeader) == 0.
+//
 // 2.1.1 Fixed Header
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader []byte
@@ -13,7 +16,7 @@ type FixedHeader []byte
 // String returns a string TYPE-FLAGS REMAINING_LENGTH
 func (h FixedHeader) String() string {
 	var sb strings.Builder
-	sb.WriteString(typeNames[h.byte1()&0b1111_0000])
+	sb.WriteString(typeNames[h[0]&0b1111_0000])
 
 	if flags := flagNames.Join("-", h.flagsByValue()); len(flags) > 0 {
 		sb.WriteString("-")
@@ -32,7 +35,7 @@ func (h FixedHeader) Is(v byte) bool {
 }
 
 func (h FixedHeader) Value() byte {
-	return byte(h.byte1()) & 0b1111_0000
+	return h[0] & 0b1111_0000
 }
 
 // RemLen returns the remaining length
@@ -45,14 +48,7 @@ func (h FixedHeader) RemLen() uint {
 }
 
 func (h FixedHeader) HasFlag(f byte) bool {
-	return h.byte1()&f == f
-}
-
-func (h FixedHeader) byte1() byte {
-	if len(h) == 0 {
-		return 0
-	}
-	return h[0]
+	return h[0]&f == f
 }
 
 func (h FixedHeader) flagsByValue() []byte {
