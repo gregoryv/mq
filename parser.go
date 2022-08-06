@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"errors"
 	"fmt"
 	"io"
 )
@@ -13,7 +14,7 @@ func Parse(r io.Reader) (p ControlPacket, err error) {
 
 	switch {
 	case h.Is(CONNECT):
-		p = &Connect{fixed: h}
+		p = NewConnect()
 
 	default:
 		err = fmt.Errorf("ParseControlPacket unknown %s", h)
@@ -22,7 +23,10 @@ func Parse(r io.Reader) (p ControlPacket, err error) {
 	// read the remaining variable and payload
 	rest := make([]byte, p.FixedHeader().RemLen())
 	_, err = r.Read(rest)
-	p.Fill(h, rest)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return
+	}
+	err = p.Fill(h, rest)
 	return
 }
 

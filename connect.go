@@ -2,60 +2,51 @@ package mqtt
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
-	"io"
 )
 
 func NewConnect() *Connect {
-	// 3.1.2 CONNECT Variable Header
-	variable := make([]byte, 10)
-
-	// 3.1.2.1 Protocol Name
-	copy(variable, protoName)
-
-	// 3.1.2.2 Protocol Version (Level)
-	variable[6] = version5
-
-	// 3.1.2.3 Connect Flags
-	variable[7] = 0
-
-	// 3.1.2.10 Keep Alive
-	variable[8] = 0
-	variable[9] = 10 // 10s
-
-	// 3.1.2.11 CONNECT Properties
-
-	variableLen := NewVarInt(uint(len(variable)))
-
-	// fixed header
-	h := make([]byte, 0, 5)
-	h = append(h, CONNECT)
-	h = append(h, variableLen...)
-
-	return &Connect{
-		fixed:    h,
-		variable: variable,
-	}
+	p := &Connect{protoName: make([]byte, 6)}
+	p.SetProtocolName(protoName)
+	p.SetProtocolVersion(version5)
+	p.SetKeepAlive(10)
+	p.makeFixedHeader()
+	return p
 }
 
 type Connect struct {
-	// headers
-	fixed      []byte
-	variable   []byte // variable header and payload
+	// fixed header
+	fixed []byte
+
+	// variable
+	protoName []byte
+	protoVer  byte
+
+	flags      byte
+	keepAlive  uint16
 	properties []byte
-	payload    []byte
+
+	// payload
+	payload []byte
 }
 
-func (p *Connect) SetFlag(f byte) {
-	p.variable[7] &= f
-}
-
-func (p *Connect) Fill(fixedHeader []byte, rest []byte) error {
-	p.fixed = fixedHeader
+func (p *Connect) Fill(h FixedHeader, rest []byte) error {
+	p.fixed = h
+	debug.Print(h)
 	if len(rest) < 10 {
 		return fmt.Errorf("Connect.Fill %w", ErrIncomplete)
 	}
-	p.variable = rest[:10] // fixed length
+	p.SetProtocolName(rest[:6])
+	p.SetProtocolVersion(rest[6])
+	p.SetFlags(rest[7])
+
+	alive, _ := binary.Uvarint(rest[7:9])
+	p.SetKeepAlive(uint16(alive))
+
+	if len(rest) < 11 {
+		return fmt.Errorf("Connect.Fill %w", ErrIncomplete)
+	}
 	propLen, err := ParseVarInt(bytes.NewReader(rest[10:]))
 	if err != nil {
 		return err
@@ -65,16 +56,13 @@ func (p *Connect) Fill(fixedHeader []byte, rest []byte) error {
 	return nil
 }
 
+// 3.1.2.1 Protocol Name
+func (p *Connect) SetProtocolName(v []byte)  { copy(p.protoName, v) }
+func (p *Connect) SetProtocolVersion(v byte) { p.protoVer = v }
+func (p *Connect) SetKeepAlive(sec uint16)   { p.keepAlive = sec }
+func (p *Connect) SetFlags(f byte)           { p.flags = f }
+
 var ErrIncomplete = fmt.Errorf("incomplete")
-
-// ReadFrom reads remaining variable header and payload.
-// The fixed header must be set before calling ReadFrom.
-func (p *Connect) ReadFrom(r io.Reader) (int64, error) {
-	p.variable = make([]byte, p.FixedHeader().RemLen())
-	n, err := r.Read(p.variable)
-
-	return int64(n), err
-}
 
 var ErrEmptyFixedHeader = fmt.Errorf("empty fixed header")
 
@@ -89,8 +77,26 @@ func (p *Connect) Reader() *bytes.Reader {
 func (p *Connect) Bytes() []byte {
 	all := make([]byte, 0)
 	all = append(all, p.fixed...)
-	all = append(all, p.variable...)
+	all = append(all, p.protoName...)
+	all = append(all, p.protoVer, p.flags)
+	alive := make([]byte, 2)
+	binary.BigEndian.PutUint16(alive, p.keepAlive)
+	all = append(all, alive...)
+	all = append(all, p.properties...)
+	all = append(all, p.payload...)
 	return all
+}
+
+func (p *Connect) makeFixedHeader() {
+	h := make([]byte, 0, 5)
+	h = append(h, CONNECT)
+	h = append(h, p.variableLength()...)
+	p.fixed = h
+}
+
+func (p *Connect) variableLength() []byte {
+	l := 10 + len(p.properties) + len(p.payload)
+	return NewVarInt(uint(l))
 }
 
 // 3.1.2.3 Connect Flags
