@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"fmt"
+	"testing"
 )
 
 func ExampleFixedHeader_String() {
@@ -30,10 +31,11 @@ func ExampleFixedHeader_HasFlag() {
 
 func ExampleFixedHeader_Name() {
 	all := []FixedHeader{
+		FixedHeader{},
 		FixedHeader{0},
 		FixedHeader{CONNECT},
 		FixedHeader{CONNACK},
-		FixedHeader{PUBLISH},
+		FixedHeader{PUBLISH | RETAIN},
 		FixedHeader{PUBACK},
 		FixedHeader{PUBREC},
 		FixedHeader{PUBREL},
@@ -45,12 +47,13 @@ func ExampleFixedHeader_Name() {
 		FixedHeader{PINGREQ},
 		FixedHeader{PINGRESP},
 		FixedHeader{DISCONNECT},
-		FixedHeader{AUTH},
+		FixedHeader{AUTH | DUP},
 	}
 	for _, h := range all {
 		fmt.Printf("%08b 0x%02x %s\n", h.Value(), h.Value(), h.Name())
 	}
 	// output:
+	// 00000000 0x00 UNDEFINED
 	// 00000000 0x00 UNDEFINED
 	// 00010000 0x10 CONNECT
 	// 00100000 0x20 CONNACK
@@ -67,4 +70,10 @@ func ExampleFixedHeader_Name() {
 	// 11010000 0xd0 PINGRESP
 	// 11100000 0xe0 DISCONNECT
 	// 11110000 0xf0 AUTH
+}
+
+func TestFixedHeader(t *testing.T) {
+	if h := []byte{PUBLISH | DUP}; FixedHeader(h).Is(CONNECT) {
+		t.Fail()
+	}
 }
