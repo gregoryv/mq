@@ -12,7 +12,7 @@ import (
 )
 
 func Example() {
-	got, _ := NewParser().Parse(NewConnect().Reader())
+	got, _ := Parse(NewConnect().Reader())
 	fmt.Println(got.FixedHeader())
 	// output:
 	// CONNECT 6

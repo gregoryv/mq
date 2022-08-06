@@ -5,13 +5,7 @@ import (
 	"io"
 )
 
-func NewParser() *Parser {
-	return &Parser{}
-}
-
-type Parser struct{}
-
-func (p *Parser) Parse(r io.Reader) (ControlPacket, error) {
+func Parse(r io.Reader) (ControlPacket, error) {
 	h, err := parseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
