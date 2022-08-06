@@ -5,6 +5,9 @@ import (
 	"io"
 )
 
+// ParseVarInt returns variable int from the reader. Returns EOF or
+// wrapped ErrMalformed.
+//
 // 1.5.5 Variable Byte Integer
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 func ParseVarInt(r io.Reader) (uint, error) {
@@ -31,6 +34,8 @@ func ParseVarInt(r io.Reader) (uint, error) {
 
 var ErrMalformed = fmt.Errorf("malformed")
 
+// NewVarInt returns a byte slice representing the given uint.
+//
 // 1.5.5 Variable Byte Integer
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 func NewVarInt(x uint) []byte {
