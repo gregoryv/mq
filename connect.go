@@ -4,10 +4,10 @@ import "bytes"
 
 func NewConnect() *Connect {
 	// 3.1.2 CONNECT Variable Header
+	variable := make([]byte, 0)
 
 	// 3.1.2.1 Protocol Name
-	protoName := []byte{0, 4, 'M', 'Q', 'T', 'T'}
-	l := len(protoName)
+	variable = append(variable, protoName...)
 
 	// 3.1.2.2 Protocol Version
 
@@ -17,19 +17,23 @@ func NewConnect() *Connect {
 
 	// 3.1.2.11 CONNECT Properties
 
+	variableLen := NewVarInt(uint(len(variable)))
+
 	// fixed header
 	h := make([]byte, 0, 5)
 	h = append(h, CONNECT)
-	h = append(h, NewVarInt(uint(l))...)
+	h = append(h, variableLen...)
 
 	return &Connect{
-		fixed: h,
+		fixed:    h,
+		variable: variable,
 	}
 }
 
 type Connect struct {
 	// headers
-	fixed []byte
+	fixed    []byte
+	variable []byte
 }
 
 func (p *Connect) FixedHeader() FixedHeader {
@@ -43,5 +47,6 @@ func (p *Connect) Reader() *bytes.Reader {
 func (p *Connect) Bytes() []byte {
 	all := make([]byte, 0)
 	all = append(all, p.fixed...)
+	all = append(all, p.variable...)
 	return all
 }

@@ -22,6 +22,9 @@ type ControlPacket interface {
 	FixedHeader() FixedHeader
 }
 
+// static protocol name, 3.1.2.1 Protocol Name
+var protoName = []byte{0, 4, 'M', 'Q', 'T', 'T'}
+
 // 2.1.2 MQTT Control Packet type
 //
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
