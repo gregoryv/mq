@@ -13,7 +13,7 @@ type FixedHeader []byte
 // String returns a string TYPE-FLAGS REMAINING_LENGTH
 func (h FixedHeader) String() string {
 	var sb strings.Builder
-	sb.WriteString(h.Name())
+	sb.WriteString(typeNames[h.byte1()&0b1111_0000])
 
 	if flags := flagNames.Join("-", h.flagsByValue()); len(flags) > 0 {
 		sb.WriteString("-")
@@ -24,10 +24,6 @@ func (h FixedHeader) String() string {
 		fmt.Fprint(&sb, rem)
 	}
 	return sb.String()
-}
-
-func (h FixedHeader) Name() string {
-	return typeNames[h.byte1()&0b1111_0000]
 }
 
 // Is is the same as h.Value() == v
