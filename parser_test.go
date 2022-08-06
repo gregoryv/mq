@@ -14,33 +14,23 @@ import (
 
 func Example() {
 	var (
-		stream = []byte{CONNECT, 0}
+		p      = NewConnect()
+		stream = p.Bytes()
 		parser = NewParser(bytes.NewReader(stream))
-		c      = make(chan *ControlPacket, 0)
+		c      = make(chan ControlPacket, 0)
 	)
 	go parser.Parse(context.Background(), c)
-	fmt.Println(<-c)
+	got := <-c
+	fmt.Println(got.FixedHeader())
 	// output:
-	// CONNECT
-}
-
-func ExampleNewParser() {
-	var (
-		con    = bytes.NewReader([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
-		parser = NewParser(con)
-		c      = make(chan *ControlPacket, 10)
-	)
-	go parser.Parse(context.Background(), c)
-	fmt.Println(<-c)
-	// output:
-	// PUBLISH-RETAIN 4
+	// CONNECT 6
 }
 
 func TestParser_respectsContextCancel(t *testing.T) {
 	var (
-		con         = bytes.NewReader([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
+		con         = bytes.NewReader(NewConnect().Bytes())
 		parser      = NewParser(con)
-		c           = make(chan *ControlPacket, 0) // blocks the parse loop
+		c           = make(chan ControlPacket, 0) // blocks the parse loop
 		ctx, cancel = context.WithCancel(context.Background())
 	)
 	cancel()

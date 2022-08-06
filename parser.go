@@ -16,7 +16,7 @@ type Parser struct {
 	r io.Reader
 }
 
-func (p *Parser) Parse(ctx Context, c chan<- *ControlPacket) error {
+func (p *Parser) Parse(ctx Context, c chan<- ControlPacket) error {
 loop:
 	for {
 		next, err := ParseControlPacket(ctx, p.r)
@@ -37,16 +37,20 @@ loop:
 	return ctx.Err()
 }
 
-func ParseControlPacket(_ Context, r io.Reader) (*ControlPacket, error) {
+func ParseControlPacket(_ Context, r io.Reader) (ControlPacket, error) {
 	h, err := ParseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
 
-	cp := &ControlPacket{
-		FixedHeader: h,
+	var cp ControlPacket
+	switch {
+	case h.Is(CONNECT):
+		cp = &Connect{fixed: h}
+	default:
+		err = fmt.Errorf("ParseControlPacket unknown %s", h)
 	}
-	return cp, nil
+	return cp, err
 }
 
 type Context = context.Context

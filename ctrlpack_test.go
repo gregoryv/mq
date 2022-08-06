@@ -1,14 +1,14 @@
 package mqtt
 
 import (
+	"bytes"
 	"fmt"
 )
 
-func ExampleControlPacket_String() {
-	p := ControlPacket{
-		FixedHeader: []byte{CONNECT, 2},
+func dump(v []byte) string {
+	var buf bytes.Buffer
+	for _, b := range v {
+		fmt.Fprintf(&buf, "%08b: %q\n", b, b)
 	}
-	fmt.Println(p.String())
-	// output:
-	// CONNECT 2
+	return buf.String()
 }
