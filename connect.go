@@ -1,5 +1,7 @@
 package mqtt
 
+import "bytes"
+
 func NewConnect() *Connect {
 	// 3.1.2 CONNECT Variable Header
 
@@ -32,6 +34,10 @@ type Connect struct {
 
 func (p *Connect) FixedHeader() FixedHeader {
 	return FixedHeader(p.fixed)
+}
+
+func (p *Connect) Reader() *bytes.Reader {
+	return bytes.NewReader(p.Bytes())
 }
 
 func (p *Connect) Bytes() []byte {

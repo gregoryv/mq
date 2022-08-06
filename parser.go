@@ -1,43 +1,17 @@
 package mqtt
 
 import (
-	"context"
 	"fmt"
 	"io"
 )
 
-func NewParser(r io.Reader) *Parser {
-	return &Parser{
-		r: r,
-	}
+func NewParser() *Parser {
+	return &Parser{}
 }
 
-type Parser struct {
-	r io.Reader
-}
+type Parser struct{}
 
-func (p *Parser) Parse(ctx Context, c chan<- ControlPacket) error {
-loop:
-	for {
-		next, err := ParseControlPacket(ctx, p.r)
-		if err != nil {
-			debug.Println(err)
-			return err
-		}
-		// The parsing can only be interrupted between two packet
-		// reads or if the reader is closed.
-		select {
-		case c <- next:
-			_ = 1 // coverage thing
-
-		case <-ctx.Done():
-			break loop
-		}
-	}
-	return ctx.Err()
-}
-
-func ParseControlPacket(_ Context, r io.Reader) (ControlPacket, error) {
+func (p *Parser) Parse(r io.Reader) (ControlPacket, error) {
 	h, err := ParseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
@@ -52,8 +26,6 @@ func ParseControlPacket(_ Context, r io.Reader) (ControlPacket, error) {
 	}
 	return cp, err
 }
-
-type Context = context.Context
 
 func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
 	buf := make([]byte, 1)

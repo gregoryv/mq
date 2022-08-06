@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -13,31 +12,10 @@ import (
 )
 
 func Example() {
-	var (
-		p      = NewConnect()
-		stream = p.Bytes()
-		parser = NewParser(bytes.NewReader(stream))
-		c      = make(chan ControlPacket, 0)
-	)
-	go parser.Parse(context.Background(), c)
-	got := <-c
+	got, _ := NewParser().Parse(NewConnect().Reader())
 	fmt.Println(got.FixedHeader())
 	// output:
 	// CONNECT 6
-}
-
-func TestParser_respectsContextCancel(t *testing.T) {
-	var (
-		con         = bytes.NewReader(NewConnect().Bytes())
-		parser      = NewParser(con)
-		c           = make(chan ControlPacket, 0) // blocks the parse loop
-		ctx, cancel = context.WithCancel(context.Background())
-	)
-	cancel()
-	err := parser.Parse(ctx, c)
-	if !errors.Is(err, context.Canceled) {
-		t.Error(err)
-	}
 }
 
 func ExampleParseFixedHeader() {
