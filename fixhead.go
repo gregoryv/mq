@@ -15,7 +15,7 @@ func (h FixedHeader) String() string {
 	var sb strings.Builder
 	sb.WriteString(h.Name())
 
-	if flags := flagNames.Join("-", h.FlagsByValue()); len(flags) > 0 {
+	if flags := flagNames.Join("-", h.flagsByValue()); len(flags) > 0 {
 		sb.WriteString("-")
 		sb.WriteString(flags)
 	}
@@ -24,26 +24,6 @@ func (h FixedHeader) String() string {
 		fmt.Fprint(&sb, rem)
 	}
 	return sb.String()
-}
-
-func (h FixedHeader) FlagsByValue() []byte {
-	flags := make([]byte, 0, 4) // max four
-	add := func(f ...byte) {
-		if len(f) == 1 && h.HasFlag(f[0]) {
-			flags = append(flags, f[0])
-			return
-		}
-		if f, ok := h.HasOneFlag(f...); ok {
-			flags = append(flags, f)
-		}
-	}
-	builders := map[byte]func(){
-		PUBLISH: func() { add(DUP); add(QoS2, QoS1); add(RETAIN) },
-	}
-	if build, found := builders[h.Value()]; found {
-		build()
-	}
-	return flags
 }
 
 func (h FixedHeader) Name() string {
@@ -91,4 +71,24 @@ func (h FixedHeader) byte1() byte {
 		return 0
 	}
 	return h[0]
+}
+
+func (h FixedHeader) flagsByValue() []byte {
+	flags := make([]byte, 0, 4) // max four
+	add := func(f ...byte) {
+		if len(f) == 1 && h.HasFlag(f[0]) {
+			flags = append(flags, f[0])
+			return
+		}
+		if f, ok := h.HasOneFlag(f...); ok {
+			flags = append(flags, f)
+		}
+	}
+	builders := map[byte]func(){
+		PUBLISH: func() { add(DUP); add(QoS2, QoS1); add(RETAIN) },
+	}
+	if build, found := builders[h.Value()]; found {
+		build()
+	}
+	return flags
 }
