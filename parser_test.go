@@ -18,6 +18,13 @@ func Example() {
 	// CONNECT 6
 }
 
+func TestParse_Undefined(t *testing.T) {
+	r := bytes.NewReader([]byte{UNDEFINED})
+	if _, err := Parse(r); err == nil {
+		t.Fail()
+	}
+}
+
 func TestParseFixedHeader(t *testing.T) {
 	SetOutput(os.Stderr)
 	defer SetOutput(ioutil.Discard)
