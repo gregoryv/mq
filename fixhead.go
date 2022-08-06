@@ -15,7 +15,7 @@ func (h FixedHeader) String() string {
 	var sb strings.Builder
 	sb.WriteString(h.Name())
 
-	if flags := FlagNames.Join("-", h.FlagsByValue()); len(flags) > 0 {
+	if flags := flagNames.Join("-", h.FlagsByValue()); len(flags) > 0 {
 		sb.WriteString("-")
 		sb.WriteString(flags)
 	}
