@@ -21,6 +21,7 @@ func Parse(r io.Reader) (ControlPacket, error) {
 	return cp, err
 }
 
+// parseFixedHeader returns complete or partial header on error
 func parseFixedHeader(r io.Reader) (FixedHeader, error) {
 	buf := make([]byte, 1)
 	header := make(FixedHeader, 0, 5) // max 5
@@ -30,9 +31,7 @@ func parseFixedHeader(r io.Reader) (FixedHeader, error) {
 	}
 	header = append(header, buf[0])
 	if header.Is(UNDEFINED) {
-		return nil, TypeError(
-			"ParseFixedHeader: type " + typeNames[UNDEFINED],
-		)
+		return header, ErrTypeUndefined
 	}
 	v, err := ParseVarInt(r)
 	if err != nil {
@@ -42,8 +41,4 @@ func parseFixedHeader(r io.Reader) (FixedHeader, error) {
 	return header, nil
 }
 
-type TypeError string
-
-func (e TypeError) Error() string {
-	return string(e)
-}
+var ErrTypeUndefined = fmt.Errorf("type undefined")

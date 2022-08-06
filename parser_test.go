@@ -38,6 +38,11 @@ func TestParseFixedHeader(t *testing.T) {
 			err: io.EOF,
 		},
 		{
+			in:  []byte{0},
+			exp: []byte{UNDEFINED},
+			err: ErrTypeUndefined,
+		},
+		{
 			in:  []byte{CONNECT},
 			exp: []byte{CONNECT},
 			err: io.EOF,
@@ -50,7 +55,7 @@ func TestParseFixedHeader(t *testing.T) {
 			t.Fatal(i, err)
 		}
 		if !reflect.DeepEqual([]byte(h), c.exp) {
-			t.Error("got", h, "exp", c.exp)
+			t.Error("got", []byte(h), "exp", c.exp)
 		}
 	}
 }
