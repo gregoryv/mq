@@ -20,7 +20,7 @@ func Example() {
 
 func ExampleParseFixedHeader() {
 	r := bytes.NewReader([]byte{PUBLISH | DUP, 4, 0, 0, 0, 0})
-	h, _ := ParseFixedHeader(r)
+	h, _ := parseFixedHeader(r)
 	fmt.Print(h)
 	// output:
 	// PUBLISH-DUP 4
@@ -53,7 +53,7 @@ func TestParseFixedHeader(t *testing.T) {
 	}
 	for i, c := range cases {
 		r := bytes.NewReader(c.in)
-		h, err := ParseFixedHeader(r)
+		h, err := parseFixedHeader(r)
 		if !errors.Is(err, c.err) {
 			t.Fatal(i, err)
 		}

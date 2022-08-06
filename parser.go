@@ -12,7 +12,7 @@ func NewParser() *Parser {
 type Parser struct{}
 
 func (p *Parser) Parse(r io.Reader) (ControlPacket, error) {
-	h, err := ParseFixedHeader(r)
+	h, err := parseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
@@ -27,7 +27,7 @@ func (p *Parser) Parse(r io.Reader) (ControlPacket, error) {
 	return cp, err
 }
 
-func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
+func parseFixedHeader(r io.Reader) (FixedHeader, error) {
 	buf := make([]byte, 1)
 	header := make(FixedHeader, 0, 5) // max 5
 
