@@ -36,6 +36,15 @@ func TestParse_Undefined(t *testing.T) {
 	}
 }
 
+func TestParse_Auth(t *testing.T) {
+	r := bytes.NewReader([]byte{AUTH, 0}) // AUTH is last
+	// todo reverse assert once implemented, here to cover the
+	// error handling of undefined
+	if _, err := Parse(r); err == nil {
+		t.Fail()
+	}
+}
+
 func TestParseFixedHeader(t *testing.T) {
 	SetOutput(os.Stderr)
 	defer SetOutput(ioutil.Discard)
