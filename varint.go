@@ -19,7 +19,7 @@ func ParseVarInt(r io.Reader) (uint, error) {
 		encodedByte = buf[0]
 		value += uint(encodedByte) & uint(127) * multiplier
 		if multiplier > 128*128*128 {
-			return 0, ErrMalformedVarInt
+			return 0, fmt.Errorf("ParseVarInt: %w", ErrMalformed)
 		}
 		if encodedByte&128 == 0 {
 			break
@@ -29,7 +29,7 @@ func ParseVarInt(r io.Reader) (uint, error) {
 	return value, nil
 }
 
-var ErrMalformedVarInt = fmt.Errorf("malformed variable byte integer")
+var ErrMalformed = fmt.Errorf("malformed")
 
 // 1.5.5 Variable Byte Integer
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011

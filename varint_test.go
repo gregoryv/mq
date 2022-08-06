@@ -16,7 +16,7 @@ func ExampleParseVarInt() {
 	// 0 EOF
 	// 16384 <nil>
 	// 266338304 <nil>
-	// 0 malformed variable byte integer
+	// 0 ParseVarInt: malformed
 }
 
 func ExampleNewVarInt() {

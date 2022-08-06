@@ -21,15 +21,14 @@ loop:
 	for {
 		next, err := ParseControlPacket(ctx, p.r)
 		if err != nil {
+			debug.Println(err)
 			return err
 		}
-		debug.Print("DEBUG ", next)
 		// The parsing can only be interrupted between two packet
 		// reads or if the reader is closed.
 		select {
 		case c <- next:
-			// coverage thing
-			_ = 1
+			_ = 1 // coverage thing
 
 		case <-ctx.Done():
 			break loop
@@ -41,7 +40,7 @@ loop:
 func ParseControlPacket(_ Context, r io.Reader) (*ControlPacket, error) {
 	h, err := ParseFixedHeader(r)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
 
 	cp := &ControlPacket{
@@ -57,12 +56,12 @@ func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
 	header := make(FixedHeader, 0, 5) // max 5
 
 	if _, err := r.Read(buf); err != nil {
-		return header, err
+		return header, fmt.Errorf("ParseFixedHeader: %w", err)
 	}
 	header = append(header, buf[0])
 	if header.Is(UNDEFINED) {
 		return nil, TypeError(
-			fmt.Sprintf("undefined %v control packet type", UNDEFINED),
+			"ParseFixedHeader: type " + typeNames[UNDEFINED],
 		)
 	}
 	v, err := ParseVarInt(r)

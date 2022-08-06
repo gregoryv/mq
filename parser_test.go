@@ -6,14 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 )
-
-func init() {
-	SetOutput(os.Stderr)
-}
 
 func ExampleNewParser() {
 	var (
@@ -50,6 +47,9 @@ func ExampleParseFixedHeader() {
 }
 
 func TestParseFixedHeader(t *testing.T) {
+	SetOutput(os.Stderr)
+	defer SetOutput(ioutil.Discard)
+
 	cases := []struct {
 		in  []byte
 		exp []byte
@@ -74,7 +74,7 @@ func TestParseFixedHeader(t *testing.T) {
 	for i, c := range cases {
 		r := bytes.NewReader(c.in)
 		h, err := ParseFixedHeader(r)
-		if err != c.err {
+		if !errors.Is(err, c.err) {
 			t.Fatal(i, err)
 		}
 		if !reflect.DeepEqual([]byte(h), c.exp) {
