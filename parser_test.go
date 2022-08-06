@@ -18,14 +18,6 @@ func Example() {
 	// CONNECT 6
 }
 
-func ExampleParseFixedHeader() {
-	r := bytes.NewReader([]byte{PUBLISH | DUP, 4, 0, 0, 0, 0})
-	h, _ := parseFixedHeader(r)
-	fmt.Print(h)
-	// output:
-	// PUBLISH-DUP 4
-}
-
 func TestParseFixedHeader(t *testing.T) {
 	SetOutput(os.Stderr)
 	defer SetOutput(ioutil.Discard)
