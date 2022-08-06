@@ -5,20 +5,25 @@ import (
 	"io"
 )
 
-func Parse(r io.Reader) (ControlPacket, error) {
+func Parse(r io.Reader) (p ControlPacket, err error) {
 	h, err := parseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
 
-	var cp ControlPacket
 	switch {
 	case h.Is(CONNECT):
-		cp = &Connect{fixed: h}
+		p = &Connect{fixed: h}
+
 	default:
 		err = fmt.Errorf("ParseControlPacket unknown %s", h)
+		return
 	}
-	return cp, err
+	// read the remaining variable and payload
+	rest := make([]byte, p.FixedHeader().RemLen())
+	_, err = r.Read(rest)
+	p.Fill(h, rest)
+	return
 }
 
 // parseFixedHeader returns complete or partial header on error
