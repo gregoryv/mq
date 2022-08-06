@@ -9,10 +9,11 @@ func NewConnect() *Connect {
 	// 3.1.2.1 Protocol Name
 	variable = append(variable, protoName...)
 
-	// 3.1.2.2 Protocol Version
+	// 3.1.2.2 Protocol Version (Level)
 	variable = append(variable, version5)
 
 	// 3.1.2.3 Connect Flags
+	variable = append(variable, 0)
 
 	// 3.1.2.10 Keep Alive
 
@@ -51,3 +52,14 @@ func (p *Connect) Bytes() []byte {
 	all = append(all, p.variable...)
 	return all
 }
+
+// 3.1.2.3 Connect Flags
+const (
+	Reserved byte = 1 << iota
+	CleanStart
+	WillFlag
+	WillQoS
+	WillRetain
+	PasswordFlag
+	UsernameFlag
+)
