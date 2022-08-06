@@ -1,12 +1,10 @@
-package parser
+package mqtt
 
 import (
 	"context"
 	"fmt"
 	"io"
 	"log"
-
-	"github.com/gregoryv/mqtt"
 )
 
 func NewParser(r io.Reader) *Parser {
@@ -19,7 +17,7 @@ type Parser struct {
 	r io.Reader
 }
 
-func (p *Parser) Parse(ctx Context, c chan<- *mqtt.ControlPacket) error {
+func (p *Parser) Parse(ctx Context, c chan<- *ControlPacket) error {
 loop:
 	for {
 		next, err := ParseControlPacket(ctx, p.r)
@@ -41,13 +39,13 @@ loop:
 	return ctx.Err()
 }
 
-func ParseControlPacket(_ Context, r io.Reader) (*mqtt.ControlPacket, error) {
+func ParseControlPacket(_ Context, r io.Reader) (*ControlPacket, error) {
 	h, err := ParseFixedHeader(r)
 	if err != nil {
 		return nil, err
 	}
 
-	cp := &mqtt.ControlPacket{
+	cp := &ControlPacket{
 		FixedHeader: h,
 	}
 	return cp, nil
@@ -55,24 +53,24 @@ func ParseControlPacket(_ Context, r io.Reader) (*mqtt.ControlPacket, error) {
 
 type Context = context.Context
 
-func ParseFixedHeader(r io.Reader) (mqtt.FixedHeader, error) {
+func ParseFixedHeader(r io.Reader) (FixedHeader, error) {
 	buf := make([]byte, 1)
-	header := make(mqtt.FixedHeader, 0, 5) // max 5
+	header := make(FixedHeader, 0, 5) // max 5
 
 	if _, err := r.Read(buf); err != nil {
 		return header, err
 	}
 	header = append(header, buf[0])
-	if header.Is(mqtt.UNDEFINED) {
+	if header.Is(UNDEFINED) {
 		return nil, TypeError(
-			fmt.Sprintf("undefined %v control packet type", mqtt.UNDEFINED),
+			fmt.Sprintf("undefined %v control packet type", UNDEFINED),
 		)
 	}
-	v, err := mqtt.ParseVarInt(r)
+	v, err := ParseVarInt(r)
 	if err != nil {
 		return header, err
 	}
-	header = append(header, mqtt.NewVarInt(v)...)
+	header = append(header, NewVarInt(v)...)
 	return header, nil
 }
 

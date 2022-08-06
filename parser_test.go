@@ -1,4 +1,4 @@
-package parser
+package mqtt
 
 import (
 	"bytes"
@@ -8,34 +8,29 @@ import (
 	"io"
 	"reflect"
 	"testing"
-
-	"github.com/gregoryv/mqtt"
-	. "github.com/gregoryv/mqtt" // for easy access to named bytes
 )
 
 func ExampleNewParser() {
-	var con bytes.Buffer // some network connection
-	con.Write([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
-
-	parser := NewParser(&con)
-	c := make(chan *mqtt.ControlPacket, 10)
+	var (
+		con    = bytes.NewReader([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
+		parser = NewParser(con)
+		c      = make(chan *ControlPacket, 10)
+	)
 	go parser.Parse(context.Background(), c)
-	pak := <-c
-	fmt.Println(pak)
+	fmt.Println(<-c)
 	// output:
 	// PUBLISH-RETAIN 4
 }
 
-func TestParser(t *testing.T) {
-	var con bytes.Buffer // some network connection
-	con.Write([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
-
-	parser := NewParser(&con)
-	ctx, cancel := context.WithCancel(context.Background())
+func TestParser_respectsContextCancel(t *testing.T) {
+	var (
+		con         = bytes.NewReader([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
+		parser      = NewParser(con)
+		c           = make(chan *ControlPacket, 0) // blocks the parse loop
+		ctx, cancel = context.WithCancel(context.Background())
+	)
 	cancel()
-	c := make(chan *mqtt.ControlPacket, 0) // blocks the parse loop
 	err := parser.Parse(ctx, c)
-
 	if !errors.Is(err, context.Canceled) {
 		t.Error(err)
 	}
