@@ -12,6 +12,21 @@ import (
 	"testing"
 )
 
+func Example() {
+	var (
+		payload = []byte("interesting coding")
+		stream  = append([]byte{
+			PUBLISH | RETAIN, byte(len(payload)),
+		}, payload...)
+		parser = NewParser(bytes.NewReader(stream))
+		c      = make(chan *ControlPacket, 0)
+	)
+	go parser.Parse(context.Background(), c)
+	fmt.Println(<-c)
+	// output:
+	// PUBLISH-RETAIN 18 "interesting coding"
+}
+
 func ExampleNewParser() {
 	var (
 		con    = bytes.NewReader([]byte{PUBLISH | RETAIN, 4, 0, 0, 0, 0})
