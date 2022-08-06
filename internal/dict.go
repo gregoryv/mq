@@ -2,19 +2,19 @@ package internal
 
 import "strings"
 
-func NewByteNames(m map[byte]string) *ByteNames {
-	return &ByteNames{names: m}
+func NewDict(m map[byte]string) *Dict {
+	return &Dict{names: m}
 }
 
-type ByteNames struct {
+type Dict struct {
 	names map[byte]string
 }
 
-func (n *ByteNames) Name(b byte) string {
+func (n *Dict) Name(b byte) string {
 	return n.names[b]
 }
 
-func (n *ByteNames) Join(sep string, b []byte) string {
+func (n *Dict) Join(sep string, b []byte) string {
 	if len(b) == 0 {
 		return ""
 	}

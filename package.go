@@ -14,7 +14,7 @@ const (
 	DUP byte = 0b0000_1000
 )
 
-var FlagNames = internal.NewByteNames(
+var FlagNames = internal.NewDict(
 	map[byte]string{
 		DUP:    "DUP",
 		QoS0:   "QoS0",
