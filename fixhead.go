@@ -47,7 +47,7 @@ func (h FixedHeader) FlagsByValue() []byte {
 }
 
 func (h FixedHeader) Name() string {
-	return controlPacketTypeName[byte(h.byte1())&0b1111_0000]
+	return typeNames[h.byte1()&0b1111_0000]
 }
 
 // Is is the same as h.Value() == v

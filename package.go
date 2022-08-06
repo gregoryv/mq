@@ -26,7 +26,7 @@ const (
 	AUTH                           // 15 Client to Server or Server to Client Authentication exchange
 )
 
-var controlPacketTypeName = map[byte]string{
+var typeNames = map[byte]string{
 	UNDEFINED:   "UNDEFINED",
 	CONNECT:     "CONNECT",
 	CONNACK:     "CONNACK",
