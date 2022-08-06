@@ -10,6 +10,7 @@ func NewConnect() *Connect {
 	variable = append(variable, protoName...)
 
 	// 3.1.2.2 Protocol Version
+	variable = append(variable, version5)
 
 	// 3.1.2.3 Connect Flags
 
