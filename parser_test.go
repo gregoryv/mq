@@ -6,9 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"testing"
 )
+
+func init() {
+	SetOutput(os.Stderr)
+}
 
 func ExampleNewParser() {
 	var (

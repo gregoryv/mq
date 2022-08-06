@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 )
 
 func NewParser(r io.Reader) *Parser {
@@ -24,7 +23,7 @@ loop:
 		if err != nil {
 			return err
 		}
-		log.Print("DEBUG ", next)
+		debug.Print("DEBUG ", next)
 		// The parsing can only be interrupted between two packet
 		// reads or if the reader is closed.
 		select {
