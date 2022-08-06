@@ -3,20 +3,12 @@ package mqtt
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 )
-
-func Example() {
-	got, _ := Parse(NewConnect().Reader())
-	fmt.Println(got.FixedHeader())
-	// output:
-	// CONNECT 6
-}
 
 func TestParse_Connect(t *testing.T) {
 	r := NewConnect().Reader()
