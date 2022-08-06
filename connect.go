@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 )
 
 func NewConnect() *Connect {
@@ -33,7 +34,6 @@ type Connect struct {
 
 func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	p.fixed = h
-	debug.Print(h)
 	if len(rest) < 10 {
 		return fmt.Errorf("Connect.Fill %w", ErrIncomplete)
 	}
@@ -44,15 +44,22 @@ func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	alive, _ := binary.Uvarint(rest[7:9])
 	p.SetKeepAlive(uint16(alive))
 
-	if len(rest) < 11 {
-		return fmt.Errorf("Connect.Fill %w", ErrIncomplete)
-	}
+	// parse properties
 	propLen, err := ParseVarInt(bytes.NewReader(rest[10:]))
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return err
 	}
+
 	width := len(NewVarInt(propLen)) // maybe optimise
-	p.payload = rest[10+width:]
+	if propLen > 0 {
+		p.properties = rest[10+width : 10+width+int(propLen)]
+	}
+
+	// rest is the payload
+	if 10+int(propLen) <= len(rest) {
+		return fmt.Errorf("TODO: %w", ErrIncomplete)
+	}
+	p.payload = rest[10+width+int(propLen):]
 	return nil
 }
 
