@@ -68,15 +68,13 @@ const (
 	DUP byte = 0b0000_1000
 )
 
-var flagNames = internal.NewDict(
-	map[byte]string{
-		DUP:    "DUP",
-		QoS0:   "QoS0",
-		QoS1:   "QoS1",
-		QoS2:   "QoS2",
-		RETAIN: "RETAIN",
-	},
-)
+var flagNames = internal.Dict{
+	DUP:    "DUP",
+	QoS0:   "QoS0",
+	QoS1:   "QoS1",
+	QoS2:   "QoS2",
+	RETAIN: "RETAIN",
+}
 
 // The Reason Codes used for Malformed Packet and Protocol Errors
 //
