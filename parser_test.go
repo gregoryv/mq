@@ -18,6 +18,17 @@ func Example() {
 	// CONNECT 6
 }
 
+func TestParse_Connect(t *testing.T) {
+	r := NewConnect().Reader()
+	got, err := Parse(r)
+	if err != nil {
+		t.Error(err)
+	}
+	if h := got.FixedHeader(); !h.Is(CONNECT) {
+		t.Error("wrong type", h)
+	}
+}
+
 func TestParse_Undefined(t *testing.T) {
 	r := bytes.NewReader([]byte{UNDEFINED})
 	if _, err := Parse(r); err == nil {
