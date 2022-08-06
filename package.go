@@ -1,4 +1,12 @@
-// Package mqtt provides a MQTT v5.0 protocol implementation.
+/*
+Package mqtt provides a MQTT v5.0 protocol implementation
+
+This package contains the protocol parsing features whereas
+subpackages contain client and server implementations.  The
+specification is found at
+https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
+
+*/
 package mqtt
 
 import (
@@ -10,6 +18,7 @@ import (
 )
 
 // 2.1.2 MQTT Control Packet type
+//
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 const (
 	UNDEFINED   byte = (iota << 4) // 0 Forbidden Reserved
