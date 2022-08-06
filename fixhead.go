@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
-// FixedHeader represents the first 1..5 bytes of a control packet.
-// It's an error if len(FixedHeader) == 0.
+// FixedHeader represents the first 2..5 bytes of a control packet.
+
+// It's an error if len(FixedHeader) < 2 or > 5.
 //
 // 2.1.1 Fixed Header
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
