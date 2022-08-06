@@ -39,16 +39,6 @@ func (h FixedHeader) Value() byte {
 	return byte(h.byte1()) & 0b1111_0000
 }
 
-func (h FixedHeader) HasOneFlag(flags ...byte) (byte, bool) {
-	for _, f := range flags {
-		if !h.HasFlag(f) {
-			continue
-		}
-		return f, true
-	}
-	return 0, false
-}
-
 // RemLen returns the remaining length
 func (h FixedHeader) RemLen() uint {
 	if len(h) < 2 {
@@ -59,11 +49,7 @@ func (h FixedHeader) RemLen() uint {
 }
 
 func (h FixedHeader) HasFlag(f byte) bool {
-	return h.Flags()&f == f
-}
-
-func (h FixedHeader) Flags() byte {
-	return byte(h.byte1()) & 0b0000_1111
+	return h.byte1()&f == f
 }
 
 func (h FixedHeader) byte1() byte {
@@ -80,7 +66,7 @@ func (h FixedHeader) flagsByValue() []byte {
 			flags = append(flags, f[0])
 			return
 		}
-		if f, ok := h.HasOneFlag(f...); ok {
+		if f, ok := h.hasOneFlag(f...); ok {
 			flags = append(flags, f)
 		}
 	}
@@ -91,4 +77,14 @@ func (h FixedHeader) flagsByValue() []byte {
 		build()
 	}
 	return flags
+}
+
+func (h FixedHeader) hasOneFlag(flags ...byte) (byte, bool) {
+	for _, f := range flags {
+		if !h.HasFlag(f) {
+			continue
+		}
+		return f, true
+	}
+	return 0, false
 }
