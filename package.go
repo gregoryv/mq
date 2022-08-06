@@ -64,3 +64,30 @@ var flagNames = internal.NewDict(
 		RETAIN: "RETAIN",
 	},
 )
+
+// The Reason Codes used for Malformed Packet and Protocol Errors
+//
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Handling_errors
+const (
+	MalformedPacket                     byte = 0x81 // Malformed Packet
+	ProtocolError                       byte = 0x82 // Protocol Error
+	ReceiveMaximumExceeded              byte = 0x93 // Receive Maximum exceeded
+	PacketTooLarge                      byte = 0x95 // Packet too large
+	RetainNotSupported                  byte = 0x9A // Retain not supported
+	QoSNotSupported                     byte = 0x9B // QoS not supported
+	SharedSubscriptionsNotSupported     byte = 0x9E // Shared Subscriptions not supported
+	SubscriptionIdentifiersNotSupported byte = 0xA1 // Subscription Identifiers not supported
+	WildcardSubscriptionsNotSupported   byte = 0xA2 // Wildcard Subscriptions not supported
+)
+
+var codeNames = map[byte]string{
+	MalformedPacket:                     "Malformed Packet",
+	ProtocolError:                       "Protocol Error",
+	ReceiveMaximumExceeded:              "Receive Maximum exceeded",
+	PacketTooLarge:                      "Packet too large",
+	RetainNotSupported:                  "Retain not supported",
+	QoSNotSupported:                     "QoS not supported",
+	SharedSubscriptionsNotSupported:     "Shared Subscriptions not supported",
+	SubscriptionIdentifiersNotSupported: "Subscription Identifiers not supported",
+	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
+}

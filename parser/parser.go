@@ -64,7 +64,7 @@ func ParseFixedHeader(r io.Reader) (mqtt.FixedHeader, error) {
 	}
 	header = append(header, buf[0])
 	if header.Is(mqtt.UNDEFINED) {
-		return nil, MalformedPacket(
+		return nil, TypeError(
 			fmt.Sprintf("undefined %v control packet type", mqtt.UNDEFINED),
 		)
 	}
@@ -76,8 +76,8 @@ func ParseFixedHeader(r io.Reader) (mqtt.FixedHeader, error) {
 	return header, nil
 }
 
-type MalformedPacket string
+type TypeError string
 
-func (e MalformedPacket) Error() string {
+func (e TypeError) Error() string {
 	return string(e)
 }
