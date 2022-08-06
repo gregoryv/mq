@@ -14,17 +14,14 @@ import (
 
 func Example() {
 	var (
-		payload = []byte("interesting coding")
-		stream  = append([]byte{
-			PUBLISH | RETAIN, byte(len(payload)),
-		}, payload...)
+		stream = []byte{CONNECT, 0}
 		parser = NewParser(bytes.NewReader(stream))
 		c      = make(chan *ControlPacket, 0)
 	)
 	go parser.Parse(context.Background(), c)
 	fmt.Println(<-c)
 	// output:
-	// PUBLISH-RETAIN 18 "interesting coding"
+	// CONNECT
 }
 
 func ExampleNewParser() {
