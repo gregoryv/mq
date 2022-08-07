@@ -7,6 +7,6 @@ func ExampleConnect_String() {
 	fmt.Println(p)
 	fmt.Println(p.WithFlags(0b0000_0000))
 	// output:
-	// CONNECT 10 MQTT upr2wsR
-	// CONNECT 10 MQTT -------
+	// CONNECT 10 MQTT5 upr2wsR
+	// CONNECT 10 MQTT5 -------
 }

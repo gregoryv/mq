@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"strings"
 )
 
 func (p *Connect) Fill(h FixedHeader, r *bytes.Reader) error {
@@ -39,12 +38,9 @@ func NewConnect() *Connect {
 	return p
 }
 
-// Should we keep fields as []byte types as to make it easy to read
-// and write, as that is the main purpose of the protocol?
+// Connect as defined in 3.1 CONNECT - Connection Request
 //
-// or do we keep them aligned with their intended value making it
-// easier to e.g. dump and or convert, is there bytes encoder perhaps?
-
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901033
 type Connect struct {
 	// fixed header
 	fixed []byte
@@ -102,12 +98,12 @@ func (p *Connect) HasFlag(f byte) bool {
 }
 
 func (p *Connect) String() string {
-	parts := []string{
-		p.FixedHeader().String(),
+	return fmt.Sprintf("%s %s%v %s",
+		p.FixedHeader(),
 		p.ProtocolName(),
-		connectFlags(p.Flags()).String(),
-	}
-	return strings.Join(parts, " ")
+		p.ProtocolVersion(),
+		connectFlags(p.Flags()),
+	)
 }
 
 func (p *Connect) size() int {
