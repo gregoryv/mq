@@ -9,15 +9,10 @@ import (
 
 func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	p.fixed = h
-	if len(rest) < 10 {
-		return fmt.Errorf("Connect.Fill %w", ErrIncomplete)
+	n := copy(p.variable, rest)
+	if n < 10 {
+		return fmt.Errorf("variable header %w", ErrIncomplete)
 	}
-	p.SetProtocolName(rest[:6])
-	p.SetProtocolVersion(rest[6])
-	p.SetFlags(rest[7])
-
-	alive, _ := binary.Uvarint(rest[7:9])
-	p.SetKeepAlive(uint16(alive))
 
 	// parse properties
 	propLen, err := ParseVarInt(bytes.NewReader(rest[10:]))
@@ -39,7 +34,9 @@ func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 }
 
 func NewConnect() *Connect {
-	p := &Connect{protoName: make([]byte, 6)}
+	p := &Connect{
+		variable: make([]byte, 10), // fixed in lenght
+	}
 	p.SetProtocolName(protoName)
 	p.SetProtocolVersion(version5)
 	p.SetKeepAlive(10)
@@ -56,11 +53,8 @@ type Connect struct {
 	// fixed header
 	fixed []byte
 
-	// variable
-	protoName  []byte
-	protoVer   byte
-	flags      byte
-	keepAlive  uint16
+	// variable header
+	variable   []byte
 	properties []byte
 
 	// payload
@@ -68,14 +62,15 @@ type Connect struct {
 }
 
 // 3.1.2.1 Protocol Name
-func (p *Connect) SetProtocolName(v []byte)  { copy(p.protoName, v) }
-func (p *Connect) SetProtocolVersion(v byte) { p.protoVer = v }
-func (p *Connect) SetKeepAlive(sec uint16)   { p.keepAlive = sec }
-func (p *Connect) SetFlags(f byte)           { p.flags = f }
+func (p *Connect) SetProtocolName(v []byte) { copy(p.variable[:6], v) }
 
-var ErrIncomplete = fmt.Errorf("incomplete")
+func (p *Connect) SetProtocolVersion(v byte) { p.variable[6] = v }
 
-var ErrEmptyFixedHeader = fmt.Errorf("empty fixed header")
+func (p *Connect) SetFlags(f byte) { p.variable[7] = f }
+
+func (p *Connect) SetKeepAlive(sec uint16) {
+	binary.BigEndian.PutUint16(p.variable[8:], sec)
+}
 
 func (p *Connect) FixedHeader() FixedHeader {
 	p.makeFixedHeader()
@@ -87,13 +82,10 @@ func (p *Connect) Reader() *bytes.Reader {
 }
 
 func (p *Connect) Bytes() []byte {
-	all := make([]byte, 0)
-	all = append(all, p.FixedHeader()...)
-	all = append(all, p.protoName...)
-	all = append(all, p.protoVer, p.flags)
-	alive := make([]byte, 2)
-	binary.BigEndian.PutUint16(alive, p.keepAlive)
-	all = append(all, alive...)
+	p.makeFixedHeader()
+	all := make([]byte, 0) // maybe optimise later to a known size
+	all = append(all, p.fixed...)
+	all = append(all, p.variable...)
 	all = append(all, p.properties...)
 	all = append(all, p.payload...)
 	return all
@@ -121,3 +113,7 @@ const (
 	PasswordFlag
 	UsernameFlag
 )
+
+var ErrIncomplete = fmt.Errorf("incomplete")
+
+var ErrEmptyFixedHeader = fmt.Errorf("empty fixed header")
