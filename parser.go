@@ -25,10 +25,7 @@ func Parse(r io.Reader) (ControlPacket, error) {
 	l := p.FixedHeader().RemLen()
 	rest := make([]byte, l)
 
-	n, err := r.Read(rest)
-	if err != nil {
-		return p, fmt.Errorf("%s %w", err.Error(), ErrIncomplete)
-	}
+	n, _ := r.Read(rest)
 	if n != l {
 		return p, fmt.Errorf("expected %v bytes read %v, %w", l, n, ErrIncomplete)
 	}
