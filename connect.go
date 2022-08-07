@@ -83,7 +83,7 @@ func (p *Connect) Reader() *bytes.Reader {
 
 func (p *Connect) Bytes() []byte {
 	p.makeFixedHeader()
-	all := make([]byte, 0) // maybe optimise later to a known size
+	all := make([]byte, 0, p.size())
 	all = append(all, p.fixed...)
 	all = append(all, p.variable...)
 	all = append(all, p.properties...)
@@ -91,6 +91,12 @@ func (p *Connect) Bytes() []byte {
 	return all
 }
 
+func (p *Connect) size() int {
+	return len(p.fixed) +
+		len(p.variable) +
+		len(p.properties) +
+		len(p.payload)
+}
 func (p *Connect) makeFixedHeader() {
 	h := make([]byte, 0, 5)
 	h = append(h, CONNECT)
@@ -99,7 +105,7 @@ func (p *Connect) makeFixedHeader() {
 }
 
 func (p *Connect) variableLength() []byte {
-	l := 10 + len(p.properties) + len(p.payload)
+	l := len(p.variable) + len(p.properties) + len(p.payload)
 	return NewVarInt(uint(l))
 }
 
