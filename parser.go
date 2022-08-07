@@ -14,16 +14,19 @@ func Parse(r io.Reader) (interface{}, error) {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
 	// read the remaining data for this control packet
-	l := h.RemLen()
-	rest := make([]byte, l)
-	n, _ := r.Read(rest)
-	if n != l {
-		return nil, fmt.Errorf("expected %v bytes read %v, %w", l, n, ErrIncomplete)
+	exp := h.RemLen()
+	remaining := make([]byte, exp)
+	n, _ := r.Read(remaining)
+	// fail if we didn't get all the remaining bytes
+	if n != exp {
+		return nil, fmt.Errorf(
+			"expected %v bytes read %v, %w", exp, n, ErrIncomplete,
+		)
 	}
 
 	switch {
 	case h.Is(CONNECT):
-		return ParseConnect(h, rest)
+		return ParseConnect(h, remaining)
 
 	default:
 		return nil, fmt.Errorf("ParseControlPacket unknown %s", h)

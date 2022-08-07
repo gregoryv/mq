@@ -4,16 +4,15 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
 )
 
 // ParseConnect returns a new connect packet from the header and
-// remaining bytes.
-func ParseConnect(h FixedHeader, rem []byte) (*Connect, error) {
+// remaining bytes. h.RemLen must be equal to len(rem).
+func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 	p := NewConnect()
 	p.fixed = h
 
-	r := bytes.NewReader(rem)
+	r := bytes.NewReader(remaining)
 	// variable header (without properties)
 	r.Read(p.variable)
 
@@ -24,11 +23,7 @@ func ParseConnect(h FixedHeader, rem []byte) (*Connect, error) {
 
 	// payload
 	p.payload = make([]byte, r.Len())
-	_, err := r.Read(p.payload)
-
-	if err != nil && err != io.EOF {
-		return p, err
-	}
+	_, _ = r.Read(p.payload)
 	return p, nil
 }
 
