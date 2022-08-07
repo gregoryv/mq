@@ -7,6 +7,46 @@ import (
 	"time"
 )
 
+func NewConnect() *Connect {
+	p := &Connect{
+		variable:              make([]byte, 10, 10),
+		SessionExpiryInterval: 59,
+	}
+	p.SetProtocolName(protoName)
+	p.SetProtocolVersion(version5)
+	p.SetKeepAlive(10)
+	p.SetReceiveMax(0) // means max 65,535 if not present
+	p.SetMaxPacketSize(4096)
+	return p
+}
+
+// Connect as defined in 3.1 CONNECT - Connection Request
+//
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901033
+type Connect struct {
+	// variable header
+	variable   []byte
+	properties []byte
+
+	SessionExpiryInterval
+	receiveMax    int16
+	maxPacketSize int32
+
+	// payload
+	payload []byte
+}
+
+func (p *Connect) MarshalBinary() ([]byte, error) {
+	all := make([]byte, 0, p.size())
+	all = append(all, p.FixedHeader()...)
+	all = append(all, p.variable...)
+	prop := p.propertyBytes()
+	all = append(all, NewVarInt(uint(len(prop)))...)
+	all = append(all, prop...)
+	all = append(all, p.payload...)
+	return all, nil
+}
+
 func (p *Connect) parseProperties(r *bytes.Reader, propLen int) error {
 	left := r.Len() - propLen + 1
 	for left < r.Len() {
@@ -37,18 +77,6 @@ func (p *Connect) propertyBytes() []byte {
 	//all = append(all, v...)
 	return all
 }
-
-func (p *Connect) MarshalBinary() ([]byte, error) {
-	all := make([]byte, 0, p.size())
-	all = append(all, p.FixedHeader()...)
-	all = append(all, p.variable...)
-	prop := p.propertyBytes()
-	all = append(all, NewVarInt(uint(len(prop)))...)
-	all = append(all, prop...)
-	all = append(all, p.payload...)
-	return all, nil
-}
-
 func (p *Connect) MarshalText() ([]byte, error) {
 	return AsText{
 		p.FixedHeader(),
@@ -60,15 +88,6 @@ const (
 	PropReceiveMax            byte = 0x21
 	PropMaxPacketSize         byte = 0x27
 )
-
-var onnectPropertyNames = map[byte]string{
-	PropSessionExpiryInterval: "SessionExpiryInterval",
-	PropReceiveMax:            "ReceiveMax",
-	PropMaxPacketSize:         "MaxPacketSize",
-}
-
-// WIP
-// ----------------------------------------
 
 // UnmarshalBinary unmarshals remaining data after fixed header has been read.
 // Remaining length must be equal to len(data).
@@ -90,35 +109,6 @@ func (p *Connect) UnmarshalBinary(data []byte) error {
 	p.payload = make([]byte, r.Len())
 	_, _ = r.Read(p.payload)
 	return nil
-}
-
-func NewConnect() *Connect {
-	p := &Connect{
-		variable:              make([]byte, 10, 10),
-		SessionExpiryInterval: 59,
-	}
-	p.SetProtocolName(protoName)
-	p.SetProtocolVersion(version5)
-	p.SetKeepAlive(10)
-	p.SetReceiveMax(0) // means max 65,535 if not present
-	p.SetMaxPacketSize(4096)
-	return p
-}
-
-// Connect as defined in 3.1 CONNECT - Connection Request
-//
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901033
-type Connect struct {
-	// variable header
-	variable   []byte
-	properties []byte
-
-	SessionExpiryInterval
-	receiveMax    int16
-	maxPacketSize int32
-
-	// payload
-	payload []byte
 }
 
 // 3.1.2.1 Protocol Name
