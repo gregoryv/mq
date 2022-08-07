@@ -21,11 +21,7 @@ func TestParse_incomplete(t *testing.T) {
 func TestParse_Connect(t *testing.T) {
 	p := NewConnect()
 	p.SetFlags(UsernameFlag | Reserved | WillQoS1)
-	r := p.Reader()
-	got, err := Parse(r)
-	if err != nil {
-		t.Fatal(got.String(), err)
-	}
+	got := mustParse(t, p.Reader()).(*Connect)
 	if h := got.FixedHeader(); !h.Is(CONNECT) {
 		t.Error("wrong type", h)
 	}

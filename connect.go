@@ -7,7 +7,8 @@ import (
 	"io"
 )
 
-func (p *Connect) Fill(h FixedHeader, r *bytes.Reader) error {
+func (p *Connect) Fill(h FixedHeader, rest []byte) error {
+	r := bytes.NewReader(rest)
 	p.fixed = h
 
 	// variable header (without properties)

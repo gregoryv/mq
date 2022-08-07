@@ -1,37 +1,35 @@
 package mqtt
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 )
 
-func Parse(r io.Reader) (ControlPacket, error) {
-
+// Parse parses a control packet from the given reader. It assumes the
+// first byte is a fixed header.
+func Parse(r io.Reader) (interface{}, error) {
+	// read fixed header
 	h, err := parseFixedHeader(r)
 	if err != nil {
 		return nil, fmt.Errorf("ParseControlPacket %w", err)
 	}
+	// read the remaining data for this control packet
+	l := h.RemLen()
+	rest := make([]byte, l)
+	n, _ := r.Read(rest)
+	if n != l {
+		return nil, fmt.Errorf("expected %v bytes read %v, %w", l, n, ErrIncomplete)
+	}
 
-	var p ControlPacket
 	switch {
 	case h.Is(CONNECT):
-		p = NewConnect()
+		p := NewConnect()
+		err = p.Fill(h, rest)
+		return p, err
 
 	default:
 		return nil, fmt.Errorf("ParseControlPacket unknown %s", h)
 	}
-	// read the remaining variable and payload
-	l := p.FixedHeader().RemLen()
-	rest := make([]byte, l)
-
-	n, _ := r.Read(rest)
-	if n != l {
-		return p, fmt.Errorf("expected %v bytes read %v, %w", l, n, ErrIncomplete)
-	}
-	br := bytes.NewReader(rest)
-	err = p.Fill(h, br)
-	return p, err
 }
 
 // parseFixedHeader returns complete or partial header on error
@@ -55,3 +53,5 @@ func parseFixedHeader(r io.Reader) (FixedHeader, error) {
 }
 
 var ErrTypeUndefined = fmt.Errorf("type undefined")
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet

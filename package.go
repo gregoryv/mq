@@ -10,21 +10,12 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 package mqtt
 
 import (
-	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 
 	"github.com/gregoryv/mqtt/internal"
 )
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
-type ControlPacket interface {
-	FixedHeader() FixedHeader
-	Fill(FixedHeader, *bytes.Reader) error
-	fmt.Stringer // short oneline representation
-}
 
 // static protocol name, 3.1.2.1 Protocol Name
 var protoName = []byte{0, 4, 'M', 'Q', 'T', 'T'}
