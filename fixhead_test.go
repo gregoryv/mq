@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func ExampleFixedHeader_String() {
+func ExampleFixedHeader() {
 	fmt.Println(FixedHeader{UNDEFINED, 0})
 	fmt.Println(FixedHeader{PUBLISH, 39})
 	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})

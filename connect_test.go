@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func ExampleConnect_String() {
+func ExampleConnect() {
 	p := NewConnect().WithFlags(0b1111_1111)
 	fmt.Println(p)
 	fmt.Println(p.WithFlags(0b0000_0000))
