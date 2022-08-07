@@ -7,31 +7,6 @@ import (
 	"io"
 )
 
-func NewConnect() *Connect {
-	p := &Connect{protoName: make([]byte, 6)}
-	p.SetProtocolName(protoName)
-	p.SetProtocolVersion(version5)
-	p.SetKeepAlive(10)
-	p.makeFixedHeader()
-	return p
-}
-
-type Connect struct {
-	// fixed header
-	fixed []byte
-
-	// variable
-	protoName []byte
-	protoVer  byte
-
-	flags      byte
-	keepAlive  uint16
-	properties []byte
-
-	// payload
-	payload []byte
-}
-
 func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	p.fixed = h
 	if len(rest) < 10 {
@@ -63,6 +38,35 @@ func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	return nil
 }
 
+func NewConnect() *Connect {
+	p := &Connect{protoName: make([]byte, 6)}
+	p.SetProtocolName(protoName)
+	p.SetProtocolVersion(version5)
+	p.SetKeepAlive(10)
+	return p
+}
+
+// Should we keep fields as []byte types as to make it easy to read
+// and write, as that is the main purpose of the protocol?
+//
+// or do we keep them aligned with their intended value making it
+// easier to e.g. dump and or convert, is there bytes encoder perhaps?
+
+type Connect struct {
+	// fixed header
+	fixed []byte
+
+	// variable
+	protoName  []byte
+	protoVer   byte
+	flags      byte
+	keepAlive  uint16
+	properties []byte
+
+	// payload
+	payload []byte
+}
+
 // 3.1.2.1 Protocol Name
 func (p *Connect) SetProtocolName(v []byte)  { copy(p.protoName, v) }
 func (p *Connect) SetProtocolVersion(v byte) { p.protoVer = v }
@@ -74,6 +78,7 @@ var ErrIncomplete = fmt.Errorf("incomplete")
 var ErrEmptyFixedHeader = fmt.Errorf("empty fixed header")
 
 func (p *Connect) FixedHeader() FixedHeader {
+	p.makeFixedHeader()
 	return FixedHeader(p.fixed)
 }
 
@@ -83,7 +88,7 @@ func (p *Connect) Reader() *bytes.Reader {
 
 func (p *Connect) Bytes() []byte {
 	all := make([]byte, 0)
-	all = append(all, p.fixed...)
+	all = append(all, p.FixedHeader()...)
 	all = append(all, p.protoName...)
 	all = append(all, p.protoVer, p.flags)
 	alive := make([]byte, 2)
