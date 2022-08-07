@@ -33,10 +33,8 @@ func Parse(r io.Reader) (ControlPacket, error) {
 		return p, fmt.Errorf("expected %v bytes read %v, %w", l, n, ErrIncomplete)
 	}
 	br := bytes.NewReader(rest)
-	if err := p.Fill(h, br); err != nil {
-		return p, fmt.Errorf("Parse %w", err)
-	}
-	return p, nil
+	err = p.Fill(h, br)
+	return p, err
 }
 
 // parseFixedHeader returns complete or partial header on error
