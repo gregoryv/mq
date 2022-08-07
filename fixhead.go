@@ -14,6 +14,10 @@ import (
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader []byte
 
+func (h FixedHeader) MarshalText() ([]byte, error) {
+	return []byte(h.String()), nil
+}
+
 // String returns a string TYPE-FLAGS REMAINING_LENGTH
 func (h FixedHeader) String() string {
 	var sb strings.Builder
