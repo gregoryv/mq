@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"time"
 )
 
 // ParseConnect returns a new connect packet from the header and
@@ -18,9 +19,25 @@ func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 
 	// properties
 	propLen, _ := ParseVarInt(r)
-	p.properties = make([]byte, propLen)
-	r.Read(p.properties)
 
+	if propLen > 0 {
+		left := r.Len() - int(propLen) + 1
+
+		for left < r.Len() {
+			ident, err := r.ReadByte()
+			debug.Printf("ParseConnect ident:%v %v, left:%v", ident, err, r.Len())
+			switch ident {
+			case SessionExpiryInterval:
+				v := make([]byte, 4)
+				_, _ = r.Read(v)
+				sec, _ := binary.Uvarint(v)
+				p.SetSessionExpiryInterval(time.Duration(sec) * time.Second)
+			default:
+				return p, fmt.Errorf("unknown property 0x%02x", ident)
+			}
+		}
+
+	}
 	// payload
 	p.payload = make([]byte, r.Len())
 	_, _ = r.Read(p.payload)
@@ -29,11 +46,12 @@ func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 
 func NewConnect() *Connect {
 	p := &Connect{
-		variable: make([]byte, 10), // fixed in lenght
+		variable: make([]byte, 10, 10),
 	}
 	p.SetProtocolName(protoName)
 	p.SetProtocolVersion(version5)
 	p.SetKeepAlive(10)
+	p.SetSessionExpiryInterval(59 * time.Second)
 	return p
 }
 
@@ -48,6 +66,8 @@ type Connect struct {
 	variable   []byte
 	properties []byte
 
+	sessionExpiryInterval time.Duration
+
 	// payload
 	payload []byte
 }
@@ -59,6 +79,14 @@ func (p *Connect) Flags() byte           { return p.variable[7] }
 
 func (p *Connect) SetProtocolName(v []byte)  { copy(p.variable[:6], v) }
 func (p *Connect) SetProtocolVersion(v byte) { p.variable[6] = v }
+
+func (p *Connect) SessionExpiryInterval() time.Duration {
+	return p.sessionExpiryInterval
+}
+
+func (p *Connect) SetSessionExpiryInterval(dur time.Duration) {
+	p.sessionExpiryInterval = dur
+}
 
 // SetFlags replaces the current flags with f
 func (p *Connect) SetFlags(f byte) { p.variable[7] |= f }
@@ -87,8 +115,20 @@ func (p *Connect) Bytes() []byte {
 	all := make([]byte, 0, p.size())
 	all = append(all, p.fixed...)
 	all = append(all, p.variable...)
-	all = append(all, p.properties...)
+	prop := p.propertyBytes()
+	all = append(all, NewVarInt(uint(len(prop)))...)
+	all = append(all, prop...)
 	all = append(all, p.payload...)
+	return all
+}
+
+func (p *Connect) propertyBytes() []byte {
+	var all []byte
+	all = append(all, SessionExpiryInterval)
+	v := make([]byte, 4)
+	sec := uint32(p.sessionExpiryInterval.Seconds())
+	binary.BigEndian.PutUint32(v, sec)
+	all = append(all, v...)
 	return all
 }
 
@@ -97,11 +137,12 @@ func (p *Connect) HasFlag(f byte) bool {
 }
 
 func (p *Connect) String() string {
-	return fmt.Sprintf("%s %s%v %s",
+	return fmt.Sprintf("%s %s%v %s %v",
 		p.FixedHeader(),
 		p.ProtocolName(),
 		p.ProtocolVersion(),
 		connectFlags(p.Flags()),
+		p.SessionExpiryInterval(),
 	)
 }
 
@@ -119,7 +160,7 @@ func (p *Connect) makeFixedHeader() {
 }
 
 func (p *Connect) variableLength() []byte {
-	l := len(p.variable) + len(p.properties) + len(p.payload)
+	l := len(p.variable) + len(p.propertyBytes()) + len(p.payload)
 	return NewVarInt(uint(l))
 }
 
@@ -180,3 +221,17 @@ func (c connectFlags) String() string {
 func (c connectFlags) Has(f byte) bool { return byte(c)&f == f }
 
 var ErrIncomplete = fmt.Errorf("incomplete")
+
+// ----------------------------------------
+
+// connect properties
+
+type properties map[byte][]byte
+
+const (
+	SessionExpiryInterval byte = 0x11
+)
+
+var onnectPropertyNames = map[byte]string{
+	SessionExpiryInterval: "SessionExpiryInterval",
+}

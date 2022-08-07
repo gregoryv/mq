@@ -4,8 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"os"
 	"testing"
 )
+
+func D(t *testing.T) {
+	SetOutput(os.Stderr)
+	t.Cleanup(func() {
+		SetOutput(ioutil.Discard)
+	})
+}
 
 func mustParse(t *testing.T, r io.Reader) interface{} {
 	got, err := Parse(r)
