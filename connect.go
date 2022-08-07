@@ -185,5 +185,3 @@ func (c connectFlags) String() string {
 func (c connectFlags) Has(f byte) bool { return byte(c)&f == f }
 
 var ErrIncomplete = fmt.Errorf("incomplete")
-
-var ErrEmptyFixedHeader = fmt.Errorf("empty fixed header")
