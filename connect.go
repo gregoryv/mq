@@ -52,6 +52,7 @@ func NewConnect() *Connect {
 	p.SetProtocolVersion(version5)
 	p.SetKeepAlive(10)
 	p.SetSessionExpiryInterval(59 * time.Second)
+	p.SetMaxPacketSize(4096)
 	return p
 }
 
@@ -67,6 +68,7 @@ type Connect struct {
 	properties []byte
 
 	sessionExpiryInterval time.Duration
+	maxPacketSize         int32
 
 	// payload
 	payload []byte
@@ -86,6 +88,10 @@ func (p *Connect) SessionExpiryInterval() time.Duration {
 
 func (p *Connect) SetSessionExpiryInterval(dur time.Duration) {
 	p.sessionExpiryInterval = dur
+}
+
+func (p *Connect) SetMaxPacketSize(v int32) {
+	p.maxPacketSize = v
 }
 
 // SetFlags replaces the current flags with f
@@ -230,8 +236,10 @@ type properties map[byte][]byte
 
 const (
 	SessionExpiryInterval byte = 0x11
+	MaxPacketSize         byte = 0x27
 )
 
 var onnectPropertyNames = map[byte]string{
 	SessionExpiryInterval: "SessionExpiryInterval",
+	MaxPacketSize:         "MaxPacketSize",
 }
