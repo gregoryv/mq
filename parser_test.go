@@ -10,16 +10,6 @@ import (
 	"testing"
 )
 
-func TestParse_Connect(t *testing.T) {
-	p := NewConnect()
-	p.SetFlags(UsernameFlag | Reserved | WillQoS1)
-
-	got := mustParse(t, p.Reader()).(*Connect)
-	if h := got.FixedHeader(); !h.Is(CONNECT) {
-		t.Error("wrong type", h)
-	}
-}
-
 func TestParse_UnknownProperty(t *testing.T) {
 	p := NewConnect()
 	b := p.Bytes()
