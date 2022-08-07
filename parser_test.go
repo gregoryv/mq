@@ -12,7 +12,7 @@ import (
 
 func TestParse_UnknownProperty(t *testing.T) {
 	p := NewConnect()
-	b := p.Bytes()
+	b, _ := p.MarshalBinary()
 	b[13] = 0 // change the code of the first property
 	_, err := Parse(bytes.NewReader(b))
 	if err == nil {

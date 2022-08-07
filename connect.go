@@ -11,13 +11,13 @@ func (p *Connect) parseProperties(r *bytes.Reader, propLen int) error {
 	left := r.Len() - propLen + 1
 	for left < r.Len() {
 		ident, err := r.ReadByte()
-		debug.Printf("ParseConnect ident:%v %v, left:%v", ident, err, r.Len())
+		debug.Printf("ParseConnect ident:%v err:%v, left:%v", ident, err, r.Len())
 		switch ident {
-		case SessionExpiryInterval:
-			v := make([]byte, 4)
-			_, _ = r.Read(v)
-			sec, _ := binary.Uvarint(v)
-			p.SetSessionExpiryInterval(time.Duration(sec) * time.Second)
+		case PropSessionExpiryInterval:
+			data := make([]byte, 4)
+			_, err := r.Read(data)
+			debug.Printf("Read SessionExpiryInterval err:%v", err)
+			p.SessionExpiryInterval.UnmarshalBinary(data)
 		default:
 			return fmt.Errorf("unknown property 0x%02x", ident)
 		}
@@ -27,26 +27,45 @@ func (p *Connect) parseProperties(r *bytes.Reader, propLen int) error {
 
 func (p *Connect) propertyBytes() []byte {
 	var all []byte
+
 	// SessionExpiryInterval
-	all = append(all, SessionExpiryInterval)
-	v := make([]byte, 4)
-	sec := uint32(p.sessionExpiryInterval.Seconds())
-	binary.BigEndian.PutUint32(v, sec)
+	all = append(all, PropSessionExpiryInterval)
+	data, _ := p.SessionExpiryInterval.MarshalBinary()
+	all = append(all, data...)
+
 	// MaxSessionExpiryInterval
-	all = append(all, v...)
+	//all = append(all, v...)
 	return all
 }
 
+func (p *Connect) MarshalBinary() ([]byte, error) {
+	p.makeFixedHeader()
+	all := make([]byte, 0, p.size())
+	all = append(all, p.fixed...)
+	all = append(all, p.variable...)
+	prop := p.propertyBytes()
+	all = append(all, NewVarInt(uint(len(prop)))...)
+	all = append(all, prop...)
+	all = append(all, p.payload...)
+	return all, nil
+}
+
+func (p *Connect) MarshalText() ([]byte, error) {
+	return AsText{
+		p.FixedHeader(),
+	}.MarshalText()
+}
+
 const (
-	SessionExpiryInterval byte = 0x11
-	ReceiveMax            byte = 0x21
-	MaxPacketSize         byte = 0x27
+	PropSessionExpiryInterval byte = 0x11
+	PropReceiveMax            byte = 0x21
+	PropMaxPacketSize         byte = 0x27
 )
 
 var onnectPropertyNames = map[byte]string{
-	SessionExpiryInterval: "SessionExpiryInterval",
-	ReceiveMax:            "ReceiveMax",
-	MaxPacketSize:         "MaxPacketSize",
+	PropSessionExpiryInterval: "SessionExpiryInterval",
+	PropReceiveMax:            "ReceiveMax",
+	PropMaxPacketSize:         "MaxPacketSize",
 }
 
 // WIP
@@ -79,12 +98,12 @@ func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 
 func NewConnect() *Connect {
 	p := &Connect{
-		variable: make([]byte, 10, 10),
+		variable:              make([]byte, 10, 10),
+		SessionExpiryInterval: 59,
 	}
 	p.SetProtocolName(protoName)
 	p.SetProtocolVersion(version5)
 	p.SetKeepAlive(10)
-	p.SetSessionExpiryInterval(59 * time.Second)
 	p.SetReceiveMax(0) // means max 65,535 if not present
 	p.SetMaxPacketSize(4096)
 	return p
@@ -101,9 +120,9 @@ type Connect struct {
 	variable   []byte
 	properties []byte
 
-	sessionExpiryInterval time.Duration
-	receiveMax            int16
-	maxPacketSize         int32
+	SessionExpiryInterval
+	receiveMax    int16
+	maxPacketSize int32
 
 	// payload
 	payload []byte
@@ -116,14 +135,6 @@ func (p *Connect) Flags() byte           { return p.variable[7] }
 
 func (p *Connect) SetProtocolName(v []byte)  { copy(p.variable[:6], v) }
 func (p *Connect) SetProtocolVersion(v byte) { p.variable[6] = v }
-
-func (p *Connect) SessionExpiryInterval() time.Duration {
-	return p.sessionExpiryInterval
-}
-
-func (p *Connect) SetSessionExpiryInterval(dur time.Duration) {
-	p.sessionExpiryInterval = dur
-}
 
 func (p *Connect) SetReceiveMax(v int16) {
 	p.receiveMax = v
@@ -151,22 +162,6 @@ func (p *Connect) FixedHeader() FixedHeader {
 	return FixedHeader(p.fixed)
 }
 
-func (p *Connect) Reader() *bytes.Reader {
-	return bytes.NewReader(p.Bytes())
-}
-
-func (p *Connect) Bytes() []byte {
-	p.makeFixedHeader()
-	all := make([]byte, 0, p.size())
-	all = append(all, p.fixed...)
-	all = append(all, p.variable...)
-	prop := p.propertyBytes()
-	all = append(all, NewVarInt(uint(len(prop)))...)
-	all = append(all, prop...)
-	all = append(all, p.payload...)
-	return all
-}
-
 func (p *Connect) HasFlag(f byte) bool {
 	return p.Flags()&f == f
 }
@@ -177,7 +172,7 @@ func (p *Connect) String() string {
 		p.ProtocolName(),
 		p.ProtocolVersion(),
 		connectFlags(p.Flags()),
-		p.SessionExpiryInterval(),
+		p.SessionExpiryInterval.Duration(),
 	)
 }
 
@@ -259,4 +254,26 @@ var ErrIncomplete = fmt.Errorf("incomplete")
 
 // ----------------------------------------
 
-// connect properties
+type SessionExpiryInterval uint32
+
+func (s SessionExpiryInterval) MarshalText() ([]byte, error) {
+	return []byte(s.String()), nil
+}
+
+func (s SessionExpiryInterval) String() string {
+	return fmt.Sprintf("SessionExpiryInterval:%v", uint32(s))
+}
+func (s SessionExpiryInterval) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 4)
+	binary.BigEndian.PutUint32(data, uint32(s))
+	return data, nil
+}
+
+func (s *SessionExpiryInterval) UnmarshalBinary(data []byte) error {
+	*s = SessionExpiryInterval(binary.BigEndian.Uint32(data))
+	return nil
+}
+
+func (s SessionExpiryInterval) Duration() time.Duration {
+	return time.Duration(s) * time.Second
+}

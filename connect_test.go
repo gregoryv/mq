@@ -1,9 +1,10 @@
 package mqtt
 
 import (
+	"bytes"
 	"fmt"
+	"reflect"
 	"testing"
-	"time"
 )
 
 func ExampleConnect() {
@@ -11,20 +12,29 @@ func ExampleConnect() {
 	fmt.Println(p)
 
 	p.WithFlags(0b0000_0000)
-	p.SetSessionExpiryInterval(132 * time.Second)
+	p.SessionExpiryInterval = 132
 	fmt.Println(p)
 	// output:
 	// CONNECT 15 MQTT5 upr2wsR 59s
 	// CONNECT 15 MQTT5 ------- 2m12s
 }
 
+func TestConnect_MarshalBinary(t *testing.T) {
+	if _, err := NewConnect().MarshalBinary(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestParse_Connect(t *testing.T) {
+	D(t)
 	p := NewConnect()
 	p.SetFlags(UsernameFlag | Reserved | WillQoS1)
 
-	got := mustParse(t, p.Reader()).(*Connect)
-	if h := got.FixedHeader(); !h.Is(CONNECT) {
-		t.Error("wrong type", h)
+	data, _ := p.MarshalBinary()
+	got := mustParse(t, bytes.NewReader(data)).(*Connect)
+	if !reflect.DeepEqual(p, got) {
+		t.Log("exp", p)
+		t.Error("got", got)
 	}
 }
 
