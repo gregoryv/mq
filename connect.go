@@ -58,13 +58,21 @@ type Connect struct {
 }
 
 // 3.1.2.1 Protocol Name
-func (p *Connect) ProtocolName() string  { return string(p.variable[:6]) }
+func (p *Connect) ProtocolName() string  { return string(p.variable[2:6]) }
 func (p *Connect) ProtocolVersion() byte { return p.variable[6] }
 func (p *Connect) Flags() byte           { return p.variable[7] }
 
 func (p *Connect) SetProtocolName(v []byte)  { copy(p.variable[:6], v) }
 func (p *Connect) SetProtocolVersion(v byte) { p.variable[6] = v }
-func (p *Connect) SetFlags(f byte)           { p.variable[7] |= f }
+
+// SetFlags replaces the current flags with f
+func (p *Connect) SetFlags(f byte) { p.variable[7] |= f }
+
+// SetFlag enables the given flags
+func (p *Connect) WithFlags(f byte) *Connect {
+	p.variable[7] = f
+	return p
+}
 
 func (p *Connect) SetKeepAlive(sec uint16) {
 	binary.BigEndian.PutUint16(p.variable[8:], sec)
@@ -94,17 +102,10 @@ func (p *Connect) HasFlag(f byte) bool {
 }
 
 func (p *Connect) String() string {
-	flags := bytes.Repeat([]byte("-"), 8)
-	for i, f := range connectFlagOrder {
-		if p.HasFlag(f) {
-			flags[i] = shortConnectFlags[f]
-		}
-	}
-
 	parts := []string{
 		p.FixedHeader().String(),
 		p.ProtocolName(),
-		string(flags),
+		connectFlags(p.Flags()).String(),
 	}
 	return strings.Join(parts, " ")
 }
@@ -154,12 +155,34 @@ var connectFlagOrder = []byte{
 	UsernameFlag,
 	PasswordFlag,
 	WillRetain,
-	WillQoS1,
-	WillQoS2,
+	'-', // QoS,
 	WillFlag,
 	CleanStart,
 	Reserved,
 }
+
+type connectFlags byte
+
+func (c connectFlags) String() string {
+	flags := bytes.Repeat([]byte("-"), 7)
+	for i, f := range connectFlagOrder {
+		if c.Has(f) {
+			flags[i] = shortConnectFlags[f]
+		}
+	}
+	if c.Has(WillQoS1) {
+		flags[3] = '1'
+	}
+	if c.Has(WillQoS2) {
+		flags[3] = '2'
+	}
+	if c.Has(Reserved) {
+		flags[6] = 'R'
+	}
+	return string(flags)
+}
+
+func (c connectFlags) Has(f byte) bool { return byte(c)&f == f }
 
 var ErrIncomplete = fmt.Errorf("incomplete")
 
