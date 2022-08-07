@@ -39,9 +39,8 @@ func (p *Connect) propertyBytes() []byte {
 }
 
 func (p *Connect) MarshalBinary() ([]byte, error) {
-	p.makeFixedHeader()
 	all := make([]byte, 0, p.size())
-	all = append(all, p.fixed...)
+	all = append(all, p.FixedHeader()...)
 	all = append(all, p.variable...)
 	prop := p.propertyBytes()
 	all = append(all, NewVarInt(uint(len(prop)))...)
@@ -71,13 +70,10 @@ var onnectPropertyNames = map[byte]string{
 // WIP
 // ----------------------------------------
 
-// ParseConnect returns a new connect packet from the header and
-// remaining bytes. h.RemLen must be equal to len(rem).
-func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
-	p := NewConnect()
-	p.fixed = h
-
-	r := bytes.NewReader(remaining)
+// UnmarshalBinary unmarshals remaining data after fixed header has been read.
+// Remaining length must be equal to len(data).
+func (p *Connect) UnmarshalBinary(data []byte) error {
+	r := bytes.NewReader(data)
 	// variable header (without properties)
 	r.Read(p.variable)
 
@@ -86,14 +82,14 @@ func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 
 	if propLen > 0 {
 		if err := p.parseProperties(r, int(propLen)); err != nil {
-			return p, err
+			return err
 		}
 	}
 
 	// payload
 	p.payload = make([]byte, r.Len())
 	_, _ = r.Read(p.payload)
-	return p, nil
+	return nil
 }
 
 func NewConnect() *Connect {
@@ -113,9 +109,6 @@ func NewConnect() *Connect {
 //
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901033
 type Connect struct {
-	// fixed header
-	fixed []byte
-
 	// variable header
 	variable   []byte
 	properties []byte
@@ -158,8 +151,10 @@ func (p *Connect) SetKeepAlive(sec uint16) {
 }
 
 func (p *Connect) FixedHeader() FixedHeader {
-	p.makeFixedHeader()
-	return FixedHeader(p.fixed)
+	h := make(FixedHeader, 0, 5)
+	h = append(h, CONNECT)
+	h = append(h, p.variableLength()...)
+	return h
 }
 
 func (p *Connect) HasFlag(f byte) bool {
@@ -177,16 +172,10 @@ func (p *Connect) String() string {
 }
 
 func (p *Connect) size() int {
-	return len(p.fixed) +
+	return len(p.FixedHeader()) +
 		len(p.variable) +
 		len(p.properties) +
 		len(p.payload)
-}
-func (p *Connect) makeFixedHeader() {
-	h := make([]byte, 0, 5)
-	h = append(h, CONNECT)
-	h = append(h, p.variableLength()...)
-	p.fixed = h
 }
 
 func (p *Connect) variableLength() []byte {
