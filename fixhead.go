@@ -40,12 +40,12 @@ func (h FixedHeader) Value() byte {
 }
 
 // RemLen returns the remaining length
-func (h FixedHeader) RemLen() uint {
+func (h FixedHeader) RemLen() int {
 	if len(h) < 2 {
 		return 0
 	}
 	v, _ := ParseVarInt(bytes.NewReader(h[1:]))
-	return v
+	return int(v)
 }
 
 func (h FixedHeader) HasFlag(f byte) bool {

@@ -9,27 +9,25 @@ import (
 
 func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	p.fixed = h
-	n := copy(p.variable, rest)
-	if n < 10 {
-		return fmt.Errorf("variable header %w", ErrIncomplete)
+	if h.RemLen() != len(rest) {
+		return ErrIncomplete
 	}
+	r := bytes.NewReader(rest)
 
-	// parse properties
-	propLen, err := ParseVarInt(bytes.NewReader(rest[10:]))
-	if err != nil && err != io.EOF {
+	// variable header (without properties)
+	r.Read(p.variable)
+
+	// properties
+	propLen, _ := ParseVarInt(r)
+	p.properties = make([]byte, propLen)
+	r.Read(p.properties)
+
+	// payload
+	p.payload = make([]byte, r.Len())
+	_, err := r.Read(p.payload)
+	if err != io.EOF {
 		return err
 	}
-
-	width := len(NewVarInt(propLen)) // maybe optimise
-	if propLen > 0 {
-		p.properties = rest[10+width : 10+width+int(propLen)]
-	}
-
-	// rest is the payload
-	if 10+int(propLen) <= len(rest) {
-		return fmt.Errorf("TODO: %w", ErrIncomplete)
-	}
-	p.payload = rest[10+width+int(propLen):]
 	return nil
 }
 
