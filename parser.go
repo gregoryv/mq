@@ -23,9 +23,7 @@ func Parse(r io.Reader) (interface{}, error) {
 
 	switch {
 	case h.Is(CONNECT):
-		p := NewConnect()
-		err = p.Fill(h, rest)
-		return p, err
+		return ParseConnect(h, rest)
 
 	default:
 		return nil, fmt.Errorf("ParseControlPacket unknown %s", h)

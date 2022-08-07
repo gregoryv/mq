@@ -7,10 +7,13 @@ import (
 	"io"
 )
 
-func (p *Connect) Fill(h FixedHeader, rest []byte) error {
-	r := bytes.NewReader(rest)
+// ParseConnect returns a new connect packet from the header and
+// remaining bytes.
+func ParseConnect(h FixedHeader, rem []byte) (*Connect, error) {
+	p := NewConnect()
 	p.fixed = h
 
+	r := bytes.NewReader(rem)
 	// variable header (without properties)
 	r.Read(p.variable)
 
@@ -24,9 +27,9 @@ func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 	_, err := r.Read(p.payload)
 
 	if err != nil && err != io.EOF {
-		return err
+		return p, err
 	}
-	return nil
+	return p, nil
 }
 
 func NewConnect() *Connect {
