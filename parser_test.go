@@ -20,6 +20,16 @@ func TestParse_Connect(t *testing.T) {
 	}
 }
 
+func TestParse_UnknownProperty(t *testing.T) {
+	p := NewConnect()
+	b := p.Bytes()
+	b[13] = 0 // change the code of the first property
+	_, err := Parse(bytes.NewReader(b))
+	if err == nil {
+		t.Fail()
+	}
+}
+
 func TestParse_incomplete(t *testing.T) {
 	r := bytes.NewReader([]byte{CONNECT, 10, 1})
 	_, err := Parse(r)
