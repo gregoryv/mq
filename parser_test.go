@@ -24,7 +24,7 @@ func TestParse_Connect(t *testing.T) {
 	r := p.Reader()
 	got, err := Parse(r)
 	if err != nil {
-		t.Fatal(got.dump(), err)
+		t.Fatal(got.String(), err)
 	}
 	if h := got.FixedHeader(); !h.Is(CONNECT) {
 		t.Error("wrong type", h)

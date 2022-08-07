@@ -11,6 +11,7 @@ package mqtt
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -22,7 +23,7 @@ import (
 type ControlPacket interface {
 	FixedHeader() FixedHeader
 	Fill(FixedHeader, *bytes.Reader) error
-	dump() string
+	fmt.Stringer // short oneline representation
 }
 
 // static protocol name, 3.1.2.1 Protocol Name

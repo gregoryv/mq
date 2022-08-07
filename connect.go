@@ -93,7 +93,7 @@ func (p *Connect) HasFlag(f byte) bool {
 	return p.Flags()&f == f
 }
 
-func (p *Connect) dump() string {
+func (p *Connect) String() string {
 	flags := bytes.Repeat([]byte("-"), 8)
 	for i, f := range connectFlagOrder {
 		if p.HasFlag(f) {
