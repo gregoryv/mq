@@ -68,6 +68,7 @@ type Connect struct {
 	properties []byte
 
 	sessionExpiryInterval time.Duration
+	receiveMax            int16
 	maxPacketSize         int32
 
 	// payload
@@ -88,6 +89,10 @@ func (p *Connect) SessionExpiryInterval() time.Duration {
 
 func (p *Connect) SetSessionExpiryInterval(dur time.Duration) {
 	p.sessionExpiryInterval = dur
+}
+
+func (p *Connect) SetReceiveMax(v int16) {
+	p.receiveMax = v
 }
 
 func (p *Connect) SetMaxPacketSize(v int32) {
@@ -130,10 +135,12 @@ func (p *Connect) Bytes() []byte {
 
 func (p *Connect) propertyBytes() []byte {
 	var all []byte
+	// SessionExpiryInterval
 	all = append(all, SessionExpiryInterval)
 	v := make([]byte, 4)
 	sec := uint32(p.sessionExpiryInterval.Seconds())
 	binary.BigEndian.PutUint32(v, sec)
+	// MaxSessionExpiryInterval
 	all = append(all, v...)
 	return all
 }
@@ -236,10 +243,12 @@ type properties map[byte][]byte
 
 const (
 	SessionExpiryInterval byte = 0x11
+	ReceiveMax            byte = 0x21
 	MaxPacketSize         byte = 0x27
 )
 
 var onnectPropertyNames = map[byte]string{
 	SessionExpiryInterval: "SessionExpiryInterval",
+	ReceiveMax:            "ReceiveMax",
 	MaxPacketSize:         "MaxPacketSize",
 }
