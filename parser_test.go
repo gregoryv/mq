@@ -11,10 +11,10 @@ import (
 )
 
 func TestParse_incomplete(t *testing.T) {
-	r := bytes.NewReader([]byte{CONNECT, 0})
+	r := bytes.NewReader([]byte{CONNECT, 10, 1})
 	_, err := Parse(r)
 	if !errors.Is(err, ErrIncomplete) {
-		t.Error("expect ", ErrIncomplete)
+		t.Error("expect", ErrIncomplete, "got", err)
 	}
 }
 

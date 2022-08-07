@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -20,7 +21,11 @@ func (p *Connect) Fill(h FixedHeader, r *bytes.Reader) error {
 
 	// payload
 	p.payload = make([]byte, r.Len())
-	r.Read(p.payload)
+	_, err := r.Read(p.payload)
+
+	if err != nil && err != io.EOF {
+		return err
+	}
 	return nil
 }
 
