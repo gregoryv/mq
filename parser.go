@@ -1,7 +1,7 @@
 package mqtt
 
 import (
-	"errors"
+	"bytes"
 	"fmt"
 	"io"
 )
@@ -22,11 +22,11 @@ func Parse(r io.Reader) (p ControlPacket, err error) {
 	}
 	// read the remaining variable and payload
 	rest := make([]byte, p.FixedHeader().RemLen())
-	_, err = r.Read(rest)
-	if err != nil && !errors.Is(err, io.EOF) {
-		return
+	r.Read(rest)
+	err = p.Fill(h, bytes.NewReader(rest))
+	if err == io.EOF {
+		err = nil
 	}
-	err = p.Fill(h, rest)
 	return
 }
 

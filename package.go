@@ -10,6 +10,7 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 package mqtt
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,7 +21,7 @@ import (
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type ControlPacket interface {
 	FixedHeader() FixedHeader
-	Fill(FixedHeader, []byte) error
+	Fill(FixedHeader, *bytes.Reader) error
 }
 
 // static protocol name, 3.1.2.1 Protocol Name

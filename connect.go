@@ -4,15 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
 )
 
-func (p *Connect) Fill(h FixedHeader, rest []byte) error {
+func (p *Connect) Fill(h FixedHeader, r *bytes.Reader) error {
 	p.fixed = h
-	if h.RemLen() != len(rest) {
-		return ErrIncomplete
-	}
-	r := bytes.NewReader(rest)
 
 	// variable header (without properties)
 	r.Read(p.variable)
@@ -24,10 +19,7 @@ func (p *Connect) Fill(h FixedHeader, rest []byte) error {
 
 	// payload
 	p.payload = make([]byte, r.Len())
-	_, err := r.Read(p.payload)
-	if err != io.EOF {
-		return err
-	}
+	r.Read(p.payload)
 	return nil
 }
 
