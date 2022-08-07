@@ -24,6 +24,9 @@ func Parse(r io.Reader) (p ControlPacket, err error) {
 	rest := make([]byte, p.FixedHeader().RemLen())
 	r.Read(rest)
 	err = p.Fill(h, bytes.NewReader(rest))
+	if err == nil {
+		return p, ErrIncomplete
+	}
 	if err == io.EOF {
 		err = nil
 	}

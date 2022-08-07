@@ -10,11 +10,21 @@ import (
 	"testing"
 )
 
+func TestParse_incomplete(t *testing.T) {
+	r := bytes.NewReader([]byte{CONNECT, 0})
+	_, err := Parse(r)
+	if !errors.Is(err, ErrIncomplete) {
+		t.Error("expect ", ErrIncomplete)
+	}
+}
+
 func TestParse_Connect(t *testing.T) {
-	r := NewConnect().Reader()
+	p := NewConnect()
+	p.SetFlags(UsernameFlag | Reserved | WillQoS1)
+	r := p.Reader()
 	got, err := Parse(r)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal(got.dump(), err)
 	}
 	if h := got.FixedHeader(); !h.Is(CONNECT) {
 		t.Error("wrong type", h)

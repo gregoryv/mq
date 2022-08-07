@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strings"
 )
 
 func (p *Connect) Fill(h FixedHeader, r *bytes.Reader) error {
@@ -52,11 +53,13 @@ type Connect struct {
 }
 
 // 3.1.2.1 Protocol Name
-func (p *Connect) SetProtocolName(v []byte) { copy(p.variable[:6], v) }
+func (p *Connect) ProtocolName() string  { return string(p.variable[:6]) }
+func (p *Connect) ProtocolVersion() byte { return p.variable[6] }
+func (p *Connect) Flags() byte           { return p.variable[7] }
 
+func (p *Connect) SetProtocolName(v []byte)  { copy(p.variable[:6], v) }
 func (p *Connect) SetProtocolVersion(v byte) { p.variable[6] = v }
-
-func (p *Connect) SetFlags(f byte) { p.variable[7] = f }
+func (p *Connect) SetFlags(f byte)           { p.variable[7] |= f }
 
 func (p *Connect) SetKeepAlive(sec uint16) {
 	binary.BigEndian.PutUint16(p.variable[8:], sec)
@@ -79,6 +82,26 @@ func (p *Connect) Bytes() []byte {
 	all = append(all, p.properties...)
 	all = append(all, p.payload...)
 	return all
+}
+
+func (p *Connect) HasFlag(f byte) bool {
+	return p.Flags()&f == f
+}
+
+func (p *Connect) dump() string {
+	flags := bytes.Repeat([]byte("-"), 8)
+	for i, f := range connectFlagOrder {
+		if p.HasFlag(f) {
+			flags[i] = shortConnectFlags[f]
+		}
+	}
+
+	parts := []string{
+		p.FixedHeader().String(),
+		p.ProtocolName(),
+		string(flags),
+	}
+	return strings.Join(parts, " ")
 }
 
 func (p *Connect) size() int {
@@ -104,11 +127,34 @@ const (
 	Reserved byte = 1 << iota
 	CleanStart
 	WillFlag
-	WillQoS
+	WillQoS1
+	WillQoS2
 	WillRetain
 	PasswordFlag
 	UsernameFlag
 )
+
+var shortConnectFlags = map[byte]byte{
+	Reserved:     'X',
+	CleanStart:   's',
+	WillFlag:     'w',
+	WillQoS1:     '1',
+	WillQoS2:     '2',
+	WillRetain:   'r',
+	PasswordFlag: 'p',
+	UsernameFlag: 'u',
+}
+
+var connectFlagOrder = []byte{
+	UsernameFlag,
+	PasswordFlag,
+	WillRetain,
+	WillQoS1,
+	WillQoS2,
+	WillFlag,
+	CleanStart,
+	Reserved,
+}
 
 var ErrIncomplete = fmt.Errorf("incomplete")
 

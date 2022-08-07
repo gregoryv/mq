@@ -22,6 +22,7 @@ import (
 type ControlPacket interface {
 	FixedHeader() FixedHeader
 	Fill(FixedHeader, *bytes.Reader) error
+	dump() string
 }
 
 // static protocol name, 3.1.2.1 Protocol Name
