@@ -7,6 +7,51 @@ import (
 	"time"
 )
 
+func (p *Connect) parseProperties(r *bytes.Reader, propLen int) error {
+	left := r.Len() - propLen + 1
+	for left < r.Len() {
+		ident, err := r.ReadByte()
+		debug.Printf("ParseConnect ident:%v %v, left:%v", ident, err, r.Len())
+		switch ident {
+		case SessionExpiryInterval:
+			v := make([]byte, 4)
+			_, _ = r.Read(v)
+			sec, _ := binary.Uvarint(v)
+			p.SetSessionExpiryInterval(time.Duration(sec) * time.Second)
+		default:
+			return fmt.Errorf("unknown property 0x%02x", ident)
+		}
+	}
+	return nil
+}
+
+func (p *Connect) propertyBytes() []byte {
+	var all []byte
+	// SessionExpiryInterval
+	all = append(all, SessionExpiryInterval)
+	v := make([]byte, 4)
+	sec := uint32(p.sessionExpiryInterval.Seconds())
+	binary.BigEndian.PutUint32(v, sec)
+	// MaxSessionExpiryInterval
+	all = append(all, v...)
+	return all
+}
+
+const (
+	SessionExpiryInterval byte = 0x11
+	ReceiveMax            byte = 0x21
+	MaxPacketSize         byte = 0x27
+)
+
+var onnectPropertyNames = map[byte]string{
+	SessionExpiryInterval: "SessionExpiryInterval",
+	ReceiveMax:            "ReceiveMax",
+	MaxPacketSize:         "MaxPacketSize",
+}
+
+// WIP
+// ----------------------------------------
+
 // ParseConnect returns a new connect packet from the header and
 // remaining bytes. h.RemLen must be equal to len(rem).
 func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
@@ -21,23 +66,11 @@ func ParseConnect(h FixedHeader, remaining []byte) (*Connect, error) {
 	propLen, _ := ParseVarInt(r)
 
 	if propLen > 0 {
-		left := r.Len() - int(propLen) + 1
-
-		for left < r.Len() {
-			ident, err := r.ReadByte()
-			debug.Printf("ParseConnect ident:%v %v, left:%v", ident, err, r.Len())
-			switch ident {
-			case SessionExpiryInterval:
-				v := make([]byte, 4)
-				_, _ = r.Read(v)
-				sec, _ := binary.Uvarint(v)
-				p.SetSessionExpiryInterval(time.Duration(sec) * time.Second)
-			default:
-				return p, fmt.Errorf("unknown property 0x%02x", ident)
-			}
+		if err := p.parseProperties(r, int(propLen)); err != nil {
+			return p, err
 		}
-
 	}
+
 	// payload
 	p.payload = make([]byte, r.Len())
 	_, _ = r.Read(p.payload)
@@ -52,6 +85,7 @@ func NewConnect() *Connect {
 	p.SetProtocolVersion(version5)
 	p.SetKeepAlive(10)
 	p.SetSessionExpiryInterval(59 * time.Second)
+	p.SetReceiveMax(0) // means max 65,535 if not present
 	p.SetMaxPacketSize(4096)
 	return p
 }
@@ -130,18 +164,6 @@ func (p *Connect) Bytes() []byte {
 	all = append(all, NewVarInt(uint(len(prop)))...)
 	all = append(all, prop...)
 	all = append(all, p.payload...)
-	return all
-}
-
-func (p *Connect) propertyBytes() []byte {
-	var all []byte
-	// SessionExpiryInterval
-	all = append(all, SessionExpiryInterval)
-	v := make([]byte, 4)
-	sec := uint32(p.sessionExpiryInterval.Seconds())
-	binary.BigEndian.PutUint32(v, sec)
-	// MaxSessionExpiryInterval
-	all = append(all, v...)
 	return all
 }
 
@@ -238,17 +260,3 @@ var ErrIncomplete = fmt.Errorf("incomplete")
 // ----------------------------------------
 
 // connect properties
-
-type properties map[byte][]byte
-
-const (
-	SessionExpiryInterval byte = 0x11
-	ReceiveMax            byte = 0x21
-	MaxPacketSize         byte = 0x27
-)
-
-var onnectPropertyNames = map[byte]string{
-	SessionExpiryInterval: "SessionExpiryInterval",
-	ReceiveMax:            "ReceiveMax",
-	MaxPacketSize:         "MaxPacketSize",
-}
