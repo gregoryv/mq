@@ -82,12 +82,6 @@ func (p *Connect) MarshalText() ([]byte, error) {
 	}.MarshalText()
 }
 
-const (
-	PropSessionExpiryInterval byte = 0x11
-	PropReceiveMax            byte = 0x21
-	PropMaxPacketSize         byte = 0x27
-)
-
 // UnmarshalBinary unmarshals remaining data after fixed header has been read.
 // Remaining length must be equal to len(data).
 func (p *Connect) UnmarshalBinary(data []byte) error {
@@ -155,7 +149,7 @@ func (p *Connect) String() string {
 		p.FixedHeader(),
 		p.ProtocolName(),
 		p.ProtocolVersion(),
-		connectFlags(p.Flags()),
+		ConnectFlags(p.Flags()),
 		p.SessionExpiryInterval.Duration(),
 	)
 }
@@ -171,61 +165,5 @@ func (p *Connect) variableLength() []byte {
 	l := len(p.variable) + len(p.propertyBytes()) + len(p.payload)
 	return NewVarInt(uint(l))
 }
-
-// 3.1.2.3 Connect Flags
-const (
-	Reserved byte = 1 << iota
-	CleanStart
-	WillFlag
-	WillQoS1
-	WillQoS2
-	WillRetain
-	PasswordFlag
-	UsernameFlag
-)
-
-var shortConnectFlags = map[byte]byte{
-	Reserved:     'X',
-	CleanStart:   's',
-	WillFlag:     'w',
-	WillQoS1:     '1',
-	WillQoS2:     '2',
-	WillRetain:   'r',
-	PasswordFlag: 'p',
-	UsernameFlag: 'u',
-}
-
-var connectFlagOrder = []byte{
-	UsernameFlag,
-	PasswordFlag,
-	WillRetain,
-	'-', // QoS,
-	WillFlag,
-	CleanStart,
-	Reserved,
-}
-
-type connectFlags byte
-
-func (c connectFlags) String() string {
-	flags := bytes.Repeat([]byte("-"), 7)
-	for i, f := range connectFlagOrder {
-		if c.Has(f) {
-			flags[i] = shortConnectFlags[f]
-		}
-	}
-	if c.Has(WillQoS1) {
-		flags[3] = '1'
-	}
-	if c.Has(WillQoS2) {
-		flags[3] = '2'
-	}
-	if c.Has(Reserved) {
-		flags[6] = 'R'
-	}
-	return string(flags)
-}
-
-func (c connectFlags) Has(f byte) bool { return byte(c)&f == f }
 
 var ErrIncomplete = fmt.Errorf("incomplete")

@@ -81,6 +81,12 @@ var flagNames = internal.Dict{
 	RETAIN: "RETAIN",
 }
 
+const (
+	PropSessionExpiryInterval byte = 0x11
+	PropReceiveMax            byte = 0x21
+	PropMaxPacketSize         byte = 0x27
+)
+
 // The Reason Codes used for Malformed Packet and Protocol Errors
 //
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Handling_errors
