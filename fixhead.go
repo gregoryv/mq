@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 )
@@ -48,7 +47,8 @@ func (h FixedHeader) RemLen() int {
 	if len(h) < 2 {
 		return 0
 	}
-	v, _ := ParseVarInt(bytes.NewReader(h[1:]))
+	var v VarInt
+	_ = v.UnmarshalBinary(h[1:])
 	return int(v)
 }
 
