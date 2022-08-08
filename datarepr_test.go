@@ -5,6 +5,17 @@ import (
 	"testing"
 )
 
+func TestBits(t *testing.T) {
+	v := Bits(0b0001_0000)
+	switch {
+	case !v.Has(0b0001_0000):
+		t.Error("!Has")
+	case v.Has(0b0000_0001):
+		t.Error("Has")
+	}
+
+}
+
 func TestFourByteInt(t *testing.T) {
 	b := FourByteInt(76)
 
