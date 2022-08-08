@@ -102,6 +102,19 @@ func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
+func (v VarByteInt) Width() int {
+	switch {
+	case v < 128:
+		return 1
+	case v < 16_384:
+		return 2
+	case v < 2_097_152:
+		return 3
+	default:
+		return 4
+	}
+}
+
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012

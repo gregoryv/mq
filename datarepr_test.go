@@ -120,7 +120,12 @@ func TestVarByteInt(t *testing.T) {
 		if after != c.x {
 			t.Errorf("%v != %v", c.x, after)
 		}
+		// widths
+		if got := c.x.Width(); got != len(c.exp) {
+			t.Error("unexpected width", got, c.x)
+		}
 	}
+
 	// error case
 	var v VarByteInt
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
