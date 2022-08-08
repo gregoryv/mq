@@ -10,10 +10,6 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 package mqtt
 
 import (
-	"io"
-	"io/ioutil"
-	"log"
-
 	"github.com/gregoryv/mqtt/internal"
 )
 
@@ -113,10 +109,3 @@ var codeNames = map[byte]string{
 	SubscriptionIdentifiersNotSupported: "Subscription Identifiers not supported",
 	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
 }
-
-// ----------------------------------------
-
-// SetOutput of debug logs. By default debug output is discarded.
-func SetOutput(w io.Writer) { debug.SetOutput(w) }
-
-var debug = log.New(ioutil.Discard, "mqtt ", log.Lshortfile|log.Lmsgprefix)
