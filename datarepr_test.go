@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"crypto/rand"
 	"reflect"
 	"strings"
 	"testing"
@@ -88,7 +89,6 @@ func TestUTF8String(t *testing.T) {
 	if _, err := UTF8String(large).MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
-
 }
 
 func TestVarByteInt(t *testing.T) {
@@ -126,5 +126,41 @@ func TestVarByteInt(t *testing.T) {
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	if err := v.UnmarshalBinary(badData); err == nil {
 		t.Error("UnmarshalBinary should fail", badData)
+	}
+}
+
+func TestBinaryData(t *testing.T) {
+	indata := make([]byte, 64)
+	if _, err := rand.Read(indata); err != nil {
+		t.Fatal(err)
+	}
+
+	b := BinaryData(indata)
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+
+	var a BinaryData
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// before and after are equal
+	if !reflect.DeepEqual(b, a) {
+		t.Error("unmarshal -> marshal should be equal", len(b), len(a))
+	}
+
+	// error case
+	if err := a.UnmarshalBinary(data[:len(data)-4]); err == nil {
+		t.Error("UnmarshalBinary should fail")
+	}
+
+	large := make([]byte, MaxUint16+1)
+	if _, err = rand.Read(large); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := BinaryData(large).MarshalBinary(); err == nil {
+		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }

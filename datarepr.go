@@ -112,6 +112,32 @@ func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 
 // ----------------------------------------
 
+type BinaryData []byte
+
+func (v BinaryData) MarshalBinary() ([]byte, error) {
+	if len(v) > MaxUint16 {
+		return nil, ErrMalformed
+	}
+	data := make([]byte, len(v)+2)
+	l, _ := TwoByteInt(len(v)).MarshalBinary()
+	copy(data[:2], l)
+	copy(data[2:], []byte(v))
+	return data, nil
+}
+
+func (v *BinaryData) UnmarshalBinary(data []byte) error {
+	var l TwoByteInt
+	_ = l.UnmarshalBinary(data)
+	if int(l) != len(data)-2 {
+		return ErrMissingData
+	}
+	*v = make([]byte, l)
+	copy(*v, data[2:l+2])
+	return nil
+}
+
+// ----------------------------------------
+
 var (
 	ErrMalformed          = fmt.Errorf("malformed")
 	ErrMissingData        = fmt.Errorf("missing data")
