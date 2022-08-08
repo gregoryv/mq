@@ -14,6 +14,23 @@ func (v Bits) Has(b Bits) bool {
 
 // ----------------------------------------
 
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
+type TwoByteInt uint16
+
+func (v TwoByteInt) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 2)
+	binary.BigEndian.PutUint16(data, uint16(v))
+	return data, nil
+}
+
+func (v *TwoByteInt) UnmarshalBinary(data []byte) error {
+	*v = TwoByteInt(binary.BigEndian.Uint16(data))
+	return nil
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
 type FourByteInt uint32
 
 func (v FourByteInt) MarshalBinary() ([]byte, error) {
