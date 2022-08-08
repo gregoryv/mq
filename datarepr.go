@@ -8,8 +8,8 @@ import (
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
 type Bits byte
 
-func (v Bits) Has(b Bits) bool {
-	return v&b == b
+func (v Bits) Has(b byte) bool {
+	return byte(v)&b == b
 }
 
 // ----------------------------------------

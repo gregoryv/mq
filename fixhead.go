@@ -12,12 +12,25 @@ import (
 // 2.1.1 Fixed Header
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader struct {
-	header  byte
-	content []byte
+	header       byte
+	remainingLen VarByteInt
+}
+
+func (f *FixedHeader) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 0, 5)
+	data = append(data, f.header)
+	rem, _ := f.remainingLen.MarshalBinary()
+	data = append(data, rem...)
+	return data, nil
+}
+
+func (f *FixedHeader) UnmarshalBinary(data []byte) error {
+	f.header = data[0]
+	return f.remainingLen.UnmarshalBinary(data[1:])
 }
 
 // String returns a string TYPE-FLAGS REMAINING_LENGTH
-func (f FixedHeader) String() string {
+func (f *FixedHeader) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[f.Value()])
 	sb.WriteString(" ")
@@ -39,19 +52,19 @@ func (f FixedHeader) String() string {
 	}
 	sb.Write(flags)
 	sb.WriteString(" ")
-	fmt.Fprint(&sb, len(f.content))
+	fmt.Fprint(&sb, f.remainingLen)
 	return sb.String()
 }
 
 // Is is the same as h.Value() == v
-func (f FixedHeader) Is(v byte) bool {
+func (f *FixedHeader) Is(v byte) bool {
 	return f.Value() == v
 }
 
-func (f FixedHeader) Value() byte {
+func (f *FixedHeader) Value() byte {
 	return f.header & 0b1111_0000
 }
 
-func (f FixedHeader) HasFlag(flag byte) bool {
-	return f.header&flag == flag
+func (f *FixedHeader) HasFlag(flag byte) bool {
+	return Bits(f.header).Has(flag)
 }

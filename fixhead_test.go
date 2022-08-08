@@ -5,25 +5,35 @@ import (
 )
 
 func TestFixedHeader(t *testing.T) {
-	h := FixedHeader{
-		header:  PUBLISH | DUP | QoS1,
-		content: []byte("gopher"),
+	b := FixedHeader{
+		header:       PUBLISH | DUP | QoS1,
+		remainingLen: 10,
+	}
+	// marshaling
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
 	}
 
-	if h.Is(CONNECT) {
+	var a FixedHeader
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// other methods
+	if a.Is(CONNECT) {
 		t.Error("!Is", CONNECT)
 	}
-	if h.HasFlag(RETAIN) {
+	if a.HasFlag(RETAIN) {
 		t.Error("!HasFlag", RETAIN)
 	}
-
 	cases := []struct {
 		h   FixedHeader
 		exp string
 	}{
 		{
-			h:   h,
-			exp: "PUBLISH d-1- 6",
+			h:   a,
+			exp: "PUBLISH d-1- 10",
 		},
 		{
 			h:   FixedHeader{header: PUBLISH | QoS2 | RETAIN},
