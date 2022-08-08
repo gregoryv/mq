@@ -104,6 +104,7 @@ func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 
 // ----------------------------------------
 
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
 type BinaryData []byte
 
 func (v BinaryData) MarshalBinary() ([]byte, error) {
@@ -120,12 +121,43 @@ func (v BinaryData) MarshalBinary() ([]byte, error) {
 func (v *BinaryData) UnmarshalBinary(data []byte) error {
 	var l TwoByteInt
 	_ = l.UnmarshalBinary(data)
-	if int(l) != len(data)-2 {
+	if len(data) < int(l)+2 {
 		return ErrMalformed
 	}
 	*v = make([]byte, l)
 	copy(*v, data[2:l+2])
 	return nil
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
+type UTF8StringPair [2]UTF8String
+
+func (v UTF8StringPair) MarshalBinary() ([]byte, error) {
+	key, err := v[0].MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	val, err := v[1].MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	return append(key, val...), nil
+}
+
+func (v *UTF8StringPair) UnmarshalBinary(data []byte) error {
+	if err := v[0].UnmarshalBinary(data); err != nil {
+		return err
+	}
+	i := len(v[0]) + 2
+	if err := v[1].UnmarshalBinary(data[i:]); err != nil {
+		return err
+	}
+	return nil
+}
+func (v UTF8StringPair) String() string {
+	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
 
 // ----------------------------------------

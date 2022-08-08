@@ -164,3 +164,47 @@ func TestBinaryData(t *testing.T) {
 		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }
+
+func TestUTF8StringPair(t *testing.T) {
+	b := UTF8StringPair{"key", "value"}
+
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+
+	var a UTF8StringPair
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err, data)
+	}
+
+	// before and after are equal
+	if !reflect.DeepEqual(b, a) {
+		t.Error("unmarshal -> marshal should be equal", b, a)
+	}
+
+	if got, exp := a.String(), "key:value"; got != exp {
+		t.Errorf("%q != %q", got, exp)
+	}
+
+	// error cases
+	if err := a.UnmarshalBinary(data[:3]); err == nil {
+		t.Error("UnmarshalBinary should fail on malformed key")
+	}
+	if err := a.UnmarshalBinary(data[:7]); err == nil {
+		t.Error("UnmarshalBinary should fail on malformed value")
+	}
+
+	// large key
+	large := UTF8String(strings.Repeat(" ", MaxUint16+1))
+	c := UTF8StringPair{large, ""}
+	if _, err := c.MarshalBinary(); err == nil {
+		t.Error("MarshalBinary should fail on malformed key")
+	}
+	// large value
+	d := UTF8StringPair{"key", large}
+	if _, err := d.MarshalBinary(); err == nil {
+		t.Error("MarshalBinary should fail on malformed value")
+	}
+
+}
