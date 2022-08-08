@@ -25,8 +25,7 @@ func TestConnect_MarshalBinary(t *testing.T) {
 	}
 }
 
-func TestParse_Connect(t *testing.T) {
-	D(t)
+func xTestParse_Connect(t *testing.T) {
 	p := NewConnect()
 	p.SetFlags(UsernameFlag | Reserved | WillQoS1)
 
