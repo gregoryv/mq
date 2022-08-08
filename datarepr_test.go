@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -58,6 +59,36 @@ func TestFourByteInt(t *testing.T) {
 	if b != a {
 		t.Errorf("b(%v) != a(%v)", b, a)
 	}
+}
+
+func TestUTF8String(t *testing.T) {
+	b := UTF8String("۞ gopher från sverige")
+
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+
+	var a UTF8String
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// before and after are equal
+	if b != a {
+		t.Errorf("b(%v) != a(%v)", b, a)
+	}
+
+	// error case
+	if err := a.UnmarshalBinary(data[:len(data)-4]); err == nil {
+		t.Error("UnmarshalBinary should fail")
+	}
+
+	large := strings.Repeat(" ", MaxUint16+1)
+	if _, err := UTF8String(large).MarshalBinary(); err == nil {
+		t.Error("MarshalBinary should fail when len > MaxUint16")
+	}
+
 }
 
 func TestVarInt(t *testing.T) {
