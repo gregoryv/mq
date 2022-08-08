@@ -50,23 +50,15 @@ func (v *FourByteInt) UnmarshalBinary(data []byte) error {
 type UTF8String string
 
 func (v UTF8String) MarshalBinary() ([]byte, error) {
-	if len(v) > MaxUint16 {
-		return nil, ErrMalformed
-	}
-	data := make([]byte, len(v)+2)
-	l, _ := TwoByteInt(len(v)).MarshalBinary()
-	copy(data[:2], l)
-	copy(data[2:], []byte(v))
-	return data, nil
+	return BinaryData([]byte(v)).MarshalBinary()
 }
 
 func (v *UTF8String) UnmarshalBinary(data []byte) error {
-	var l TwoByteInt
-	_ = l.UnmarshalBinary(data)
-	if int(l) != len(data)-2 {
-		return ErrMalformed
+	var b BinaryData
+	if err := b.UnmarshalBinary(data); err != nil {
+		return err
 	}
-	*v = UTF8String(data[2 : l+2])
+	*v = UTF8String(b)
 	return nil
 }
 
