@@ -72,11 +72,10 @@ func (v *UTF8String) UnmarshalBinary(data []byte) error {
 
 // ----------------------------------------
 
-// 1.5.5 Variable Byte Integer
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
-type VarInt uint
+type VarByteInt uint
 
-func (v VarInt) MarshalBinary() ([]byte, error) {
+func (v VarByteInt) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 0, 4) // max four
 	if v == 0 {
 		data = append(data, 0)
@@ -93,27 +92,25 @@ func (v VarInt) MarshalBinary() ([]byte, error) {
 	return data, nil
 }
 
-// ParseVarInt returns variable int from the reader. Returns EOF or
-// wrapped ErrMalformed.
-//
-// 1.5.5 Variable Byte Integer
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
-func (v *VarInt) UnmarshalBinary(data []byte) error {
+// UnmarshalBinary returns nil or fails with EOF or ErrMalformed.
+func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 	var multiplier uint = 1
 	var value uint
 	for _, encodedByte := range data {
 		value += uint(encodedByte) & uint(127) * multiplier
 		if multiplier > 128*128*128 {
-			return fmt.Errorf("ParseVarInt: %w", ErrMalformed)
+			return ErrMalformed
 		}
 		if encodedByte&128 == 0 {
 			break
 		}
 		multiplier = multiplier * 128
 	}
-	*v = VarInt(value)
+	*v = VarByteInt(value)
 	return nil
 }
+
+// ----------------------------------------
 
 var (
 	ErrMalformed          = fmt.Errorf("malformed")

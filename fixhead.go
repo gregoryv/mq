@@ -47,7 +47,7 @@ func (h FixedHeader) RemLen() int {
 	if len(h) < 2 {
 		return 0
 	}
-	var v VarInt
+	var v VarByteInt
 	_ = v.UnmarshalBinary(h[1:])
 	return int(v)
 }

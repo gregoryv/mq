@@ -91,9 +91,9 @@ func TestUTF8String(t *testing.T) {
 
 }
 
-func TestVarInt(t *testing.T) {
+func TestVarByteInt(t *testing.T) {
 	cases := []struct {
-		x   VarInt
+		x   VarByteInt
 		exp []byte
 	}{
 		{0, []byte{0x00}},
@@ -113,7 +113,7 @@ func TestVarInt(t *testing.T) {
 		if !reflect.DeepEqual(data, c.exp) {
 			t.Error("got", data, "exp", c.exp)
 		}
-		var after VarInt
+		var after VarByteInt
 		if err := after.UnmarshalBinary(data); err != nil {
 			t.Error("Unmarshal", data)
 		}
@@ -122,7 +122,7 @@ func TestVarInt(t *testing.T) {
 		}
 	}
 	// error case
-	var v VarInt
+	var v VarByteInt
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	if err := v.UnmarshalBinary(badData); err == nil {
 		t.Error("UnmarshalBinary should fail", badData)
