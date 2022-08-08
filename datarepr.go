@@ -51,7 +51,7 @@ type UTF8String string
 
 func (v UTF8String) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
-		return nil, ErrUTF8StringTooLarge
+		return nil, ErrMalformed
 	}
 	data := make([]byte, len(v)+2)
 	l, _ := TwoByteInt(len(v)).MarshalBinary()
@@ -64,7 +64,7 @@ func (v *UTF8String) UnmarshalBinary(data []byte) error {
 	var l TwoByteInt
 	_ = l.UnmarshalBinary(data)
 	if int(l) != len(data)-2 {
-		return ErrMissingData
+		return ErrMalformed
 	}
 	*v = UTF8String(data[2 : l+2])
 	return nil
@@ -129,7 +129,7 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 	var l TwoByteInt
 	_ = l.UnmarshalBinary(data)
 	if int(l) != len(data)-2 {
-		return ErrMissingData
+		return ErrMalformed
 	}
 	*v = make([]byte, l)
 	copy(*v, data[2:l+2])
@@ -139,9 +139,7 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 // ----------------------------------------
 
 var (
-	ErrMalformed          = fmt.Errorf("malformed")
-	ErrMissingData        = fmt.Errorf("missing data")
-	ErrUTF8StringTooLarge = fmt.Errorf("utf8 string too large")
+	ErrMalformed = fmt.Errorf("malformed")
 )
 
 // see math.MaxUint16
