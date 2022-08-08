@@ -1,24 +1,14 @@
 package mqtt
 
 import (
-	"fmt"
 	"testing"
 )
 
-func ExampleFixedHeader() {
-	fmt.Println(FixedHeader{UNDEFINED, 0})
-	fmt.Println(FixedHeader{PUBLISH, 39})
-	fmt.Println(FixedHeader{PUBLISH | DUP | RETAIN})
-	fmt.Println(FixedHeader{PUBLISH | QoS2, 2})
-	//output:
-	// UNDEFINED
-	// PUBLISH 39
-	// PUBLISH-DUP-RETAIN
-	// PUBLISH-QoS2 2
-}
-
 func TestFixedHeader(t *testing.T) {
-	h := FixedHeader([]byte{PUBLISH | DUP})
+	h := FixedHeader{
+		header:  PUBLISH | DUP | QoS1,
+		content: []byte("gopher"),
+	}
 
 	if h.Is(CONNECT) {
 		t.Error("!Is", CONNECT)
@@ -26,4 +16,32 @@ func TestFixedHeader(t *testing.T) {
 	if h.HasFlag(RETAIN) {
 		t.Error("!HasFlag", RETAIN)
 	}
+
+	cases := []struct {
+		h   FixedHeader
+		exp string
+	}{
+		{
+			h:   h,
+			exp: "PUBLISH d-1- 6",
+		},
+		{
+			h:   FixedHeader{header: PUBLISH | QoS2 | RETAIN},
+			exp: "PUBLISH -2-r 0",
+		},
+		{
+			h:   FixedHeader{header: PUBLISH | QoS1 | QoS2},
+			exp: "PUBLISH -!!- 0",
+		},
+		{
+			h:   FixedHeader{header: CONNECT},
+			exp: "CONNECT ---- 0",
+		},
+	}
+	for _, c := range cases {
+		if got, exp := c.h.String(), c.exp; got != exp {
+			t.Errorf("String: %q != %q", got, exp)
+		}
+	}
+
 }
