@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- More readable encoding errors
 - FixedHeader supports marshal/unmarshal
 
 ## [0.1.0] 2022-08-08
