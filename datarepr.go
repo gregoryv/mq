@@ -40,7 +40,11 @@ func (v UTF8StringPair) String() string {
 type UTF8String string
 
 func (v UTF8String) MarshalBinary() ([]byte, error) {
-	return BinaryData([]byte(v)).MarshalBinary()
+	data, err := BinaryData([]byte(v)).MarshalBinary()
+	if err != nil {
+		return data, marshalErr(v, "", err.(*Malformed))
+	}
+	return data, nil
 }
 
 func (v *UTF8String) UnmarshalBinary(data []byte) error {
