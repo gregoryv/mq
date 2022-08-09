@@ -122,7 +122,7 @@ type BinaryData []byte
 
 func (v BinaryData) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
-		return nil, ErrMalformed
+		return nil, &Malformed{reason: "size exceeded"}
 	}
 	data := make([]byte, len(v)+2)
 	l, _ := TwoByteInt(len(v)).MarshalBinary()
@@ -135,7 +135,7 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 	var l TwoByteInt
 	_ = l.UnmarshalBinary(data)
 	if len(data) < int(l)+2 {
-		return ErrMalformed
+		return &Malformed{reason: "missing data"}
 	}
 	*v = make([]byte, l)
 	copy(*v, data[2:l+2])
@@ -150,22 +150,22 @@ type UTF8StringPair [2]UTF8String
 func (v UTF8StringPair) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
 	if err != nil {
-		return nil, err
+		return nil, newMalformed("key", err.(*Malformed))
 	}
 	val, err := v[1].MarshalBinary()
 	if err != nil {
-		return nil, err
+		return nil, newMalformed("value", err.(*Malformed))
 	}
 	return append(key, val...), nil
 }
 
 func (v *UTF8StringPair) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
-		return err
+		return newMalformed("key", err.(*Malformed))
 	}
 	i := len(v[0]) + 2
 	if err := v[1].UnmarshalBinary(data[i:]); err != nil {
-		return err
+		return newMalformed("value", err.(*Malformed))
 	}
 	return nil
 }
@@ -176,8 +176,30 @@ func (v UTF8StringPair) String() string {
 // ----------------------------------------
 
 var (
-	ErrMalformed = fmt.Errorf("malformed")
+	ErrMalformed    = Error("malformed")
+	ErrSizeExceeded = Error("size exceeded")
+	ErrMissingData  = Error("missing data")
 )
+
+func newMalformed(ref string, err *Malformed) *Malformed {
+	return &Malformed{
+		ref:    ref,
+		reason: err.reason,
+	}
+}
+
+type Malformed struct {
+	ref    string
+	reason string
+}
+
+func (e *Malformed) Error() string {
+	return fmt.Sprintf("malformed: %s %s", e.ref, e.reason)
+}
+
+type Error string
+
+func (e Error) Error() string { return string(e) }
 
 // see math.MaxUint16
 const MaxUint16 = 1<<16 - 1

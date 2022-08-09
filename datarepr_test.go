@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"crypto/rand"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -211,5 +212,14 @@ func TestUTF8StringPair(t *testing.T) {
 	if _, err := d.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed value")
 	}
-
 }
+
+func ExampleMalformed() {
+	c := UTF8StringPair{large, ""}
+	_, err := c.MarshalBinary()
+	fmt.Println(err)
+	// output:
+	// malformed: key size exceeded
+}
+
+var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
