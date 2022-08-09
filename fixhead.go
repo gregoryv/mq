@@ -19,14 +19,18 @@ type FixedHeader struct {
 func (f *FixedHeader) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 0, 5)
 	data = append(data, f.header)
-	rem, _ := f.remainingLen.MarshalBinary()
+	rem, _ := f.remainingLen.MarshalBinary() // cannot fail
 	data = append(data, rem...)
 	return data, nil
 }
 
 func (f *FixedHeader) UnmarshalBinary(data []byte) error {
 	f.header = data[0]
-	return f.remainingLen.UnmarshalBinary(data[1:])
+	err := f.remainingLen.UnmarshalBinary(data[1:])
+	if err != nil {
+		return unmarshalErr(f, "remaining length", err.(*Malformed))
+	}
+	return nil
 }
 
 // String returns a string TYPE-FLAGS REMAINING_LENGTH

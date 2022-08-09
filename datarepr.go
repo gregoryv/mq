@@ -88,6 +88,7 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 type VarByteInt uint
 
+// MarshalBinary always returns nil error
 func (v VarByteInt) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 0, 4) // max four
 	if v == 0 {
@@ -107,6 +108,9 @@ func (v VarByteInt) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary data, returns nil or *Malformed error
 func (v *VarByteInt) UnmarshalBinary(data []byte) error {
+	if len(data) == 0 {
+		return unmarshalErr(v, "", "missing data")
+	}
 	var multiplier uint = 1
 	var value uint
 	for _, encodedByte := range data {

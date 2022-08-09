@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -53,5 +54,12 @@ func TestFixedHeader(t *testing.T) {
 			t.Errorf("String: %q != %q", got, exp)
 		}
 	}
+}
 
+func ExampleFixedHeader() {
+	bad := []byte{PUBLISH | QoS1 | QoS2}
+	var f FixedHeader
+	fmt.Println(f.UnmarshalBinary(bad))
+	// output:
+	// malformed mqtt.FixedHeader unmarshal: remaining length missing data
 }
