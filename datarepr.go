@@ -11,22 +11,22 @@ type UTF8StringPair [2]UTF8String
 func (v UTF8StringPair) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
 	if err != nil {
-		return nil, newMalformed(v, "key", err.(*Malformed))
+		return nil, marshalErr(v, "key", err.(*Malformed))
 	}
 	val, err := v[1].MarshalBinary()
 	if err != nil {
-		return nil, newMalformed(v, "value", err.(*Malformed))
+		return nil, marshalErr(v, "value", err.(*Malformed))
 	}
 	return append(key, val...), nil
 }
 
 func (v *UTF8StringPair) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
-		return newMalformed(v, "key", err.(*Malformed))
+		return unmarshalErr(v, "key", err.(*Malformed))
 	}
 	i := len(v[0]) + 2
 	if err := v[1].UnmarshalBinary(data[i:]); err != nil {
-		return newMalformed(v, "value", err.(*Malformed))
+		return unmarshalErr(v, "value", err.(*Malformed))
 	}
 	return nil
 }
@@ -46,7 +46,7 @@ func (v UTF8String) MarshalBinary() ([]byte, error) {
 func (v *UTF8String) UnmarshalBinary(data []byte) error {
 	var b BinaryData
 	if err := b.UnmarshalBinary(data); err != nil {
-		return newMalformed(v, "", err.(*Malformed))
+		return unmarshalErr(v, "", err.(*Malformed))
 	}
 	*v = UTF8String(b)
 	return nil
@@ -59,7 +59,7 @@ type BinaryData []byte
 
 func (v BinaryData) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
-		return nil, newMalformed(v, "", "size exceeded")
+		return nil, marshalErr(v, "", "size exceeded")
 	}
 	data := make([]byte, len(v)+2)
 	l, _ := TwoByteInt(len(v)).MarshalBinary()
@@ -72,7 +72,7 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 	var l TwoByteInt
 	_ = l.UnmarshalBinary(data)
 	if len(data) < int(l)+2 {
-		return newMalformed(v, "", "missing data")
+		return unmarshalErr(v, "", "missing data")
 	}
 	*v = make([]byte, l)
 	copy(*v, data[2:l+2])
@@ -108,7 +108,7 @@ func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 	for _, encodedByte := range data {
 		value += uint(encodedByte) & uint(127) * multiplier
 		if multiplier > 128*128*128 {
-			return newMalformed(v, "", "size exceeded")
+			return unmarshalErr(v, "", "size exceeded")
 		}
 		if encodedByte&128 == 0 {
 			break
@@ -174,6 +174,18 @@ func (v *FourByteInt) UnmarshalBinary(data []byte) error {
 
 // ----------------------------------------
 
+func marshalErr(v interface{}, ref string, err interface{}) *Malformed {
+	e := newMalformed(v, ref, err)
+	e.method = "marshal"
+	return e
+}
+
+func unmarshalErr(v interface{}, ref string, err interface{}) *Malformed {
+	e := newMalformed(v, ref, err)
+	e.method = "unmarshal"
+	return e
+}
+
 func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
 	var reason string
 	switch e := err.(type) {
@@ -195,6 +207,7 @@ func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
 }
 
 type Malformed struct {
+	method string
 	t      string
 	ref    string
 	reason string
@@ -202,9 +215,9 @@ type Malformed struct {
 
 func (e *Malformed) Error() string {
 	if e.ref == "" {
-		return fmt.Sprintf("malformed %s: %s", e.t, e.reason)
+		return fmt.Sprintf("malformed %s %s: %s", e.t, e.method, e.reason)
 	}
-	return fmt.Sprintf("malformed %s: %s %s", e.t, e.ref, e.reason)
+	return fmt.Sprintf("malformed %s %s: %s %s", e.t, e.method, e.ref, e.reason)
 }
 
 // see math.MaxUint16

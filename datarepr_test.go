@@ -224,9 +224,9 @@ func ExampleMalformed() {
 	_, err = BinaryData(large).MarshalBinary()
 	fmt.Println(err)
 	// output:
-	// malformed mqtt.UTF8StringPair: key size exceeded
-	// malformed mqtt.VarByteInt: size exceeded
-	// malformed mqtt.BinaryData: size exceeded
+	// malformed mqtt.UTF8StringPair marshal: key size exceeded
+	// malformed mqtt.VarByteInt unmarshal: size exceeded
+	// malformed mqtt.BinaryData marshal: size exceeded
 }
 
 var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
