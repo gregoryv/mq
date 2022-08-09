@@ -218,8 +218,12 @@ func ExampleMalformed() {
 	c := UTF8StringPair{large, ""}
 	_, err := c.MarshalBinary()
 	fmt.Println(err)
+
+	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
+	fmt.Println(new(VarByteInt).UnmarshalBinary(badData))
 	// output:
 	// malformed: key size exceeded
+	// malformed: VarByteInt size exceeded
 }
 
 var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
