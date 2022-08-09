@@ -215,15 +215,18 @@ func TestUTF8StringPair(t *testing.T) {
 }
 
 func ExampleMalformed() {
-	c := UTF8StringPair{large, ""}
-	_, err := c.MarshalBinary()
+	_, err := (&UTF8StringPair{large, ""}).MarshalBinary()
 	fmt.Println(err)
 
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	fmt.Println(new(VarByteInt).UnmarshalBinary(badData))
+
+	_, err = BinaryData(large).MarshalBinary()
+	fmt.Println(err)
 	// output:
-	// malformed: key size exceeded
-	// malformed: VarByteInt size exceeded
+	// malformed mqtt.UTF8StringPair: key size exceeded
+	// malformed mqtt.VarByteInt: size exceeded
+	// malformed mqtt.BinaryData: size exceeded
 }
 
 var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
