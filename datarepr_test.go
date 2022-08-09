@@ -214,29 +214,38 @@ func TestUTF8StringPair(t *testing.T) {
 	}
 }
 
-func ExampleMalformed() {
+func ExampleUTF8StringPair() {
 	_, err := (&UTF8StringPair{large, ""}).MarshalBinary()
 	fmt.Println(err)
+	// output:
+	// malformed mqtt.UTF8StringPair marshal: key size exceeded
+}
 
+func ExampleVarByteInt() {
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	fmt.Println(new(VarByteInt).UnmarshalBinary(badData))
+	// output:
+	// malformed mqtt.VarByteInt unmarshal: size exceeded
+}
 
-	_, err = BinaryData(large).MarshalBinary()
+func ExampleBinaryData() {
+	_, err := BinaryData(large).MarshalBinary()
 	fmt.Println(err)
 
 	var bin BinaryData
 	fmt.Println(bin.UnmarshalBinary([]byte{0, 2}))
+	// output:
+	// malformed mqtt.BinaryData marshal: size exceeded
+	// malformed mqtt.BinaryData unmarshal: missing data
+}
 
-	_, err = UTF8String(large).MarshalBinary()
+func ExampleUTF8String() {
+	_, err := UTF8String(large).MarshalBinary()
 	fmt.Println(err)
 
 	var s UTF8String
 	fmt.Println(s.UnmarshalBinary([]byte{0, 2}))
 	// output:
-	// malformed mqtt.UTF8StringPair marshal: key size exceeded
-	// malformed mqtt.VarByteInt unmarshal: size exceeded
-	// malformed mqtt.BinaryData marshal: size exceeded
-	// malformed mqtt.BinaryData unmarshal: missing data
 	// malformed mqtt.UTF8String marshal: size exceeded
 	// malformed mqtt.UTF8String unmarshal: missing data
 }

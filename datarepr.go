@@ -137,6 +137,7 @@ func (v VarByteInt) Width() int {
 }
 
 // ----------------------------------------
+
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
 type Bits byte
 
@@ -224,5 +225,6 @@ func (e *Malformed) Error() string {
 	return fmt.Sprintf("malformed %s %s: %s %s", e.t, e.method, e.ref, e.reason)
 }
 
-// see math.MaxUint16
+// see math package for other max values
+
 const MaxUint16 = 1<<16 - 1
