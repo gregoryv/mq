@@ -15,29 +15,39 @@ import (
 	"time"
 )
 
-func NewConnectPacket() *ConnectPacket {
-	return &ConnectPacket{
-		ProtocolName:    MQTT,
-		ProtocolVersion: Version5,
+func NewControlPacket() *ControlPacket {
+	return &ControlPacket{
+		protocolName:    "MQTT",
+		protocolVersion: 5,
 	}
+
 }
 
-type ConnectPacket struct {
-	ProtocolName
-	ProtocolVersion
-	ConnectFlags
-	KeepAlive
+type ControlPacket struct {
+	fixedHeader byte
 
-	// Properties
-	SessionExpiryInterval
-	ReceiveMax
-	MaxPacketSize
-	TopicAliasMax
-	RequestResponseInfo
-	RequestProblemInfo
-	UserProperties []UserProperty
-	AuthMethod
-	AuthData
+	// variable header
+	protocolName    string
+	protocolVersion uint8
+	flags           byte
+	keepAlive       uint16
+
+	// properties
+	sessionExpiryInterval uint32
+	receiveMax            uint16
+	maxPacketSize         uint32
+	topicAliasMax         uint16
+	requestResponseInfo   bool
+	requestProblemInfo    bool
+	userProperties        [][2]string
+	authMethod            string
+	authData              []byte
+
+	payload []byte
+}
+
+func (p *ControlPacket) String() string {
+	return "todo"
 }
 
 // ---------------------------------------------------------------------

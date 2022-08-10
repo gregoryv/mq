@@ -9,8 +9,9 @@ import (
 	"time"
 )
 
-func TestConnectPacket(t *testing.T) {
-	_ = NewConnectPacket()
+func TestControlPacket(t *testing.T) {
+	p := NewControlPacket()
+	t.Error(p.String())
 }
 
 // ---------------------------------------------------------------------
