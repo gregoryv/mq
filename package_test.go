@@ -211,6 +211,8 @@ func TestFourByteInt(t *testing.T) {
 	}
 }
 
+// ................................................ Data representations
+
 func TestUTF8String(t *testing.T) {
 	b := UTF8String("۞ gopher från sverige")
 
@@ -283,6 +285,8 @@ func TestVarByteInt(t *testing.T) {
 	}
 }
 
+// ................................................ Data representations
+
 func TestBinaryData(t *testing.T) {
 	indata := make([]byte, 64)
 	if _, err := rand.Read(indata); err != nil {
@@ -318,6 +322,8 @@ func TestBinaryData(t *testing.T) {
 		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }
+
+// ................................................ Data representations
 
 func TestUTF8StringPair(t *testing.T) {
 	b := UTF8StringPair{"key", "value"}
@@ -376,6 +382,8 @@ func ExampleVarByteInt() {
 	// malformed mqtt.VarByteInt unmarshal: size exceeded
 }
 
+// ................................................ Data representations
+
 func ExampleBinaryData() {
 	_, err := BinaryData(large).MarshalBinary()
 	fmt.Println(err)
@@ -399,3 +407,5 @@ func ExampleUTF8String() {
 }
 
 var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
+
+// ................................................ Data representations
