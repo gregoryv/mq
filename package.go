@@ -15,6 +15,31 @@ import (
 	"time"
 )
 
+func NewConnectPacket() *ConnectPacket {
+	return &ConnectPacket{
+		ProtocolName:    MQTT,
+		ProtocolVersion: Version5,
+	}
+}
+
+type ConnectPacket struct {
+	ProtocolName
+	ProtocolVersion
+	ConnectFlags
+	KeepAlive
+
+	// Properties
+	SessionExpiryInterval
+	ReceiveMax
+	MaxPacketSize
+	TopicAliasMax
+	RequestResponseInfo
+	RequestProblemInfo
+	UserProperties []UserProperty
+	AuthMethod
+	AuthData
+}
+
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
 // ---------------------------------------------------------------------
@@ -66,9 +91,14 @@ func (c ConnectFlags) String() string {
 
 func (c ConnectFlags) Has(f byte) bool { return Bits(c).Has(f) }
 
+type KeepAlive TwoByteInt
+
 // ---------------------------------------------------------------------
 // 3.1.2.11 CONNECT Properties
 // ---------------------------------------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901047
+type PropertyLen VarByteInt
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
 type SessionExpiryInterval FourByteInt
@@ -80,9 +110,6 @@ func (s SessionExpiryInterval) String() string {
 func (s SessionExpiryInterval) Duration() time.Duration {
 	return time.Duration(s) * time.Second
 }
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901047
-type PropertyLen VarByteInt
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
 type ReceiveMax TwoByteInt
@@ -183,6 +210,9 @@ func (f *FixedHeader) HasFlag(flag byte) bool {
 // ---------------------------------------------------------------------
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
+
+type ProtocolName UTF8String
+type ProtocolVersion byte
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
 type UTF8StringPair [2]UTF8String
@@ -415,9 +445,9 @@ func (e *Malformed) Error() string {
 // ---------------------------------------------------------------------
 
 const (
-	ProtocolName         = "MQTT" // 3.1.2.1 Protocol Name
-	ProtocolVersion byte = 5
-	MaxUint16            = 1<<16 - 1
+	MQTT                      = ProtocolName("MQTT") // 3.1.2.1 Protocol Name
+	Version5  ProtocolVersion = 5
+	MaxUint16                 = 1<<16 - 1
 )
 
 // 2.1.2 MQTT Control Packet type
