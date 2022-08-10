@@ -32,47 +32,39 @@ const (
 
 type ConnectFlags byte
 
+// String returns flags represented with a letter.
+// Improper flags are marked with '!' and unset are marked with '-'.
+//
+//   UsernameFlag  u
+//   PasswordFlag  p
+//   WillRetain    r
+//   WillQoS       1, 2 or !
+//   WillFlag      2
+//   CleanStart    s
+//   Reserved      !
 func (c ConnectFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 7)
-	for i, f := range connectFlagOrder {
-		if c.Has(f) {
-			flags[i] = shortConnectFlags[f]
+
+	mark := func(i int, flag byte, v byte) {
+		if !c.Has(flag) {
+			return
 		}
+		flags[i] = v
 	}
-	if c.Has(WillQoS1) {
-		flags[3] = '1'
-	}
-	if c.Has(WillQoS2) {
-		flags[3] = '2'
-	}
-	if c.Has(Reserved) {
-		flags[6] = '!'
-	}
+	mark(0, UsernameFlag, 'u')
+	mark(1, PasswordFlag, 'p')
+	mark(2, WillRetain, 'r')
+	mark(3, WillQoS1, '1')
+	mark(3, WillQoS2, '2')
+	mark(3, WillQoS1|WillQoS2, '!')
+	mark(4, WillFlag, 'w')
+	mark(5, CleanStart, 's')
+	mark(6, Reserved, '!')
+
 	return string(flags)
 }
 
-func (c ConnectFlags) Has(f byte) bool { return byte(c)&f == f }
-
-var shortConnectFlags = map[byte]byte{
-	//	Reserved:     '',
-	CleanStart:   's',
-	WillFlag:     'w',
-	WillQoS1:     '1',
-	WillQoS2:     '2',
-	WillRetain:   'r',
-	PasswordFlag: 'p',
-	UsernameFlag: 'u',
-}
-
-var connectFlagOrder = []byte{
-	UsernameFlag, // bit 7
-	PasswordFlag, // bit 6
-	WillRetain,   // bit 5
-	'-',          // QoS bits 4 and 3
-	WillFlag,     // bit 2
-	CleanStart,   // bit 1
-	Reserved,     // bit 0
-}
+func (c ConnectFlags) Has(f byte) bool { return Bits(c).Has(f) }
 
 // ---------------------------------------------------------------------
 // 3.1.2.11 CONNECT Properties
