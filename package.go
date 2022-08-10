@@ -9,10 +9,6 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 */
 package mqtt
 
-import (
-	"github.com/gregoryv/mqtt/internal"
-)
-
 // static protocol name, 3.1.2.1 Protocol Name
 var protoName = []byte{0, 4, 'M', 'Q', 'T', 'T'}
 
@@ -68,14 +64,6 @@ const (
 	//QoS3 FixedHeader = 0b0000_0110   malformed!
 	DUP byte = 0b0000_1000
 )
-
-var flagNames = internal.Dict{
-	DUP:    "DUP",
-	QoS0:   "QoS0",
-	QoS1:   "QoS1",
-	QoS2:   "QoS2",
-	RETAIN: "RETAIN",
-}
 
 const (
 	PropSessionExpiryInterval byte = 0x11

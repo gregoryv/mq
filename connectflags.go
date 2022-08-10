@@ -30,7 +30,7 @@ func (c ConnectFlags) String() string {
 		flags[3] = '2'
 	}
 	if c.Has(Reserved) {
-		flags[6] = 'R'
+		flags[6] = '!'
 	}
 	return string(flags)
 }
@@ -38,7 +38,7 @@ func (c ConnectFlags) String() string {
 func (c ConnectFlags) Has(f byte) bool { return byte(c)&f == f }
 
 var shortConnectFlags = map[byte]byte{
-	Reserved:     'X',
+	//	Reserved:     '',
 	CleanStart:   's',
 	WillFlag:     'w',
 	WillQoS1:     '1',
@@ -49,11 +49,11 @@ var shortConnectFlags = map[byte]byte{
 }
 
 var connectFlagOrder = []byte{
-	UsernameFlag,
-	PasswordFlag,
-	WillRetain,
-	'-', // QoS,
-	WillFlag,
-	CleanStart,
-	Reserved,
+	UsernameFlag, // bit 7
+	PasswordFlag, // bit 6
+	WillRetain,   // bit 5
+	'-',          // QoS bits 4 and 3
+	WillFlag,     // bit 2
+	CleanStart,   // bit 1
+	Reserved,     // bit 0
 }

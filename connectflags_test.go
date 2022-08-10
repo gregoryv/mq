@@ -14,7 +14,7 @@ func TestConnectFlags(t *testing.T) {
 		t.Errorf("got %q != exp %q", got, exp)
 	}
 	f = ConnectFlags(0b00000001)
-	if got, exp := f.String(), "------R"; got != exp {
+	if got, exp := f.String(), "------!"; got != exp {
 		t.Errorf("got %q != exp %q", got, exp)
 	}
 	if f.Has(WillFlag) || !f.Has(Reserved) {
