@@ -1,18 +1,430 @@
 /*
 Package mqtt provides a MQTT v5.0 protocol implementation
 
-This package contains the protocol parsing features whereas
-subpackages contain client and server implementations.  The
-specification is found at
+The specification is found at
 https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 
 */
 package mqtt
 
-// static protocol name, 3.1.2.1 Protocol Name
-var protoName = []byte{0, 4, 'M', 'Q', 'T', 'T'}
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"strings"
+	"time"
+)
 
-const version5 byte = 5
+// ---------------------------------------------------------------------
+// 3.1.2.3 Connect Flags
+// ---------------------------------------------------------------------
+
+const (
+	Reserved byte = 1 << iota
+	CleanStart
+	WillFlag
+	WillQoS1
+	WillQoS2
+	WillRetain
+	PasswordFlag
+	UsernameFlag
+)
+
+type ConnectFlags byte
+
+func (c ConnectFlags) String() string {
+	flags := bytes.Repeat([]byte("-"), 7)
+	for i, f := range connectFlagOrder {
+		if c.Has(f) {
+			flags[i] = shortConnectFlags[f]
+		}
+	}
+	if c.Has(WillQoS1) {
+		flags[3] = '1'
+	}
+	if c.Has(WillQoS2) {
+		flags[3] = '2'
+	}
+	if c.Has(Reserved) {
+		flags[6] = '!'
+	}
+	return string(flags)
+}
+
+func (c ConnectFlags) Has(f byte) bool { return byte(c)&f == f }
+
+var shortConnectFlags = map[byte]byte{
+	//	Reserved:     '',
+	CleanStart:   's',
+	WillFlag:     'w',
+	WillQoS1:     '1',
+	WillQoS2:     '2',
+	WillRetain:   'r',
+	PasswordFlag: 'p',
+	UsernameFlag: 'u',
+}
+
+var connectFlagOrder = []byte{
+	UsernameFlag, // bit 7
+	PasswordFlag, // bit 6
+	WillRetain,   // bit 5
+	'-',          // QoS bits 4 and 3
+	WillFlag,     // bit 2
+	CleanStart,   // bit 1
+	Reserved,     // bit 0
+}
+
+// ---------------------------------------------------------------------
+// 3.1.2.11 CONNECT Properties
+// ---------------------------------------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
+type ReceiveMax uint16
+
+func (r ReceiveMax) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 2)
+	binary.BigEndian.PutUint16(data, uint16(r))
+	return data, nil
+}
+
+func (r *ReceiveMax) UnmarshalBinary(data []byte) error {
+	*r = ReceiveMax(binary.BigEndian.Uint16(data))
+	return nil
+}
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
+type SessionExpiryInterval uint32
+
+func (s SessionExpiryInterval) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 4)
+	binary.BigEndian.PutUint32(data, uint32(s))
+	return data, nil
+}
+
+func (s *SessionExpiryInterval) UnmarshalBinary(data []byte) error {
+	*s = SessionExpiryInterval(binary.BigEndian.Uint32(data))
+	return nil
+}
+
+func (s SessionExpiryInterval) String() string {
+	return s.Duration().String()
+}
+
+func (s SessionExpiryInterval) Duration() time.Duration {
+	return time.Duration(s) * time.Second
+}
+
+// ---------------------------------------------------------------------
+// Headers
+// ---------------------------------------------------------------------
+
+// FixedHeader represents the first 2..5 bytes of a control packet.
+
+// It's an error if len(FixedHeader) < 2 or > 5.
+//
+// 2.1.1 Fixed Header
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
+type FixedHeader struct {
+	header       byte
+	remainingLen VarByteInt
+}
+
+func (f *FixedHeader) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 0, 5)
+	data = append(data, f.header)
+	rem, _ := f.remainingLen.MarshalBinary() // cannot fail
+	data = append(data, rem...)
+	return data, nil
+}
+
+func (f *FixedHeader) UnmarshalBinary(data []byte) error {
+	f.header = data[0]
+	err := f.remainingLen.UnmarshalBinary(data[1:])
+	if err != nil {
+		return unmarshalErr(f, "remaining length", err.(*Malformed))
+	}
+	return nil
+}
+
+// String returns a string TYPE-FLAGS REMAINING_LENGTH
+func (f *FixedHeader) String() string {
+	var sb strings.Builder
+	sb.WriteString(typeNames[f.Value()])
+	sb.WriteString(" ")
+	flags := []byte("----")
+	if f.HasFlag(DUP) {
+		flags[0] = 'd'
+	}
+	switch {
+	case f.HasFlag(QoS1 | QoS2):
+		flags[1] = '!' // malformed
+		flags[2] = '!' // malformed
+	case f.HasFlag(QoS1):
+		flags[2] = '1'
+	case f.HasFlag(QoS2):
+		flags[1] = '2'
+	}
+	if f.HasFlag(RETAIN) {
+		flags[3] = 'r'
+	}
+	sb.Write(flags)
+	sb.WriteString(" ")
+	fmt.Fprint(&sb, f.remainingLen)
+	return sb.String()
+}
+
+// Is is the same as h.Value() == v
+func (f *FixedHeader) Is(v byte) bool {
+	return f.Value() == v
+}
+
+func (f *FixedHeader) Value() byte {
+	return f.header & 0b1111_0000
+}
+
+func (f *FixedHeader) HasFlag(flag byte) bool {
+	return Bits(f.header).Has(flag)
+}
+
+// ---------------------------------------------------------------------
+// Data representations, the low level data types
+// ---------------------------------------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
+type UTF8StringPair [2]UTF8String
+
+func (v UTF8StringPair) MarshalBinary() ([]byte, error) {
+	key, err := v[0].MarshalBinary()
+	if err != nil {
+		return nil, marshalErr(v, "key", err.(*Malformed))
+	}
+	val, err := v[1].MarshalBinary()
+	if err != nil {
+		return nil, marshalErr(v, "value", err.(*Malformed))
+	}
+	return append(key, val...), nil
+}
+
+func (v *UTF8StringPair) UnmarshalBinary(data []byte) error {
+	if err := v[0].UnmarshalBinary(data); err != nil {
+		return unmarshalErr(v, "key", err.(*Malformed))
+	}
+	i := len(v[0]) + 2
+	if err := v[1].UnmarshalBinary(data[i:]); err != nil {
+		return unmarshalErr(v, "value", err.(*Malformed))
+	}
+	return nil
+}
+func (v UTF8StringPair) String() string {
+	return fmt.Sprintf("%s:%s", v[0], v[1])
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
+type UTF8String string
+
+func (v UTF8String) MarshalBinary() ([]byte, error) {
+	data, err := BinaryData([]byte(v)).MarshalBinary()
+	if err != nil {
+		return data, marshalErr(v, "", err.(*Malformed))
+	}
+	return data, nil
+}
+
+func (v *UTF8String) UnmarshalBinary(data []byte) error {
+	var b BinaryData
+	if err := b.UnmarshalBinary(data); err != nil {
+		return unmarshalErr(v, "", err.(*Malformed))
+	}
+	*v = UTF8String(b)
+	return nil
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
+type BinaryData []byte
+
+func (v BinaryData) MarshalBinary() ([]byte, error) {
+	if len(v) > MaxUint16 {
+		return nil, marshalErr(v, "", "size exceeded")
+	}
+	data := make([]byte, len(v)+2)
+	l, _ := TwoByteInt(len(v)).MarshalBinary()
+	copy(data[:2], l)
+	copy(data[2:], []byte(v))
+	return data, nil
+}
+
+func (v *BinaryData) UnmarshalBinary(data []byte) error {
+	var l TwoByteInt
+	_ = l.UnmarshalBinary(data)
+	if len(data) < int(l)+2 {
+		return unmarshalErr(v, "", "missing data")
+	}
+	*v = make([]byte, l)
+	copy(*v, data[2:l+2])
+	return nil
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
+type VarByteInt uint
+
+// MarshalBinary always returns nil error
+func (v VarByteInt) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 0, 4) // max four
+	if v == 0 {
+		data = append(data, 0)
+		return data, nil
+	}
+	for v > 0 {
+		encodedByte := byte(v % 128)
+		v = v / 128
+		if v > 0 {
+			encodedByte = encodedByte | 128
+		}
+		data = append(data, encodedByte)
+	}
+	return data, nil
+}
+
+// UnmarshalBinary data, returns nil or *Malformed error
+func (v *VarByteInt) UnmarshalBinary(data []byte) error {
+	if len(data) == 0 {
+		return unmarshalErr(v, "", "missing data")
+	}
+	var multiplier uint = 1
+	var value uint
+	for _, encodedByte := range data {
+		value += uint(encodedByte) & uint(127) * multiplier
+		if multiplier > 128*128*128 {
+			return unmarshalErr(v, "", "size exceeded")
+		}
+		if encodedByte&128 == 0 {
+			break
+		}
+		multiplier = multiplier * 128
+	}
+	*v = VarByteInt(value)
+	return nil
+}
+
+func (v VarByteInt) Width() int {
+	switch {
+	case v < 128:
+		return 1
+	case v < 16_384:
+		return 2
+	case v < 2_097_152:
+		return 3
+	default:
+		return 4
+	}
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
+type Bits byte
+
+func (v Bits) Has(b byte) bool {
+	return byte(v)&b == b
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
+type TwoByteInt uint16
+
+func (v TwoByteInt) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 2)
+	binary.BigEndian.PutUint16(data, uint16(v))
+	return data, nil
+}
+
+func (v *TwoByteInt) UnmarshalBinary(data []byte) error {
+	*v = TwoByteInt(binary.BigEndian.Uint16(data))
+	return nil
+}
+
+// ----------------------------------------
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
+type FourByteInt uint32
+
+func (v FourByteInt) MarshalBinary() ([]byte, error) {
+	data := make([]byte, 4)
+	binary.BigEndian.PutUint32(data, uint32(v))
+	return data, nil
+}
+
+func (v *FourByteInt) UnmarshalBinary(data []byte) error {
+	*v = FourByteInt(binary.BigEndian.Uint32(data))
+	return nil
+}
+
+// ---------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------
+
+func marshalErr(v interface{}, ref string, err interface{}) *Malformed {
+	e := newMalformed(v, ref, err)
+	e.method = "marshal"
+	return e
+}
+
+func unmarshalErr(v interface{}, ref string, err interface{}) *Malformed {
+	e := newMalformed(v, ref, err)
+	e.method = "unmarshal"
+	return e
+}
+
+func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
+	var reason string
+	switch e := err.(type) {
+	case *Malformed:
+		reason = e.reason
+	case string:
+		reason = e
+	}
+	// remove * from type name
+	t := fmt.Sprintf("%T", v)
+	if t[0] == '*' {
+		t = t[1:]
+	}
+	return &Malformed{
+		t:      t,
+		ref:    ref,
+		reason: reason,
+	}
+}
+
+type Malformed struct {
+	method string
+	t      string
+	ref    string
+	reason string
+}
+
+func (e *Malformed) Error() string {
+	if e.ref == "" {
+		return fmt.Sprintf("malformed %s %s: %s", e.t, e.method, e.reason)
+	}
+	return fmt.Sprintf("malformed %s %s: %s %s", e.t, e.method, e.ref, e.reason)
+}
+
+// ---------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------
+
+const (
+	ProtocolName         = "MQTT" // 3.1.2.1 Protocol Name
+	ProtocolVersion byte = 5
+	MaxUint16            = 1<<16 - 1
+)
 
 // 2.1.2 MQTT Control Packet type
 //

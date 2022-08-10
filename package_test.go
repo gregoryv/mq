@@ -6,7 +6,155 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
+
+// ---------------------------------------------------------------------
+// 3.1.2.3 Connect Flags
+// ---------------------------------------------------------------------
+
+func TestConnectFlags(t *testing.T) {
+	f := ConnectFlags(0b11110110)
+	// QoS2
+	if got, exp := f.String(), "upr2ws-"; got != exp {
+		t.Errorf("got %q != exp %q", got, exp)
+	}
+	// QoS1
+	f = ConnectFlags(0b11101110)
+	if got, exp := f.String(), "upr1ws-"; got != exp {
+		t.Errorf("got %q != exp %q", got, exp)
+	}
+	f = ConnectFlags(0b00000001)
+	if got, exp := f.String(), "------!"; got != exp {
+		t.Errorf("got %q != exp %q", got, exp)
+	}
+	if f.Has(WillFlag) || !f.Has(Reserved) {
+		t.Errorf("Has %08b", f)
+	}
+}
+
+// ---------------------------------------------------------------------
+// 3.1.2.11 CONNECT Properties
+// ---------------------------------------------------------------------
+
+func TestReceiveMax(t *testing.T) {
+	b := ReceiveMax(76)
+
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+	if exp := []byte{0, 76}; !reflect.DeepEqual(data, exp) {
+		t.Error("unexpected data ", data)
+	}
+
+	var a ReceiveMax
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// before and after are equal
+	if b != a {
+		t.Errorf("b(%v) != a(%v)", b, a)
+	}
+}
+
+func TestSessionExpiryInterval(t *testing.T) {
+	b := SessionExpiryInterval(76)
+
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+	if exp := []byte{0, 0, 0, 76}; !reflect.DeepEqual(data, exp) {
+		t.Error("unexpected data ", data)
+	}
+
+	var a SessionExpiryInterval
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// before and after are equal
+	if b != a {
+		t.Errorf("b(%v) != a(%v)", b, a)
+	}
+
+	if got := a.String(); got != "1m16s" {
+		t.Error("unexpected text", got)
+	}
+
+	if dur := a.Duration(); dur != 76*time.Second {
+		t.Error("unexpected duration", dur)
+	}
+}
+
+// ---------------------------------------------------------------------
+// Headers
+// ---------------------------------------------------------------------
+
+func ExampleFixedHeader() {
+	bad := []byte{PUBLISH | QoS1 | QoS2}
+	var f FixedHeader
+	fmt.Println(f.UnmarshalBinary(bad))
+	// output:
+	// malformed mqtt.FixedHeader unmarshal: remaining length missing data
+}
+
+func TestFixedHeader(t *testing.T) {
+	b := FixedHeader{
+		header:       PUBLISH | DUP | QoS1,
+		remainingLen: 10,
+	}
+	// marshaling
+	data, err := b.MarshalBinary()
+	if err != nil {
+		t.Error("MarshalBinary", err)
+	}
+
+	var a FixedHeader
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// other methods
+	if a.Is(CONNECT) {
+		t.Error("!Is", CONNECT)
+	}
+	if a.HasFlag(RETAIN) {
+		t.Error("!HasFlag", RETAIN)
+	}
+	cases := []struct {
+		h   FixedHeader
+		exp string
+	}{
+		{
+			h:   a,
+			exp: "PUBLISH d-1- 10",
+		},
+		{
+			h:   FixedHeader{header: PUBLISH | QoS2 | RETAIN},
+			exp: "PUBLISH -2-r 0",
+		},
+		{
+			h:   FixedHeader{header: PUBLISH | QoS1 | QoS2},
+			exp: "PUBLISH -!!- 0",
+		},
+		{
+			h:   FixedHeader{header: CONNECT},
+			exp: "CONNECT ---- 0",
+		},
+	}
+	for _, c := range cases {
+		if got, exp := c.h.String(), c.exp; got != exp {
+			t.Errorf("String: %q != %q", got, exp)
+		}
+	}
+}
+
+// ---------------------------------------------------------------------
+// Data representations, the low level data types
+// ---------------------------------------------------------------------
 
 func TestBits(t *testing.T) {
 	v := Bits(0b0001_0000)
