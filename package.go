@@ -47,8 +47,40 @@ type ControlPacket struct {
 }
 
 func (p *ControlPacket) String() string {
-	return "todo"
+	var sb strings.Builder
+	f := Bits(p.fixedHeader)
+	sb.WriteString(typeNames[p.fixedHeader&0b1111_0000])
+	sb.WriteString(" ")
+	flags := []byte("----")
+
+	if f.Has(DUP) {
+		flags[0] = 'd'
+	}
+	switch {
+	case f.Has(QoS1 | QoS2):
+		flags[1] = '!' // malformed
+		flags[2] = '!' // malformed
+	case f.Has(QoS1):
+		flags[2] = '1'
+	case f.Has(QoS2):
+		flags[1] = '2'
+	}
+	if f.Has(RETAIN) {
+		flags[3] = 'r'
+	}
+	sb.Write(flags)
+	sb.WriteString(" ")
+	fmt.Fprint(&sb, p.RemainingLen())
+	return sb.String()
 }
+
+// todo calculate without converting to wire format
+func (p *ControlPacket) RemainingLen() int {
+	return 0
+}
+
+// todo MarshalBinary
+// todo UnmarshalBinary
 
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
