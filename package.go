@@ -70,33 +70,8 @@ func (c ConnectFlags) Has(f byte) bool { return Bits(c).Has(f) }
 // 3.1.2.11 CONNECT Properties
 // ---------------------------------------------------------------------
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
-type ReceiveMax uint16
-
-func (r ReceiveMax) MarshalBinary() ([]byte, error) {
-	data := make([]byte, 2)
-	binary.BigEndian.PutUint16(data, uint16(r))
-	return data, nil
-}
-
-func (r *ReceiveMax) UnmarshalBinary(data []byte) error {
-	*r = ReceiveMax(binary.BigEndian.Uint16(data))
-	return nil
-}
-
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
-type SessionExpiryInterval uint32
-
-func (s SessionExpiryInterval) MarshalBinary() ([]byte, error) {
-	data := make([]byte, 4)
-	binary.BigEndian.PutUint32(data, uint32(s))
-	return data, nil
-}
-
-func (s *SessionExpiryInterval) UnmarshalBinary(data []byte) error {
-	*s = SessionExpiryInterval(binary.BigEndian.Uint32(data))
-	return nil
-}
+type SessionExpiryInterval FourByteInt
 
 func (s SessionExpiryInterval) String() string {
 	return s.Duration().String()
@@ -105,6 +80,15 @@ func (s SessionExpiryInterval) String() string {
 func (s SessionExpiryInterval) Duration() time.Duration {
 	return time.Duration(s) * time.Second
 }
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
+type ReceiveMax TwoByteInt
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901050
+type MaxPacketSize FourByteInt
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901051
+type TopicAliasMax TwoByteInt
 
 // ---------------------------------------------------------------------
 // Headers
