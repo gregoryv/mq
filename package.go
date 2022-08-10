@@ -81,6 +81,9 @@ func (s SessionExpiryInterval) Duration() time.Duration {
 	return time.Duration(s) * time.Second
 }
 
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901047
+type PropertyLen VarByteInt
+
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
 type ReceiveMax TwoByteInt
 
@@ -89,6 +92,21 @@ type MaxPacketSize FourByteInt
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901051
 type TopicAliasMax TwoByteInt
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901052
+type RequestResponseInfo byte
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901053
+type RequestProblemInfo byte
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901054
+type UserProperty UTF8StringPair
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901055
+type AuthMethod UTF8String
+
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901056
+type AuthData BinaryData
 
 // ---------------------------------------------------------------------
 // Headers
