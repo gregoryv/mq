@@ -57,16 +57,11 @@ type ControlPacket struct {
 	contentType           string
 	protocolName          string
 	responseTopic         string
-	properties            []property
-	userProperties        []property
+	properties            [][2]string
+	userProperties        [][2]string
 	correlationData       []byte
 	authData              []byte
 	payload               []byte
-}
-
-type property struct {
-	key string
-	val string
 }
 
 func (p *ControlPacket) String() string {
@@ -82,18 +77,13 @@ func (p *ControlPacket) String() string {
 func (p *ControlPacket) Buffers() (net.Buffers, error) {
 	buf := make(net.Buffers, 0)
 
-	varhead, err := p.variableHeader()
-	if err != nil {
-		return nil, err
-	}
+	varhead, _ := p.variableHeader() // todo handle error
 
 	// fixed header
 	buf = append(buf, []byte{byte(p.fixed)})
 	remlen := VarByteInt(sumlen(varhead) + len(p.payload))
-	data, err := remlen.MarshalBinary()
-	if err != nil {
-		return nil, err
-	}
+	data, _ := remlen.MarshalBinary() // todo handle error
+
 	buf = append(buf, data)
 	buf = append(buf, varhead...)
 	buf = append(buf, p.payload)
@@ -129,15 +119,16 @@ func (p *ControlPacket) Is(v byte) bool {
 // UnmarshalBinary unmarshals a control packets remaining data. The
 // header must be set before calling this func. len(data) is the fixed
 // headers remainig length.
-func (p *ControlPacket) UnmarshalBinary(data []byte) error {
+/*func (p *ControlPacket) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")
-}
+}*/
 
 func (p *ControlPacket) fixedFlags(h bits) []byte {
 	switch byte(h) & 0b1111_0000 {
 
 	case UNDEFINED:
-		return []byte(strings.ReplaceAll(fmt.Sprintf("%04b", h), "0", "-"))
+		str := fmt.Sprintf("%04b", h)
+		return []byte(strings.ReplaceAll(str, "0", "-"))
 
 	case PUBLISH:
 		flags := []byte("---")
@@ -476,8 +467,7 @@ func (v VarByteInt) Width() int {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
 type bits byte
 
-func (v bits) Has(b byte) bool   { return byte(v)&b == b }
-func (v bits) Value(b byte) byte { return byte(v) & b }
+func (v bits) Has(b byte) bool { return byte(v)&b == b }
 
 // ----------------------------------------
 

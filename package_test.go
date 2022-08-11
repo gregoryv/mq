@@ -16,12 +16,10 @@ func TestControlPacket_Buffers(t *testing.T) {
 	p := NewPacket(CONNECT)
 	bin, err := p.Buffers()
 	if err != nil {
-		t.Error(err)
+		var buf bytes.Buffer
+		bin.WriteTo(&buf)
+		t.Error(hex.Dump(buf.Bytes()), "\n", err)
 	}
-	var buf bytes.Buffer
-	bin.WriteTo(&buf)
-	t.Log(hex.Dump(buf.Bytes()))
-	//t.Error("todo")
 }
 
 func TestControlPacket_String(t *testing.T) {
@@ -50,8 +48,12 @@ func TestSizeof(t *testing.T) {
 	var p ControlPacket
 	_ = p
 	best := uint(216)
-	if got := uint(unsafe.Sizeof(p)); got > best {
+	got := uint(unsafe.Sizeof(p))
+	switch {
+	case got > best:
 		t.Error("ControlPacket size: ", got)
+	case got < best:
+		t.Error("Size improved, update TestSizeof")
 	}
 }
 
