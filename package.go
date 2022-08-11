@@ -44,6 +44,14 @@ type ControlPacket struct {
 	userProperties        [][2]string
 	authMethod            string
 	authData              []byte
+	properties            [][2]string
+
+	willDelayInterval      uint32
+	payloadFormatIndicator bool
+	messageExpireInterval  uint32
+	contentType            string
+	responseTopic          string
+	correlationData        []byte
 
 	payload []byte
 }
