@@ -93,9 +93,13 @@ func (p *ControlPacket) RemainingLen() int {
 }
 
 func (p *ControlPacket) Buffers() (net.Buffers, error) {
-	return nil, fmt.Errorf(": todo")
+	buf := make(net.Buffers, 0)
+	return buf, fmt.Errorf(": todo")
 }
 
+// UnmarshalBinary unmarshals a control packets remaining data. The
+// header must be set before calling this func. len(data) is the fixed
+// headers remainig length.
 func (p *ControlPacket) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")
 }
