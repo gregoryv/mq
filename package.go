@@ -85,6 +85,10 @@ func (p *ControlPacket) RemainingLen() int {
 // todo MarshalBinary
 // todo UnmarshalBinary
 
+func (p *ControlPacket) WithHeader(v byte) *ControlPacket {
+	p.SetHeader(v)
+	return p
+}
 func (p *ControlPacket) Header() byte     { return byte(p.header) }
 func (p *ControlPacket) SetHeader(v byte) { p.header = bits(v) }
 

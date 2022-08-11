@@ -9,11 +9,24 @@ import (
 	"time"
 )
 
-func TestControlPacket(t *testing.T) {
-	p := NewControlPacket()
-	p.SetHeader(PUBLISH | DUP | QoS1)
+func TestControlPacket_String(t *testing.T) {
+	p := NewControlPacket().WithHeader(PUBLISH | DUP | QoS1)
+	if got := p.String(); !strings.HasPrefix(got, "PUBLISH d1-") {
+		t.Error(got)
+	}
 
-	t.Error(p.String())
+	p.SetHeader(PUBLISH | QoS1 | QoS2)
+	if got := p.String(); !strings.Contains(got, "-!-") {
+		t.Error(got)
+	}
+
+	p.SetHeader(PUBLISH | QoS2 | RETAIN)
+	if got := p.String(); !strings.Contains(got, "-2r") {
+		t.Error(got)
+	}
+	if got := p.Header(); got != PUBLISH|QoS2|RETAIN {
+		t.Error("invalid header")
+	}
 }
 
 // ---------------------------------------------------------------------
