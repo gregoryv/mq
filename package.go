@@ -11,16 +11,23 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 )
 
-func NewControlPacket() *ControlPacket {
+// NewPacket returns a MQTT v5 packet with the given fixed header
+func NewPacket(fixedHeader byte) *ControlPacket {
 	return &ControlPacket{
+		header:          bits(fixedHeader),
 		protocolName:    "MQTT",
 		protocolVersion: 5,
 	}
+}
 
+// NewControlPacket returns an undefined packet ready for unmarshaling
+func NewControlPacket() *ControlPacket {
+	return &ControlPacket{}
 }
 
 type ControlPacket struct {
@@ -82,15 +89,15 @@ func (p *ControlPacket) RemainingLen() int {
 	return 0
 }
 
-// todo MarshalBinary
-// todo UnmarshalBinary
-
-func (p *ControlPacket) WithHeader(v byte) *ControlPacket {
-	p.SetHeader(v)
-	return p
+func (p *ControlPacket) Buffers() (net.Buffers, error) {
+	return nil, fmt.Errorf(": todo")
 }
-func (p *ControlPacket) Header() byte     { return byte(p.header) }
-func (p *ControlPacket) SetHeader(v byte) { p.header = bits(v) }
+
+func (p *ControlPacket) UnmarshalBinary(data []byte) error {
+	return fmt.Errorf(": todo")
+}
+
+func (p *ControlPacket) Header() byte { return byte(p.header) }
 
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
