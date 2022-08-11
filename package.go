@@ -36,34 +36,37 @@ func NewPacket(fixed byte) *ControlPacket {
 }
 
 type ControlPacket struct {
-	fixed byte
+	// fields are ordered to minimize memory allocation
+	fixed               byte // 1
+	flags               byte // 1
+	requestResponseInfo bool // 1
+	requestProblemInfo  bool // 1
 
-	// variable header
-	protocolName    string
-	protocolVersion uint8
-	flags           byte
-	keepAlive       uint16
+	payloadFormatIndicator bool   // 1
+	protocolVersion        uint8  // 1
+	keepAlive              uint16 // 2
 
-	// properties
+	receiveMax    uint16 // 2
+	topicAliasMax uint16 // 2
+
 	sessionExpiryInterval uint32
-	receiveMax            uint16
 	maxPacketSize         uint32
-	topicAliasMax         uint16
-	requestResponseInfo   bool
-	requestProblemInfo    bool
-	userProperties        [][2]string
+	willDelayInterval     uint32
+	messageExpireInterval uint32
 	authMethod            string
+	contentType           string
+	protocolName          string
+	responseTopic         string
+	properties            []property
+	userProperties        []property
+	correlationData       []byte
 	authData              []byte
-	properties            [][2]string
+	payload               []byte
+}
 
-	willDelayInterval      uint32
-	payloadFormatIndicator bool
-	messageExpireInterval  uint32
-	contentType            string
-	responseTopic          string
-	correlationData        []byte
-
-	payload []byte
+type property struct {
+	key string
+	val string
 }
 
 func (p *ControlPacket) String() string {

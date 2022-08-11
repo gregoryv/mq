@@ -20,7 +20,7 @@ func TestControlPacket_Buffers(t *testing.T) {
 	var buf bytes.Buffer
 	bin.WriteTo(&buf)
 	t.Log(hex.Dump(buf.Bytes()))
-	t.Error("todo")
+	//t.Error("todo")
 }
 
 func TestControlPacket_String(t *testing.T) {
@@ -42,6 +42,19 @@ func TestControlPacket_String(t *testing.T) {
 	if got := p.String(); !strings.HasPrefix(got, "UNDEFINED ---") {
 		t.Error(got)
 	}
+}
+
+func BenchmarkControlPacket_Buffers(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		p := NewPacket(CONNECT)
+		_, _ = p.Buffers()
+	}
+}
+
+func TestSizeof(t *testing.T) {
+	var p ControlPacket
+	_ = p
+	//t.Error("ControlPacket size: ", unsafe.Sizeof(p))
 }
 
 // ---------------------------------------------------------------------
