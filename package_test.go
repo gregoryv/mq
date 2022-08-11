@@ -24,23 +24,17 @@ func TestControlPacket_Buffers(t *testing.T) {
 }
 
 func TestControlPacket_String(t *testing.T) {
-	p := NewPacket(PUBLISH | DUP | QoS1)
-	if got := p.String(); !strings.HasPrefix(got, "PUBLISH d1-") {
-		t.Error(got)
+	cases := map[string]*ControlPacket{
+		"PUBLISH d1r":    NewPacket(PUBLISH | DUP | QoS1 | RETAIN),
+		"PUBLISH -2-":    NewPacket(PUBLISH | QoS2),
+		"PUBLISH -!-":    NewPacket(PUBLISH | QoS1 | QoS2),
+		"SUBSCRIBE":      NewPacket(SUBSCRIBE | QoS2 | RETAIN), // reset flags
+		"UNDEFINED 1--1": &ControlPacket{fixed: 0b0000_1001},
 	}
-
-	p = NewPacket(PUBLISH | QoS1 | QoS2)
-	if got := p.String(); !strings.Contains(got, "-!-") {
-		t.Error(got)
-	}
-
-	p = NewPacket(SUBSCRIBE | QoS2 | RETAIN)
-	if got := p.String(); got != "SUBSCRIBE" {
-		t.Error(got)
-	}
-	p = &ControlPacket{fixed: 0b0000_1001}
-	if got := p.String(); got != "UNDEFINED 1--1" {
-		t.Errorf("%q", got)
+	for exp, p := range cases {
+		if got := p.String(); !strings.HasPrefix(got, exp) {
+			t.Error(got)
+		}
 	}
 }
 
