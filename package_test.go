@@ -1,13 +1,27 @@
 package mqtt
 
 import (
+	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
+
+func TestControlPacket_Buffers(t *testing.T) {
+	p := NewPacket(CONNECT)
+	bin, err := p.Buffers()
+	if err != nil {
+		t.Error(err)
+	}
+	var buf bytes.Buffer
+	bin.WriteTo(&buf)
+	t.Log(hex.Dump(buf.Bytes()))
+	t.Error("todo")
+}
 
 func TestControlPacket_String(t *testing.T) {
 	p := NewPacket(PUBLISH | DUP | QoS1)

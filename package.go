@@ -16,22 +16,32 @@ import (
 	"time"
 )
 
-// NewPacket returns a MQTT v5 packet with the given fixed header
+// NewPacket returns a MQTT v5 packet with the given fixed header.
+// Any reserved flags are reset according to the specification.
 func NewPacket(fixedHeader byte) *ControlPacket {
-	return &ControlPacket{
-		header:          bits(fixedHeader),
+	p := &ControlPacket{
+		header:          fixedHeader,
 		protocolName:    "MQTT",
 		protocolVersion: 5,
 	}
+	// reset flags if needed
+	switch {
+	case p.Is(PUBREL), p.Is(SUBSCRIBE), p.Is(UNSUBSCRIBE):
+		p.header = fixedHeader&0b1111_0000 | 0b0000_0010 // special reserved
+	case p.Is(PUBLISH):
+	default:
+		p.header = fixedHeader & 0b1111_0000 // special reserved
+	}
+	return p
 }
 
 type ControlPacket struct {
-	header bits
+	header byte
 
 	// variable header
 	protocolName    string
 	protocolVersion uint8
-	flags           bits
+	flags           byte
 	keepAlive       uint16
 
 	// properties
@@ -58,15 +68,67 @@ type ControlPacket struct {
 
 func (p *ControlPacket) String() string {
 	var sb strings.Builder
-	sb.WriteString(typeNames[p.header.Value(0b1111_0000)])
+	sb.WriteString(typeNames[p.header&0b1111_0000])
 	sb.WriteString(" ")
-
-	sb.Write(p.headerFlags(p.header))
-	sb.WriteString(" ")
-
-	fmt.Fprint(&sb, p.RemainingLen())
+	sb.Write(p.headerFlags(bits(p.header)))
 	return sb.String()
 }
+
+func (p *ControlPacket) Buffers() (net.Buffers, error) {
+	buf := make(net.Buffers, 0)
+
+	varhead, err := p.variableHeader()
+	if err != nil {
+		return nil, err
+	}
+
+	// fixed header
+	buf = append(buf, []byte{byte(p.header)})
+	remlen := VarByteInt(sumlen(varhead) + len(p.payload))
+	data, err := remlen.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	buf = append(buf, data)
+	buf = append(buf, varhead...)
+	buf = append(buf, p.payload)
+
+	return buf, nil
+}
+
+func sumlen(b net.Buffers) int {
+	var l int
+	for _, v := range b {
+		l += len(v)
+	}
+	return l
+}
+
+func (p *ControlPacket) variableHeader() (net.Buffers, error) {
+	buf := make(net.Buffers, 0)
+
+	if p.Is(CONNECT) {
+		namelen, _ := TwoByteInt(len(p.protocolName)).MarshalBinary()
+		buf = append(buf, namelen)
+		buf = append(buf, []byte(p.protocolName))
+		buf = append(buf, []byte{p.protocolVersion})
+	}
+	// todo continue
+	return buf, nil
+}
+
+func (p *ControlPacket) Is(v byte) bool {
+	return p.header&0b1111_0000 == v
+}
+
+// UnmarshalBinary unmarshals a control packets remaining data. The
+// header must be set before calling this func. len(data) is the fixed
+// headers remainig length.
+func (p *ControlPacket) UnmarshalBinary(data []byte) error {
+	return fmt.Errorf(": todo")
+}
+
+func (p *ControlPacket) Header() byte { return byte(p.header) }
 
 func (p *ControlPacket) headerFlags(h bits) []byte {
 	flags := []byte("---")
@@ -86,25 +148,6 @@ func (p *ControlPacket) headerFlags(h bits) []byte {
 	}
 	return flags
 }
-
-// todo calculate without converting to wire format
-func (p *ControlPacket) RemainingLen() int {
-	return 0
-}
-
-func (p *ControlPacket) Buffers() (net.Buffers, error) {
-	buf := make(net.Buffers, 0)
-	return buf, fmt.Errorf(": todo")
-}
-
-// UnmarshalBinary unmarshals a control packets remaining data. The
-// header must be set before calling this func. len(data) is the fixed
-// headers remainig length.
-func (p *ControlPacket) UnmarshalBinary(data []byte) error {
-	return fmt.Errorf(": todo")
-}
-
-func (p *ControlPacket) Header() byte { return byte(p.header) }
 
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
