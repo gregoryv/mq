@@ -24,12 +24,12 @@ func NewControlPacket() *ControlPacket {
 }
 
 type ControlPacket struct {
-	fixedHeader byte
+	header bits
 
 	// variable header
 	protocolName    string
 	protocolVersion uint8
-	flags           byte
+	flags           bits
 	keepAlive       uint16
 
 	// properties
@@ -48,28 +48,28 @@ type ControlPacket struct {
 
 func (p *ControlPacket) String() string {
 	var sb strings.Builder
-	f := Bits(p.fixedHeader)
-	sb.WriteString(typeNames[p.fixedHeader&0b1111_0000])
+	sb.WriteString(typeNames[p.header.Value(0b1111_0000)])
 	sb.WriteString(" ")
-	flags := []byte("----")
 
-	if f.Has(DUP) {
-		flags[0] = 'd'
+	// header flags
+	hflags := []byte("---")
+	if p.header.Has(DUP) {
+		hflags[0] = 'd'
 	}
 	switch {
-	case f.Has(QoS1 | QoS2):
-		flags[1] = '!' // malformed
-		flags[2] = '!' // malformed
-	case f.Has(QoS1):
-		flags[2] = '1'
-	case f.Has(QoS2):
-		flags[1] = '2'
+	case p.header.Has(QoS1 | QoS2):
+		hflags[1] = '!' // malformed
+	case p.header.Has(QoS1):
+		hflags[1] = '1'
+	case p.header.Has(QoS2):
+		hflags[1] = '2'
 	}
-	if f.Has(RETAIN) {
-		flags[3] = 'r'
+	if p.header.Has(RETAIN) {
+		hflags[2] = 'r'
 	}
-	sb.Write(flags)
+	sb.Write(hflags)
 	sb.WriteString(" ")
+
 	fmt.Fprint(&sb, p.RemainingLen())
 	return sb.String()
 }
@@ -81,6 +81,9 @@ func (p *ControlPacket) RemainingLen() int {
 
 // todo MarshalBinary
 // todo UnmarshalBinary
+
+func (p *ControlPacket) Header() byte     { return byte(p.header) }
+func (p *ControlPacket) SetHeader(v byte) { p.header = bits(v) }
 
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
@@ -131,7 +134,7 @@ func (c ConnectFlags) String() string {
 	return string(flags)
 }
 
-func (c ConnectFlags) Has(f byte) bool { return Bits(c).Has(f) }
+func (c ConnectFlags) Has(f byte) bool { return bits(c).Has(f) }
 
 type KeepAlive TwoByteInt
 
@@ -246,7 +249,7 @@ func (f *FixedHeader) Value() byte {
 }
 
 func (f *FixedHeader) HasFlag(flag byte) bool {
-	return Bits(f.header).Has(flag)
+	return bits(f.header).Has(flag)
 }
 
 // ---------------------------------------------------------------------
@@ -394,11 +397,10 @@ func (v VarByteInt) Width() int {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
-type Bits byte
+type bits byte
 
-func (v Bits) Has(b byte) bool {
-	return byte(v)&b == b
-}
+func (v bits) Has(b byte) bool   { return byte(v)&b == b }
+func (v bits) Value(b byte) byte { return byte(v) & b }
 
 // ----------------------------------------
 

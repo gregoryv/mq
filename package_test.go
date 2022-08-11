@@ -11,6 +11,8 @@ import (
 
 func TestControlPacket(t *testing.T) {
 	p := NewControlPacket()
+	p.SetHeader(PUBLISH | DUP | QoS1)
+
 	t.Error(p.String())
 }
 
@@ -121,8 +123,8 @@ func TestFixedHeader(t *testing.T) {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-func TestBits(t *testing.T) {
-	v := Bits(0b0001_0000)
+func Testbits(t *testing.T) {
+	v := bits(0b0001_0000)
 	switch {
 	case !v.Has(0b0001_0000):
 		t.Error("!Has")
