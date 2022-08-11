@@ -25,11 +25,6 @@ func NewPacket(fixedHeader byte) *ControlPacket {
 	}
 }
 
-// NewControlPacket returns an undefined packet ready for unmarshaling
-func NewControlPacket() *ControlPacket {
-	return &ControlPacket{}
-}
-
 type ControlPacket struct {
 	header bits
 

@@ -28,7 +28,7 @@ func TestControlPacket_String(t *testing.T) {
 		t.Error("invalid header")
 	}
 
-	p = NewControlPacket()
+	p = &ControlPacket{}
 	if got := p.String(); !strings.HasPrefix(got, "UNDEFINED ---") {
 		t.Error(got)
 	}
