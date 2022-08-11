@@ -14,7 +14,7 @@ import (
 
 func TestConnect_Buffers(t *testing.T) {
 	t.Fatal("prove the correctness of CONNECT packet Buffers")
-	p := NewPacket(CONNECT)
+	p := NewConnect()
 	bin, err := p.Buffers()
 	if err != nil {
 		var buf bytes.Buffer
@@ -25,11 +25,7 @@ func TestConnect_Buffers(t *testing.T) {
 
 func TestConnect_String(t *testing.T) {
 	cases := map[string]*Connect{
-		"PUBLISH d1r":    NewPacket(PUBLISH | DUP | QoS1 | RETAIN),
-		"PUBLISH -2-":    NewPacket(PUBLISH | QoS2),
-		"PUBLISH -!-":    NewPacket(PUBLISH | QoS1 | QoS2),
-		"SUBSCRIBE":      NewPacket(SUBSCRIBE | QoS2 | RETAIN), // reset flags
-		"UNDEFINED 1--1": &Connect{fixed: 0b0000_1001},
+		"CONNECT": NewConnect(),
 	}
 	for exp, p := range cases {
 		if got := p.String(); !strings.HasPrefix(got, exp) {
@@ -40,7 +36,7 @@ func TestConnect_String(t *testing.T) {
 
 func BenchmarkControlPacket_Buffers(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		p := NewPacket(CONNECT)
+		p := NewConnect()
 		_, _ = p.Buffers()
 	}
 }
@@ -48,13 +44,13 @@ func BenchmarkControlPacket_Buffers(b *testing.B) {
 func TestSizeof(t *testing.T) {
 	var p Connect
 	_ = p
-	best := uint(216)
+	best := uint(48)
 	got := uint(unsafe.Sizeof(p))
 	switch {
 	case got > best:
 		t.Error("ControlPacket size: ", got)
 	case got < best:
-		t.Error("Size improved, update TestSizeof")
+		t.Errorf("Size %v improved, update TestSizeof", got)
 	}
 }
 

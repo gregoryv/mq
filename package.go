@@ -16,52 +16,23 @@ import (
 	"time"
 )
 
-// NewPacket returns a MQTT v5 packet with the given fixed header.
-// Any reserved flags are reset according to the specification.
-func NewPacket(fixed byte) *Connect {
-	p := &Connect{
-		fixed:           fixed,
+// NewConnect returns an empty MQTT v5 connect packet.
+func NewConnect() *Connect {
+	return &Connect{
+		fixed:           CONNECT,
 		protocolName:    "MQTT",
 		protocolVersion: 5,
 	}
-	// reset flags if needed
-	switch {
-	case p.Is(PUBREL), p.Is(SUBSCRIBE), p.Is(UNSUBSCRIBE):
-		p.fixed = fixed&0b1111_0000 | 0b0000_0010 // special reserved
-	case p.Is(PUBLISH):
-	default:
-		p.fixed = fixed & 0b1111_0000 // special reserved
-	}
-	return p
 }
 
 type Connect struct {
 	// fields are ordered to minimize memory allocation
-	fixed               byte // 1
-	flags               byte // 1
-	requestResponseInfo bool // 1
-	requestProblemInfo  bool // 1
+	fixed           byte  // 1
+	flags           byte  // 1
+	protocolVersion uint8 // 1
+	protocolName    string
 
-	payloadFormatIndicator bool   // 1
-	protocolVersion        uint8  // 1
-	keepAlive              uint16 // 2
-
-	receiveMax    uint16 // 2
-	topicAliasMax uint16 // 2
-
-	sessionExpiryInterval uint32
-	maxPacketSize         uint32
-	willDelayInterval     uint32
-	messageExpireInterval uint32
-	authMethod            string
-	contentType           string
-	protocolName          string
-	responseTopic         string
-	properties            [][2]string
-	userProperties        [][2]string
-	correlationData       []byte
-	authData              []byte
-	payload               []byte
+	payload []byte
 }
 
 func (p *Connect) String() string {
