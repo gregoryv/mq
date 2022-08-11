@@ -38,10 +38,6 @@ func TestControlPacket_String(t *testing.T) {
 	if got := p.String(); !strings.Contains(got, "-2r") {
 		t.Error(got)
 	}
-	if got := p.Header(); got != PUBLISH|QoS2|RETAIN {
-		t.Error("invalid header")
-	}
-
 	p = &ControlPacket{}
 	if got := p.String(); !strings.HasPrefix(got, "UNDEFINED ---") {
 		t.Error(got)

@@ -18,25 +18,25 @@ import (
 
 // NewPacket returns a MQTT v5 packet with the given fixed header.
 // Any reserved flags are reset according to the specification.
-func NewPacket(fixedHeader byte) *ControlPacket {
+func NewPacket(fixed byte) *ControlPacket {
 	p := &ControlPacket{
-		header:          fixedHeader,
+		fixed:           fixed,
 		protocolName:    "MQTT",
 		protocolVersion: 5,
 	}
 	// reset flags if needed
 	switch {
 	case p.Is(PUBREL), p.Is(SUBSCRIBE), p.Is(UNSUBSCRIBE):
-		p.header = fixedHeader&0b1111_0000 | 0b0000_0010 // special reserved
+		p.fixed = fixed&0b1111_0000 | 0b0000_0010 // special reserved
 	case p.Is(PUBLISH):
 	default:
-		p.header = fixedHeader & 0b1111_0000 // special reserved
+		p.fixed = fixed & 0b1111_0000 // special reserved
 	}
 	return p
 }
 
 type ControlPacket struct {
-	header byte
+	fixed byte
 
 	// variable header
 	protocolName    string
@@ -68,9 +68,9 @@ type ControlPacket struct {
 
 func (p *ControlPacket) String() string {
 	var sb strings.Builder
-	sb.WriteString(typeNames[p.header&0b1111_0000])
+	sb.WriteString(typeNames[p.fixed&0b1111_0000])
 	sb.WriteString(" ")
-	sb.Write(p.headerFlags(bits(p.header)))
+	sb.Write(p.headerFlags(bits(p.fixed)))
 	return sb.String()
 }
 
@@ -83,7 +83,7 @@ func (p *ControlPacket) Buffers() (net.Buffers, error) {
 	}
 
 	// fixed header
-	buf = append(buf, []byte{byte(p.header)})
+	buf = append(buf, []byte{byte(p.fixed)})
 	remlen := VarByteInt(sumlen(varhead) + len(p.payload))
 	data, err := remlen.MarshalBinary()
 	if err != nil {
@@ -118,7 +118,7 @@ func (p *ControlPacket) variableHeader() (net.Buffers, error) {
 }
 
 func (p *ControlPacket) Is(v byte) bool {
-	return p.header&0b1111_0000 == v
+	return p.fixed&0b1111_0000 == v
 }
 
 // UnmarshalBinary unmarshals a control packets remaining data. The
@@ -127,8 +127,6 @@ func (p *ControlPacket) Is(v byte) bool {
 func (p *ControlPacket) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")
 }
-
-func (p *ControlPacket) Header() byte { return byte(p.header) }
 
 func (p *ControlPacket) headerFlags(h bits) []byte {
 	flags := []byte("---")
