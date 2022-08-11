@@ -72,8 +72,10 @@ type property struct {
 func (p *ControlPacket) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[p.fixed&0b1111_0000])
-	sb.WriteString(" ")
-	sb.Write(p.headerFlags(bits(p.fixed)))
+	if f := p.headerFlags(bits(p.fixed)); len(f) > 0 {
+		sb.WriteString(" ")
+		sb.Write(f)
+	}
 	return sb.String()
 }
 
@@ -132,22 +134,32 @@ func (p *ControlPacket) UnmarshalBinary(data []byte) error {
 }
 
 func (p *ControlPacket) headerFlags(h bits) []byte {
-	flags := []byte("---")
-	if h.Has(DUP) {
-		flags[0] = 'd'
+	switch byte(h) & 0b1111_0000 {
+
+	case UNDEFINED:
+		return []byte(strings.ReplaceAll(fmt.Sprintf("%04b", h), "0", "-"))
+
+	case PUBLISH:
+		flags := []byte("---")
+		if h.Has(DUP) {
+			flags[0] = 'd'
+		}
+		switch {
+		case h.Has(QoS1 | QoS2):
+			flags[1] = '!' // malformed
+		case h.Has(QoS1):
+			flags[1] = '1'
+		case h.Has(QoS2):
+			flags[1] = '2'
+		}
+		if h.Has(RETAIN) {
+			flags[2] = 'r'
+		}
+		return flags
+
+	default:
+		return nil
 	}
-	switch {
-	case h.Has(QoS1 | QoS2):
-		flags[1] = '!' // malformed
-	case h.Has(QoS1):
-		flags[1] = '1'
-	case h.Has(QoS2):
-		flags[1] = '2'
-	}
-	if h.Has(RETAIN) {
-		flags[2] = 'r'
-	}
-	return flags
 }
 
 // ---------------------------------------------------------------------

@@ -34,13 +34,13 @@ func TestControlPacket_String(t *testing.T) {
 		t.Error(got)
 	}
 
-	p = NewPacket(PUBLISH | QoS2 | RETAIN)
-	if got := p.String(); !strings.Contains(got, "-2r") {
+	p = NewPacket(SUBSCRIBE | QoS2 | RETAIN)
+	if got := p.String(); got != "SUBSCRIBE" {
 		t.Error(got)
 	}
-	p = &ControlPacket{}
-	if got := p.String(); !strings.HasPrefix(got, "UNDEFINED ---") {
-		t.Error(got)
+	p = &ControlPacket{fixed: 0b0000_1001}
+	if got := p.String(); got != "UNDEFINED 1--1" {
+		t.Errorf("%q", got)
 	}
 }
 
