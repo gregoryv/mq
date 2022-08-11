@@ -72,7 +72,7 @@ type property struct {
 func (p *ControlPacket) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[p.fixed&0b1111_0000])
-	if f := p.headerFlags(bits(p.fixed)); len(f) > 0 {
+	if f := p.fixedFlags(bits(p.fixed)); len(f) > 0 {
 		sb.WriteString(" ")
 		sb.Write(f)
 	}
@@ -133,7 +133,7 @@ func (p *ControlPacket) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")
 }
 
-func (p *ControlPacket) headerFlags(h bits) []byte {
+func (p *ControlPacket) fixedFlags(h bits) []byte {
 	switch byte(h) & 0b1111_0000 {
 
 	case UNDEFINED:
