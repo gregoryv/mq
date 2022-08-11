@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 func TestControlPacket_Buffers(t *testing.T) {
@@ -48,7 +49,10 @@ func BenchmarkControlPacket_Buffers(b *testing.B) {
 func TestSizeof(t *testing.T) {
 	var p ControlPacket
 	_ = p
-	//t.Error("ControlPacket size: ", unsafe.Sizeof(p))
+	best := uint(216)
+	if got := uint(unsafe.Sizeof(p)); got > best {
+		t.Error("ControlPacket size: ", got)
+	}
 }
 
 // ---------------------------------------------------------------------
