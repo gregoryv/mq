@@ -12,7 +12,8 @@ import (
 	"unsafe"
 )
 
-func TestControlPacket_Buffers(t *testing.T) {
+func TestConnect_Buffers(t *testing.T) {
+	t.Fatal("prove the correctness of CONNECT packet Buffers")
 	p := NewPacket(CONNECT)
 	bin, err := p.Buffers()
 	if err != nil {
@@ -22,13 +23,13 @@ func TestControlPacket_Buffers(t *testing.T) {
 	}
 }
 
-func TestControlPacket_String(t *testing.T) {
-	cases := map[string]*ControlPacket{
+func TestConnect_String(t *testing.T) {
+	cases := map[string]*Connect{
 		"PUBLISH d1r":    NewPacket(PUBLISH | DUP | QoS1 | RETAIN),
 		"PUBLISH -2-":    NewPacket(PUBLISH | QoS2),
 		"PUBLISH -!-":    NewPacket(PUBLISH | QoS1 | QoS2),
 		"SUBSCRIBE":      NewPacket(SUBSCRIBE | QoS2 | RETAIN), // reset flags
-		"UNDEFINED 1--1": &ControlPacket{fixed: 0b0000_1001},
+		"UNDEFINED 1--1": &Connect{fixed: 0b0000_1001},
 	}
 	for exp, p := range cases {
 		if got := p.String(); !strings.HasPrefix(got, exp) {
@@ -45,7 +46,7 @@ func BenchmarkControlPacket_Buffers(b *testing.B) {
 }
 
 func TestSizeof(t *testing.T) {
-	var p ControlPacket
+	var p Connect
 	_ = p
 	best := uint(216)
 	got := uint(unsafe.Sizeof(p))

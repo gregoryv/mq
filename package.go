@@ -18,8 +18,8 @@ import (
 
 // NewPacket returns a MQTT v5 packet with the given fixed header.
 // Any reserved flags are reset according to the specification.
-func NewPacket(fixed byte) *ControlPacket {
-	p := &ControlPacket{
+func NewPacket(fixed byte) *Connect {
+	p := &Connect{
 		fixed:           fixed,
 		protocolName:    "MQTT",
 		protocolVersion: 5,
@@ -35,7 +35,7 @@ func NewPacket(fixed byte) *ControlPacket {
 	return p
 }
 
-type ControlPacket struct {
+type Connect struct {
 	// fields are ordered to minimize memory allocation
 	fixed               byte // 1
 	flags               byte // 1
@@ -64,7 +64,7 @@ type ControlPacket struct {
 	payload               []byte
 }
 
-func (p *ControlPacket) String() string {
+func (p *Connect) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[p.fixed&0b1111_0000])
 	if f := p.fixedFlags(bits(p.fixed)); len(f) > 0 {
@@ -74,17 +74,19 @@ func (p *ControlPacket) String() string {
 	return sb.String()
 }
 
-func (p *ControlPacket) Buffers() (net.Buffers, error) {
+func (p *Connect) Buffers() (net.Buffers, error) {
 	buf := make(net.Buffers, 0)
 
-	varhead, _ := p.variableHeader() // todo handle error
+	varhead, err := p.variableHeader() // todo handle error
+	if err != nil {
+		return nil, err
+	}
 
 	// fixed header
 	buf = append(buf, []byte{byte(p.fixed)})
 	remlen := VarByteInt(sumlen(varhead) + len(p.payload))
-	data, _ := remlen.MarshalBinary() // todo handle error
-
-	buf = append(buf, data)
+	rem, _ := remlen.MarshalBinary() // todo handle error
+	buf = append(buf, rem)
 	buf = append(buf, varhead...)
 	buf = append(buf, p.payload)
 
@@ -99,20 +101,21 @@ func sumlen(b net.Buffers) int {
 	return l
 }
 
-func (p *ControlPacket) variableHeader() (net.Buffers, error) {
+func (p *Connect) variableHeader() (net.Buffers, error) {
 	buf := make(net.Buffers, 0)
 
 	if p.Is(CONNECT) {
 		namelen, _ := TwoByteInt(len(p.protocolName)).MarshalBinary()
 		buf = append(buf, namelen)
 		buf = append(buf, []byte(p.protocolName))
-		buf = append(buf, []byte{p.protocolVersion})
+		buf = append(buf, []byte{p.protocolVersion, p.flags})
+
+		return nil, fmt.Errorf(": todo")
 	}
-	// todo continue
 	return buf, nil
 }
 
-func (p *ControlPacket) Is(v byte) bool {
+func (p *Connect) Is(v byte) bool {
 	return p.fixed&0b1111_0000 == v
 }
 
@@ -123,7 +126,7 @@ func (p *ControlPacket) Is(v byte) bool {
 	return fmt.Errorf(": todo")
 }*/
 
-func (p *ControlPacket) fixedFlags(h bits) []byte {
+func (p *Connect) fixedFlags(h bits) []byte {
 	switch byte(h) & 0b1111_0000 {
 
 	case UNDEFINED:
