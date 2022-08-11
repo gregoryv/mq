@@ -51,27 +51,30 @@ func (p *ControlPacket) String() string {
 	sb.WriteString(typeNames[p.header.Value(0b1111_0000)])
 	sb.WriteString(" ")
 
-	// header flags
-	hflags := []byte("---")
-	if p.header.Has(DUP) {
-		hflags[0] = 'd'
-	}
-	switch {
-	case p.header.Has(QoS1 | QoS2):
-		hflags[1] = '!' // malformed
-	case p.header.Has(QoS1):
-		hflags[1] = '1'
-	case p.header.Has(QoS2):
-		hflags[1] = '2'
-	}
-	if p.header.Has(RETAIN) {
-		hflags[2] = 'r'
-	}
-	sb.Write(hflags)
+	sb.Write(p.headerFlags(p.header))
 	sb.WriteString(" ")
 
 	fmt.Fprint(&sb, p.RemainingLen())
 	return sb.String()
+}
+
+func (p *ControlPacket) headerFlags(h bits) []byte {
+	flags := []byte("---")
+	if h.Has(DUP) {
+		flags[0] = 'd'
+	}
+	switch {
+	case h.Has(QoS1 | QoS2):
+		flags[1] = '!' // malformed
+	case h.Has(QoS1):
+		flags[1] = '1'
+	case h.Has(QoS2):
+		flags[1] = '2'
+	}
+	if h.Has(RETAIN) {
+		flags[2] = 'r'
+	}
+	return flags
 }
 
 // todo calculate without converting to wire format
