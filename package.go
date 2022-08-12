@@ -127,7 +127,7 @@ func (v u8pair) String() string {
 type u8str string
 
 func (v u8str) MarshalBinary() ([]byte, error) {
-	data, err := BinaryData([]byte(v)).MarshalBinary()
+	data, err := bindat([]byte(v)).MarshalBinary()
 	if err != nil {
 		return data, marshalErr(v, "", err.(*Malformed))
 	}
@@ -135,7 +135,7 @@ func (v u8str) MarshalBinary() ([]byte, error) {
 }
 
 func (v *u8str) UnmarshalBinary(data []byte) error {
-	var b BinaryData
+	var b bindat
 	if err := b.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "", err.(*Malformed))
 	}
@@ -146,9 +146,9 @@ func (v *u8str) UnmarshalBinary(data []byte) error {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
-type BinaryData []byte
+type bindat []byte
 
-func (v BinaryData) MarshalBinary() ([]byte, error) {
+func (v bindat) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
 		return nil, marshalErr(v, "", "size exceeded")
 	}
@@ -159,7 +159,7 @@ func (v BinaryData) MarshalBinary() ([]byte, error) {
 	return data, nil
 }
 
-func (v *BinaryData) UnmarshalBinary(data []byte) error {
+func (v *bindat) UnmarshalBinary(data []byte) error {
 	var l b2int
 	_ = l.UnmarshalBinary(data)
 	if len(data) < int(l)+2 {

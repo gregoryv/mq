@@ -206,19 +206,19 @@ func Testvbint(t *testing.T) {
 
 // ................................................ Data representations
 
-func TestBinaryData(t *testing.T) {
+func Testbindat(t *testing.T) {
 	indata := make([]byte, 64)
 	if _, err := rand.Read(indata); err != nil {
 		t.Fatal(err)
 	}
 
-	b := BinaryData(indata)
+	b := bindat(indata)
 	data, err := b.MarshalBinary()
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
-	var a BinaryData
+	var a bindat
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
@@ -237,7 +237,7 @@ func TestBinaryData(t *testing.T) {
 	if _, err = rand.Read(large); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := BinaryData(large).MarshalBinary(); err == nil {
+	if _, err := bindat(large).MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }
@@ -304,10 +304,10 @@ func ExampleVarByteInt() {
 // ................................................ Data representations
 
 func ExampleBinaryData() {
-	_, err := BinaryData(large).MarshalBinary()
+	_, err := bindat(large).MarshalBinary()
 	fmt.Println(err)
 
-	var bin BinaryData
+	var bin bindat
 	fmt.Println(bin.UnmarshalBinary([]byte{0, 2}))
 	// output:
 	// malformed mqtt.BinaryData marshal: size exceeded
