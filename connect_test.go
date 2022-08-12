@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
-	"time"
 	"unsafe"
 )
 
@@ -74,21 +73,5 @@ func TestConnectFlags(t *testing.T) {
 	}
 	if f.Has(WillFlag) || !f.Has(Reserved) {
 		t.Errorf("Has %08b", f)
-	}
-}
-
-// ---------------------------------------------------------------------
-// 3.1.2.11 CONNECT Properties
-// ---------------------------------------------------------------------
-
-func TestConnectProperties(t *testing.T) {
-	b := SessionExpiryInterval(76)
-
-	if got := b.String(); got != "1m16s" {
-		t.Error("unexpected text", got)
-	}
-
-	if dur := b.Duration(); dur != 76*time.Second {
-		t.Error("unexpected duration", dur)
 	}
 }

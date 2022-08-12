@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"time"
 
 	"github.com/gregoryv/nexus"
 )
@@ -36,18 +35,6 @@ type Connect struct {
 	protocolName    string
 
 	payload *limitedReader
-}
-
-// limitedReader is a reader with a known size. This is needed to
-// calculate the remaining length of a control packet without loading
-// everything into memory.
-type limitedReader struct {
-	src io.ReadSeeker
-
-	// width is the number of bytes the above reader will ever read
-	// before returning EOF. Similar to io.LimitedReader, though it's
-	// not updated after each read.
-	width int
 }
 
 // WriteTo copies the source to the given writer and then resets the
@@ -184,46 +171,14 @@ func (c ConnectFlags) String() string {
 
 func (c ConnectFlags) Has(f byte) bool { return bits(c).Has(f) }
 
-type KeepAlive b2int
+// limitedReader is a reader with a known size. This is needed to
+// calculate the remaining length of a control packet without loading
+// everything into memory.
+type limitedReader struct {
+	src io.ReadSeeker
 
-// ---------------------------------------------------------------------
-// 3.1.2.11 CONNECT Properties
-// ---------------------------------------------------------------------
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901047
-type PropertyLen vbint
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
-type SessionExpiryInterval b4int
-
-func (s SessionExpiryInterval) String() string {
-	return s.Duration().String()
+	// width is the number of bytes the above reader will ever read
+	// before returning EOF. Similar to io.LimitedReader, though it's
+	// not updated after each read.
+	width int
 }
-
-func (s SessionExpiryInterval) Duration() time.Duration {
-	return time.Duration(s) * time.Second
-}
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
-type ReceiveMax b2int
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901050
-type MaxPacketSize b4int
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901051
-type TopicAliasMax b2int
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901052
-type RequestResponseInfo byte
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901053
-type RequestProblemInfo byte
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901054
-type UserProperty spair
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901055
-type AuthMethod u8str
-
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901056
-type AuthData bindat
