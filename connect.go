@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/gregoryv/nexus"
@@ -49,6 +50,14 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	return p.Written, *err
 }
 
+func (p *Connect) String() string {
+	return Fixed(p.fixed).String()
+}
+
+func (p *Connect) check() error {
+	return newMalformed(p, "", fmt.Errorf("todo"))
+}
+
 // width returns the remaining length
 func (p *Connect) width() int {
 	n := 10 // always there
@@ -58,10 +67,6 @@ func (p *Connect) width() int {
 		n += p.payload.width
 	}
 	return n
-}
-
-func (p *Connect) String() string {
-	return Fixed(p.fixed).String()
 }
 
 // ---------------------------------------------------------------------

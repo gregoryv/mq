@@ -9,6 +9,11 @@ import (
 
 func TestConnect(t *testing.T) {
 	p := NewConnect()
+
+	if err := Check(p); err == nil {
+		t.Error("should fail to write an empty connect")
+	}
+
 	data := []byte{1}
 	p.payload = &limitedReader{
 		src:   bytes.NewReader(data),
