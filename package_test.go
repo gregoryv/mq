@@ -174,6 +174,10 @@ func Test_vbint(t *testing.T) {
 		t.Error("UnmarshalBinary should fail", badData)
 	}
 
+	if err := v.UnmarshalBinary(nil); err == nil {
+		t.Error("UnmarshalBinary should fail on empty")
+	}
+
 	var w brokenWriter
 	if _, err := vbint(268_435_455 + 10).WriteTo(&w); err == nil {
 		t.Error("should fail")
