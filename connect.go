@@ -45,7 +45,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	p.Write([]byte{c.fixed})
 	// size of the remaining things, we need to know this before
 
-	proto, e := UTF8String(c.protocolName).MarshalBinary()
+	proto, e := u8str(c.protocolName).MarshalBinary()
 	*err = e
 	p.Write(proto)
 	p.Write([]byte{c.protocolVersion, c.flags})
@@ -225,7 +225,7 @@ type RequestProblemInfo byte
 type UserProperty UTF8StringPair
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901055
-type AuthMethod UTF8String
+type AuthMethod u8str
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901056
 type AuthData BinaryData

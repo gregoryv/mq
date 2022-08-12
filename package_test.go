@@ -132,15 +132,15 @@ func TestFourByteInt(t *testing.T) {
 
 // ................................................ Data representations
 
-func TestUTF8String(t *testing.T) {
-	b := UTF8String("۞ gopher från sverige")
+func Testu8str(t *testing.T) {
+	b := u8str("۞ gopher från sverige")
 
 	data, err := b.MarshalBinary()
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
-	var a UTF8String
+	var a u8str
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
@@ -156,7 +156,7 @@ func TestUTF8String(t *testing.T) {
 	}
 
 	large := strings.Repeat(" ", MaxUint16+1)
-	if _, err := UTF8String(large).MarshalBinary(); err == nil {
+	if _, err := u8str(large).MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }
@@ -275,7 +275,7 @@ func TestUTF8StringPair(t *testing.T) {
 	}
 
 	// large key
-	large := UTF8String(strings.Repeat(" ", MaxUint16+1))
+	large := u8str(strings.Repeat(" ", MaxUint16+1))
 	c := UTF8StringPair{large, ""}
 	if _, err := c.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed key")
@@ -315,13 +315,13 @@ func ExampleBinaryData() {
 }
 
 func ExampleUTF8String() {
-	data, _ := UTF8String("gopher").MarshalBinary()
+	data, _ := u8str("gopher").MarshalBinary()
 	fmt.Println(data)
 
-	_, err := UTF8String(large).MarshalBinary()
+	_, err := u8str(large).MarshalBinary()
 	fmt.Println(err)
 
-	var s UTF8String
+	var s u8str
 	fmt.Println(s.UnmarshalBinary([]byte{0, 2}))
 	// output:
 	// [0 6 103 111 112 104 101 114]
@@ -329,6 +329,6 @@ func ExampleUTF8String() {
 	// malformed mqtt.UTF8String unmarshal: missing data
 }
 
-var large = UTF8String(strings.Repeat(" ", MaxUint16+1))
+var large = u8str(strings.Repeat(" ", MaxUint16+1))
 
 // ................................................ Data representations

@@ -89,11 +89,11 @@ func (f *FixedHeader) HasFlag(flag byte) bool {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-type ProtocolName UTF8String
+type ProtocolName u8str
 type ProtocolVersion byte
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
-type UTF8StringPair [2]UTF8String
+type UTF8StringPair [2]u8str
 
 func (v UTF8StringPair) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
@@ -124,9 +124,9 @@ func (v UTF8StringPair) String() string {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
-type UTF8String string
+type u8str string
 
-func (v UTF8String) MarshalBinary() ([]byte, error) {
+func (v u8str) MarshalBinary() ([]byte, error) {
 	data, err := BinaryData([]byte(v)).MarshalBinary()
 	if err != nil {
 		return data, marshalErr(v, "", err.(*Malformed))
@@ -134,12 +134,12 @@ func (v UTF8String) MarshalBinary() ([]byte, error) {
 	return data, nil
 }
 
-func (v *UTF8String) UnmarshalBinary(data []byte) error {
+func (v *u8str) UnmarshalBinary(data []byte) error {
 	var b BinaryData
 	if err := b.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "", err.(*Malformed))
 	}
-	*v = UTF8String(b)
+	*v = u8str(b)
 	return nil
 }
 
