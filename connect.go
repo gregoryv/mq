@@ -42,14 +42,24 @@ type Connect struct {
 // calculate the remaining length of a control packet without loading
 // everything into memory.
 type limitedReader struct {
-	io.Reader
+	src io.ReadSeeker
 
 	// width is the number of bytes the above reader will ever read
-	// before returning EOF
+	// before returning EOF. Similar to io.LimitedReader, though it's
+	// not updated after each read.
 	width int
 }
 
-func (l *limitedReader) Width() int { return l.width }
+// WriteTo copies the source to the given writer and then resets the
+// src.
+func (l *limitedReader) WriteTo(w io.Writer) (int64, error) {
+	if l == nil {
+		return 0, nil
+	}
+	n, err := io.Copy(w, l.src)
+	l.src.Seek(0, io.SeekStart) // reset
+	return n, err
+}
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	p, err := nexus.NewPrinter(w)
@@ -60,15 +70,20 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	u8str(c.protocolName).WriteTo(p)
 	p.Write([]byte{c.protocolVersion, c.flags})
 
-	if c.payload != nil {
-		io.Copy(p, c.payload)
-	}
+	c.payload.WriteTo(p)
+
 	return p.Written, *err
 }
 
-// Width returns the remaining length
+// width returns the remaining length
 func (p *Connect) width() int {
-	return 0 // todo
+	n := 10 // always there
+	n += 0  // todo width of properties
+
+	if p.payload != nil {
+		n += p.payload.width
+	}
+	return n
 }
 
 func (p *Connect) String() string {
