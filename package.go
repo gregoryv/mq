@@ -8,6 +8,7 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 package mqtt
 
 import (
+	"encoding"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -90,11 +91,12 @@ func (f *FixedHeader) HasFlag(flag byte) bool {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-type ProtocolName u8str
-type ProtocolVersion byte
-
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
 type spair [2]u8str
+
+func (v spair) WriteTo(w io.Writer) (int64, error) {
+	return src(v).WriteTo(w)
+}
 
 func (v spair) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
@@ -127,6 +129,10 @@ func (v spair) String() string {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
 type u8str string
 
+func (v u8str) WriteTo(w io.Writer) (int64, error) {
+	return src(v).WriteTo(w)
+}
+
 func (v u8str) MarshalBinary() ([]byte, error) {
 	data, err := bindat([]byte(v)).MarshalBinary()
 	if err != nil {
@@ -148,6 +154,10 @@ func (v *u8str) UnmarshalBinary(data []byte) error {
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
 type bindat []byte
+
+func (v bindat) WriteTo(w io.Writer) (int64, error) {
+	return src(v).WriteTo(w)
+}
 
 func (v bindat) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
@@ -177,11 +187,7 @@ func (v *bindat) UnmarshalBinary(data []byte) error {
 type vbint uint
 
 func (v vbint) WriteTo(w io.Writer) (int64, error) {
-	data, err := v.MarshalBinary()
-	// should never fail according to the MarshalBinary comment
-	_ = err
-	n, err := w.Write(data)
-	return int64(n), err
+	return src(v).WriteTo(w)
 }
 
 // MarshalBinary always returns nil error
@@ -248,6 +254,10 @@ func (v bits) Has(b byte) bool { return byte(v)&b == b }
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
 type b2int uint16
 
+func (v b2int) WriteTo(w io.Writer) (int64, error) {
+	return src(v).WriteTo(w)
+}
+
 func (v b2int) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, uint16(v))
@@ -264,6 +274,10 @@ func (v *b2int) UnmarshalBinary(data []byte) error {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
 type b4int uint32
 
+func (v b4int) WriteTo(w io.Writer) (int64, error) {
+	return src(v).WriteTo(w)
+}
+
 func (v b4int) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, uint32(v))
@@ -273,6 +287,25 @@ func (v b4int) MarshalBinary() ([]byte, error) {
 func (v *b4int) UnmarshalBinary(data []byte) error {
 	*v = b4int(binary.BigEndian.Uint32(data))
 	return nil
+}
+
+// ----------------------------------------
+
+func src(v encoding.BinaryMarshaler) io.WriterTo {
+	return writerToFunc(func(w io.Writer) (int64, error) {
+		data, err := v.MarshalBinary()
+		if err != nil {
+			return 0, err
+		}
+		n, err := w.Write(data)
+		return int64(n), err
+	})
+}
+
+type writerToFunc func(w io.Writer) (int64, error)
+
+func (f writerToFunc) WriteTo(w io.Writer) (int64, error) {
+	return f(w)
 }
 
 // ---------------------------------------------------------------------
@@ -330,9 +363,9 @@ func (e *Malformed) Error() string {
 // ---------------------------------------------------------------------
 
 const (
-	MQTT                      = ProtocolName("MQTT") // 3.1.2.1 Protocol Name
-	Version5  ProtocolVersion = 5
-	MaxUint16                 = 1<<16 - 1
+	MQTT      = "MQTT" // 3.1.2.1 Protocol Name
+	Version5  = 5
+	MaxUint16 = 1<<16 - 1
 )
 
 // 2.1.2 MQTT Control Packet type

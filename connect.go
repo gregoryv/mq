@@ -58,10 +58,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	// variable header
 	p.Write([]byte{c.fixed})
 	vbint(c.width()).WriteTo(p)
-
-	proto, e := u8str(c.protocolName).MarshalBinary()
-	*err = e
-	p.Write(proto)
+	u8str(c.protocolName).WriteTo(p)
 	p.Write([]byte{c.protocolVersion, c.flags})
 
 	if c.payload != nil {

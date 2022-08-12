@@ -90,10 +90,12 @@ func Test_bits(t *testing.T) {
 func Test_b2int(t *testing.T) {
 	b := b2int(76)
 
-	data, err := b.MarshalBinary()
+	var buf bytes.Buffer
+	_, err := b.WriteTo(&buf)
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
+	data := buf.Bytes()
 	if exp := []byte{0, 76}; !reflect.DeepEqual(data, exp) {
 		t.Error("unexpected data ", data)
 	}
@@ -112,10 +114,12 @@ func Test_b2int(t *testing.T) {
 func Test_b4int(t *testing.T) {
 	b := b4int(76)
 
-	data, err := b.MarshalBinary()
+	var buf bytes.Buffer
+	_, err := b.WriteTo(&buf)
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
+	data := buf.Bytes()
 	if exp := []byte{0, 0, 0, 76}; !reflect.DeepEqual(data, exp) {
 		t.Error("unexpected data ", data)
 	}
@@ -136,11 +140,13 @@ func Test_b4int(t *testing.T) {
 func Test_u8str(t *testing.T) {
 	b := u8str("۞ gopher från sverige")
 
-	data, err := b.MarshalBinary()
+	var buf bytes.Buffer
+	_, err := b.WriteTo(&buf)
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
+	data := buf.Bytes()
 	var a u8str
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
@@ -224,11 +230,13 @@ func Test_bindat(t *testing.T) {
 	}
 
 	b := bindat(indata)
-	data, err := b.MarshalBinary()
+	var buf bytes.Buffer
+	_, err := b.WriteTo(&buf)
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
+	data := buf.Bytes()
 	var a bindat
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
@@ -258,11 +266,12 @@ func Test_bindat(t *testing.T) {
 func Test_spair(t *testing.T) {
 	b := spair{"key", "value"}
 
-	data, err := b.MarshalBinary()
+	var buf bytes.Buffer
+	_, err := b.WriteTo(&buf)
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
-
+	data := buf.Bytes()
 	var a spair
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
