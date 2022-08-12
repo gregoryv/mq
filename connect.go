@@ -3,10 +3,21 @@ package mqtt
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/gregoryv/nexus"
 )
+
+// If we want to be able to handle large packets each must implement
+// io.ReaderFrom This allows a client decide if it should read in all
+// the data in one slice and wrap it in a reader or not.
+
+// The other direction is also important to be able to write out large
+// packets without loading everything into memory each packet must
+// implement io.WriterTo.
 
 // NewConnect returns an empty MQTT v5 connect packet.
 func NewConnect() *Connect {
@@ -27,6 +38,30 @@ type Connect struct {
 	payload []byte
 }
 
+func (c *Connect) WriteTo(w io.Writer) (int64, error) {
+	p, err := nexus.NewPrinter(w)
+
+	// variable header
+	p.Write([]byte{c.fixed})
+	// size of the remaining things, we need to know this before
+
+	proto, e := UTF8String(c.protocolName).MarshalBinary()
+	*err = e
+	p.Write(proto)
+	p.Write([]byte{c.protocolVersion, c.flags})
+
+	varhead, e := c.variableHeader()
+	*err = e
+
+	remlen := sumlen(varhead) + len(c.payload)
+	rem, e := VarByteInt(remlen).MarshalBinary()
+	*err = e
+	p.Write(rem)
+	varhead.WriteTo(p)
+	p.Write(c.payload)
+	return p.Written, *err
+}
+
 func (p *Connect) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[p.fixed&0b1111_0000])
@@ -35,25 +70,6 @@ func (p *Connect) String() string {
 		sb.Write(f)
 	}
 	return sb.String()
-}
-
-func (p *Connect) Buffers() (net.Buffers, error) {
-	buf := make(net.Buffers, 0)
-
-	varhead, err := p.variableHeader() // todo handle error
-	if err != nil {
-		return nil, err
-	}
-
-	// fixed header
-	buf = append(buf, []byte{byte(p.fixed)})
-	remlen := VarByteInt(sumlen(varhead) + len(p.payload))
-	rem, _ := remlen.MarshalBinary() // todo handle error
-	buf = append(buf, rem)
-	buf = append(buf, varhead...)
-	buf = append(buf, p.payload)
-
-	return buf, nil
 }
 
 func sumlen(b net.Buffers) int {

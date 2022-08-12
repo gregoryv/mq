@@ -2,7 +2,7 @@ package mqtt
 
 import (
 	"bytes"
-	"encoding/hex"
+	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -10,13 +10,15 @@ import (
 )
 
 func TestConnect_Buffers(t *testing.T) {
-	t.Fatal("prove the correctness of CONNECT packet Buffers")
 	p := NewConnect()
-	bin, err := p.Buffers()
+	var buf bytes.Buffer
+	n, err := p.WriteTo(&buf)
 	if err != nil {
-		var buf bytes.Buffer
-		bin.WriteTo(&buf)
-		t.Error(hex.Dump(buf.Bytes()), "\n", err)
+		t.Fatal(err)
+	}
+	if data, exp := buf.Bytes(), int64(10); n != exp {
+		t.Log(data)
+		t.Errorf("len(data) = %v, expected %v", n, exp)
 	}
 }
 
@@ -34,7 +36,7 @@ func TestConnect_String(t *testing.T) {
 func BenchmarkControlPacket_Buffers(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		p := NewConnect()
-		_, _ = p.Buffers()
+		_, _ = p.WriteTo(ioutil.Discard)
 	}
 }
 
