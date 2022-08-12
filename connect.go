@@ -2,9 +2,7 @@ package mqtt
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"strings"
 
 	"github.com/gregoryv/nexus"
 )
@@ -37,17 +35,6 @@ type Connect struct {
 	payload *limitedReader
 }
 
-// WriteTo copies the source to the given writer and then resets the
-// src.
-func (l *limitedReader) WriteTo(w io.Writer) (int64, error) {
-	if l == nil {
-		return 0, nil
-	}
-	n, err := io.Copy(w, l.src)
-	l.src.Seek(0, io.SeekStart) // reset
-	return n, err
-}
-
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	p, err := nexus.NewPrinter(w)
 
@@ -74,50 +61,7 @@ func (p *Connect) width() int {
 }
 
 func (p *Connect) String() string {
-	var sb strings.Builder
-	sb.WriteString(typeNames[p.fixed&0b1111_0000])
-	if f := p.fixedFlags(bits(p.fixed)); len(f) > 0 {
-		sb.WriteString(" ")
-		sb.Write(f)
-	}
-	return sb.String()
-}
-
-// UnmarshalBinary unmarshals a control packets remaining data. The
-// header must be set before calling this func. len(data) is the fixed
-// headers remainig length.
-/*func (p *ControlPacket) UnmarshalBinary(data []byte) error {
-	return fmt.Errorf(": todo")
-}*/
-
-func (p *Connect) fixedFlags(h bits) []byte {
-	switch byte(h) & 0b1111_0000 {
-
-	case UNDEFINED:
-		str := fmt.Sprintf("%04b", h)
-		return []byte(strings.ReplaceAll(str, "0", "-"))
-
-	case PUBLISH:
-		flags := []byte("---")
-		if h.Has(DUP) {
-			flags[0] = 'd'
-		}
-		switch {
-		case h.Has(QoS1 | QoS2):
-			flags[1] = '!' // malformed
-		case h.Has(QoS1):
-			flags[1] = '1'
-		case h.Has(QoS2):
-			flags[1] = '2'
-		}
-		if h.Has(RETAIN) {
-			flags[2] = 'r'
-		}
-		return flags
-
-	default:
-		return nil
-	}
+	return Fixed(p.fixed).String()
 }
 
 // ---------------------------------------------------------------------

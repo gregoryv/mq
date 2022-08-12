@@ -253,7 +253,20 @@ func (v *b4int) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// ----------------------------------------
+// ---------------------------------------------------------------------
+// Readers and writers
+// ---------------------------------------------------------------------
+
+// WriteTo copies the source to the given writer and then resets the
+// src.
+func (l *limitedReader) WriteTo(w io.Writer) (int64, error) {
+	if l == nil {
+		return 0, nil
+	}
+	n, err := io.Copy(w, l.src)
+	l.src.Seek(0, io.SeekStart) // reset
+	return n, err
+}
 
 func src(v encoding.BinaryMarshaler) io.WriterTo {
 	return writerToFunc(func(w io.Writer) (int64, error) {
