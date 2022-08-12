@@ -291,3 +291,17 @@ func Test_spair(t *testing.T) {
 var large = u8str(strings.Repeat(" ", MaxUint16+1))
 
 // ................................................ Data representations
+
+func ExampleMalformed_Error() {
+	e := Malformed{
+		method: "unmarshal",
+		t:      fmt.Sprintf("%T", Connect{}),
+		reason: "missing data",
+	}
+	fmt.Println(e.Error())
+	e.ref = "remaining length"
+	fmt.Println(e.Error())
+	// output:
+	// malformed mqtt.Connect unmarshal: missing data
+	// malformed mqtt.Connect unmarshal: remaining length missing data
+}
