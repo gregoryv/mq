@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	"reflect"
@@ -179,7 +180,12 @@ func Test_vbint(t *testing.T) {
 		{268_435_455, []byte{0xff, 0xff, 0xff, 0x7f}},
 	}
 	for _, c := range cases {
-		data, _ := c.x.MarshalBinary()
+		var buf bytes.Buffer
+		_, err := c.x.WriteTo(&buf)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data := buf.Bytes()
 		if !reflect.DeepEqual(data, c.exp) {
 			t.Error("got", data, "exp", c.exp)
 		}
@@ -203,6 +209,10 @@ func Test_vbint(t *testing.T) {
 		t.Error("UnmarshalBinary should fail", badData)
 	}
 
+	var w brokenWriter
+	if _, err := vbint(268_435_455 + 10).WriteTo(&w); err == nil {
+		t.Error("should fail")
+	}
 }
 
 // ................................................ Data representations
@@ -305,3 +315,11 @@ func ExampleMalformed_Error() {
 	// malformed mqtt.Connect unmarshal: missing data
 	// malformed mqtt.Connect unmarshal: remaining length missing data
 }
+
+type brokenWriter struct{}
+
+func (w *brokenWriter) Write(data []byte) (int, error) {
+	return 0, broken
+}
+
+var broken = fmt.Errorf("broken")

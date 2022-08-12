@@ -10,6 +10,7 @@ package mqtt
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -174,6 +175,14 @@ func (v *bindat) UnmarshalBinary(data []byte) error {
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 type vbint uint
+
+func (v vbint) WriteTo(w io.Writer) (int64, error) {
+	data, err := v.MarshalBinary()
+	// should never fail according to the MarshalBinary comment
+	_ = err
+	n, err := w.Write(data)
+	return int64(n), err
+}
 
 // MarshalBinary always returns nil error
 func (v vbint) MarshalBinary() ([]byte, error) {

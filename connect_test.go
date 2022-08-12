@@ -43,7 +43,7 @@ func BenchmarkControlPacket_Buffers(b *testing.B) {
 func TestSizeof(t *testing.T) {
 	var p Connect
 	_ = p
-	best := uint(48)
+	best := uint(32)
 	got := uint(unsafe.Sizeof(p))
 	switch {
 	case got > best:

@@ -36,27 +36,28 @@ type Connect struct {
 	protocolVersion uint8 // 1
 	protocolName    string
 
-	payload limitedReader
+	payload *limitedReader
 }
 
-// limitedReader is a reader with a known length
-type limitedReader interface {
+// limitedReader is a reader with a known size. This is needed to
+// calculate the remaining length of a control packet without loading
+// everything into memory.
+type limitedReader struct {
 	io.Reader
 
-	// Len returns the number of bytes the above reader will ever
-	// read before returning EOF
-	Len() int
+	// width is the number of bytes the above reader will ever read
+	// before returning EOF
+	width int
 }
+
+func (l *limitedReader) Width() int { return l.width }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	p, err := nexus.NewPrinter(w)
 
 	// variable header
 	p.Write([]byte{c.fixed})
-	// todo implement vbint.WriteTo
-	remainingLen, e := vbint(c.width()).MarshalBinary()
-	*err = e
-	p.Write(remainingLen)
+	vbint(c.width()).WriteTo(p)
 
 	proto, e := u8str(c.protocolName).MarshalBinary()
 	*err = e
