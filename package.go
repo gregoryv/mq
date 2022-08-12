@@ -93,9 +93,9 @@ type ProtocolName u8str
 type ProtocolVersion byte
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
-type u8pair [2]u8str
+type spair [2]u8str
 
-func (v u8pair) MarshalBinary() ([]byte, error) {
+func (v spair) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
 	if err != nil {
 		return nil, marshalErr(v, "key", err.(*Malformed))
@@ -107,7 +107,7 @@ func (v u8pair) MarshalBinary() ([]byte, error) {
 	return append(key, val...), nil
 }
 
-func (v *u8pair) UnmarshalBinary(data []byte) error {
+func (v *spair) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
 	}
@@ -117,7 +117,7 @@ func (v *u8pair) UnmarshalBinary(data []byte) error {
 	}
 	return nil
 }
-func (v u8pair) String() string {
+func (v spair) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
 

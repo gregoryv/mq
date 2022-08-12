@@ -30,8 +30,9 @@ func NewConnect() *Connect {
 
 type Connect struct {
 	// fields are ordered to minimize memory allocation
-	fixed           byte  // 1
-	flags           byte  // 1
+	fixed byte // 1
+	flags byte // 1
+
 	protocolVersion uint8 // 1
 	protocolName    string
 
@@ -222,7 +223,7 @@ type RequestResponseInfo byte
 type RequestProblemInfo byte
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901054
-type UserProperty u8pair
+type UserProperty spair
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901055
 type AuthMethod u8str

@@ -75,7 +75,7 @@ func TestFixedHeader(t *testing.T) {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-func Testbits(t *testing.T) {
+func Test_bits(t *testing.T) {
 	v := bits(0b0001_0000)
 	switch {
 	case !v.Has(0b0001_0000):
@@ -86,7 +86,7 @@ func Testbits(t *testing.T) {
 
 }
 
-func Testb2int(t *testing.T) {
+func Test_b2int(t *testing.T) {
 	b := b2int(76)
 
 	data, err := b.MarshalBinary()
@@ -108,7 +108,7 @@ func Testb2int(t *testing.T) {
 	}
 }
 
-func Testb4int(t *testing.T) {
+func Test_b4int(t *testing.T) {
 	b := b4int(76)
 
 	data, err := b.MarshalBinary()
@@ -132,7 +132,7 @@ func Testb4int(t *testing.T) {
 
 // ................................................ Data representations
 
-func Testu8str(t *testing.T) {
+func Test_u8str(t *testing.T) {
 	b := u8str("۞ gopher från sverige")
 
 	data, err := b.MarshalBinary()
@@ -161,7 +161,7 @@ func Testu8str(t *testing.T) {
 	}
 }
 
-func Testvbint(t *testing.T) {
+func Test_vbint(t *testing.T) {
 	cases := []struct {
 		x   vbint
 		exp []byte
@@ -202,11 +202,12 @@ func Testvbint(t *testing.T) {
 	if err := v.UnmarshalBinary(badData); err == nil {
 		t.Error("UnmarshalBinary should fail", badData)
 	}
+
 }
 
 // ................................................ Data representations
 
-func Testbindat(t *testing.T) {
+func Test_bindat(t *testing.T) {
 	indata := make([]byte, 64)
 	if _, err := rand.Read(indata); err != nil {
 		t.Fatal(err)
@@ -244,15 +245,15 @@ func Testbindat(t *testing.T) {
 
 // ................................................ Data representations
 
-func Testu8pair(t *testing.T) {
-	b := u8pair{"key", "value"}
+func Test_spair(t *testing.T) {
+	b := spair{"key", "value"}
 
 	data, err := b.MarshalBinary()
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
-	var a u8pair
+	var a spair
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
 	}
@@ -276,57 +277,15 @@ func Testu8pair(t *testing.T) {
 
 	// large key
 	large := u8str(strings.Repeat(" ", MaxUint16+1))
-	c := u8pair{large, ""}
+	c := spair{large, ""}
 	if _, err := c.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed key")
 	}
 	// large value
-	d := u8pair{"key", large}
+	d := spair{"key", large}
 	if _, err := d.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed value")
 	}
-}
-
-func ExampleUTF8StringPair() {
-	_, err := (&u8pair{large, ""}).MarshalBinary()
-	fmt.Println(err)
-	// output:
-	// malformed mqtt.UTF8StringPair marshal: key size exceeded
-}
-
-func ExampleVarByteInt() {
-	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
-	fmt.Println(new(vbint).UnmarshalBinary(badData))
-	// output:
-	// malformed mqtt.VarByteInt unmarshal: size exceeded
-}
-
-// ................................................ Data representations
-
-func ExampleBinaryData() {
-	_, err := bindat(large).MarshalBinary()
-	fmt.Println(err)
-
-	var bin bindat
-	fmt.Println(bin.UnmarshalBinary([]byte{0, 2}))
-	// output:
-	// malformed mqtt.BinaryData marshal: size exceeded
-	// malformed mqtt.BinaryData unmarshal: missing data
-}
-
-func ExampleUTF8String() {
-	data, _ := u8str("gopher").MarshalBinary()
-	fmt.Println(data)
-
-	_, err := u8str(large).MarshalBinary()
-	fmt.Println(err)
-
-	var s u8str
-	fmt.Println(s.UnmarshalBinary([]byte{0, 2}))
-	// output:
-	// [0 6 103 111 112 104 101 114]
-	// malformed mqtt.UTF8String marshal: size exceeded
-	// malformed mqtt.UTF8String unmarshal: missing data
 }
 
 var large = u8str(strings.Repeat(" ", MaxUint16+1))
