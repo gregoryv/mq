@@ -84,7 +84,7 @@ func (p *Connect) variableHeader() (net.Buffers, error) {
 	buf := make(net.Buffers, 0)
 
 	if p.Is(CONNECT) {
-		namelen, _ := TwoByteInt(len(p.protocolName)).MarshalBinary()
+		namelen, _ := b2int(len(p.protocolName)).MarshalBinary()
 		buf = append(buf, namelen)
 		buf = append(buf, []byte(p.protocolName))
 		buf = append(buf, []byte{p.protocolVersion, p.flags})
@@ -186,7 +186,7 @@ func (c ConnectFlags) String() string {
 
 func (c ConnectFlags) Has(f byte) bool { return bits(c).Has(f) }
 
-type KeepAlive TwoByteInt
+type KeepAlive b2int
 
 // ---------------------------------------------------------------------
 // 3.1.2.11 CONNECT Properties
@@ -207,13 +207,13 @@ func (s SessionExpiryInterval) Duration() time.Duration {
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901049
-type ReceiveMax TwoByteInt
+type ReceiveMax b2int
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901050
 type MaxPacketSize FourByteInt
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901051
-type TopicAliasMax TwoByteInt
+type TopicAliasMax b2int
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901052
 type RequestResponseInfo byte

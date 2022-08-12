@@ -153,14 +153,14 @@ func (v BinaryData) MarshalBinary() ([]byte, error) {
 		return nil, marshalErr(v, "", "size exceeded")
 	}
 	data := make([]byte, len(v)+2)
-	l, _ := TwoByteInt(len(v)).MarshalBinary()
+	l, _ := b2int(len(v)).MarshalBinary()
 	copy(data[:2], l)
 	copy(data[2:], []byte(v))
 	return data, nil
 }
 
 func (v *BinaryData) UnmarshalBinary(data []byte) error {
-	var l TwoByteInt
+	var l b2int
 	_ = l.UnmarshalBinary(data)
 	if len(data) < int(l)+2 {
 		return unmarshalErr(v, "", "missing data")
@@ -237,16 +237,16 @@ func (v bits) Has(b byte) bool { return byte(v)&b == b }
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
-type TwoByteInt uint16
+type b2int uint16
 
-func (v TwoByteInt) MarshalBinary() ([]byte, error) {
+func (v b2int) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, uint16(v))
 	return data, nil
 }
 
-func (v *TwoByteInt) UnmarshalBinary(data []byte) error {
-	*v = TwoByteInt(binary.BigEndian.Uint16(data))
+func (v *b2int) UnmarshalBinary(data []byte) error {
+	*v = b2int(binary.BigEndian.Uint16(data))
 	return nil
 }
 
