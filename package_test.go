@@ -315,12 +315,16 @@ func ExampleBinaryData() {
 }
 
 func ExampleUTF8String() {
+	data, _ := UTF8String("gopher").MarshalBinary()
+	fmt.Println(data)
+
 	_, err := UTF8String(large).MarshalBinary()
 	fmt.Println(err)
 
 	var s UTF8String
 	fmt.Println(s.UnmarshalBinary([]byte{0, 2}))
 	// output:
+	// [0 6 103 111 112 104 101 114]
 	// malformed mqtt.UTF8String marshal: size exceeded
 	// malformed mqtt.UTF8String unmarshal: missing data
 }
