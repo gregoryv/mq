@@ -65,6 +65,8 @@ func (f Fixed) String() string {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
+type property = spair
+
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
 type spair [2]u8str
 
@@ -203,7 +205,7 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-func (v vbint) Width() int {
+func (v vbint) width() int {
 	switch {
 	case v < 128:
 		return 1
@@ -243,6 +245,8 @@ func (v *b2int) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
+func (v b2int) width() int { return 2 }
+
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
@@ -262,6 +266,8 @@ func (v *b4int) UnmarshalBinary(data []byte) error {
 	*v = b4int(binary.BigEndian.Uint32(data))
 	return nil
 }
+
+func (v b4int) width() int { return 4 }
 
 // ---------------------------------------------------------------------
 // Readers and writers
@@ -438,3 +444,5 @@ var codeNames = map[byte]string{
 	SubscriptionIdentifiersNotSupported: "Subscription Identifiers not supported",
 	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
 }
+
+

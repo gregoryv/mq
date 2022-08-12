@@ -69,6 +69,10 @@ func Test_b2int(t *testing.T) {
 	if b != a {
 		t.Errorf("b(%v) != a(%v)", b, a)
 	}
+
+	if got := a.width(); got != 2 {
+		t.Error("invalid b2int width", got)
+	}
 }
 
 func Test_b4int(t *testing.T) {
@@ -163,7 +167,7 @@ func Test_vbint(t *testing.T) {
 			t.Errorf("%v != %v", c.x, after)
 		}
 		// widths
-		if got := c.x.Width(); got != len(c.exp) {
+		if got := c.x.width(); got != len(c.exp) {
 			t.Error("unexpected width", got, c.x)
 		}
 	}

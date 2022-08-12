@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 
 	"github.com/gregoryv/nexus"
 )
@@ -30,43 +31,124 @@ type Connect struct {
 	fixed byte // 1
 	flags byte // 1
 
-	protocolVersion uint8 // 1
-	protocolName    string
+	protocolVersion byte // 1
+	protocolName    u8str
 
-	payload *limitedReader
+	clientID u8str
+
+	prop connectProp
+	// will *willProp todo
+
+	willDelayInterval b4int
 }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	p, err := nexus.NewPrinter(w)
 
+	// ----------------------------------------
 	// variable header
-	p.Write([]byte{c.fixed})
+	w.Write([]byte{c.fixed})
 	vbint(c.width()).WriteTo(p)
-	u8str(c.protocolName).WriteTo(p)
-	p.Write([]byte{c.protocolVersion, c.flags})
+	c.protocolName.WriteTo(p)
+	w.Write([]byte{
+		c.protocolVersion,
+		c.flags,
+	})
 
-	c.payload.WriteTo(p)
+	// connect properties
+	c.prop.WriteTo(p)
+
+	// ----------------------------------------
+	// payload
+	// Client Identifier
+	u8str(c.clientID).WriteTo(w)
+
+	// Will Properties
+	if bits(c.flags).Has(WillFlag) {
+		c.willDelayInterval.WriteTo(p)
+	}
+	// Will Topic
+	// Will Payload
+	// User Name
+	// Password
 
 	return p.Written, *err
 }
 
-func (p *Connect) String() string {
-	return Fixed(p.fixed).String()
-}
-
-func (p *Connect) check() error {
-	return newMalformed(p, "", fmt.Errorf("todo"))
-}
-
 // width returns the remaining length
-func (p *Connect) width() int {
+func (c *Connect) width() int {
 	n := 10 // always there
-	n += 0  // todo width of properties
 
-	if p.payload != nil {
-		n += p.payload.width
+	n += c.willPropertiesWidth()
+	n += c.prop.width()
+	return n
+}
+
+func (c *Connect) willPropertiesWidth() int {
+	var n int
+	if bits(c.flags).Has(WillFlag) {
+		n += c.willDelayInterval.width()
 	}
 	return n
+}
+
+func (c *Connect) SetWillDelayInterval(v b4int) {
+	c.flags = c.flags | WillFlag
+	c.willDelayInterval = v
+}
+
+func (c *Connect) String() string {
+	return fmt.Sprintf("%s %s", Fixed(c.fixed).String(), c.Flags())
+}
+
+func (c *Connect) check() error {
+	return newMalformed(c, "", fmt.Errorf("todo"))
+}
+
+func (c *Connect) Flags() ConnectFlags {
+	return ConnectFlags(c.flags)
+}
+
+// ----------------------------------------
+
+type connectProp struct {
+	sessionExpiryInterval uint32     // 0x11
+	receiveMax            uint16     // 0x21
+	maxPacketSize         uint32     // 0x27
+	topicAliasMax         uint16     // 0x22
+	requestResponseInfo   bool       // 0x19
+	requestProblemInfo    bool       // 0x17
+	userProperties        []property // 0x26
+	authMethod            string     // 0x15
+	authData              []byte     // 0x16
+}
+
+func (p *connectProp) width() int {
+	n, _ := p.WriteTo(ioutil.Discard)
+	return int(n)
+}
+
+func (p *connectProp) WriteTo(w io.Writer) (int64, error) {
+	dst, err := nexus.NewPrinter(w)
+
+	if p.sessionExpiryInterval > 0 {
+		dst.Write([]byte{IdentSessionExpiryInterval})
+		b4int(p.sessionExpiryInterval).WriteTo(dst)
+	}
+	if p.receiveMax > 0 {
+		b2int(p.receiveMax).WriteTo(dst)
+	}
+	if p.maxPacketSize > 0 {
+		b2int(p.maxPacketSize).WriteTo(dst)
+	}
+	if p.maxPacketSize > 0 {
+		b4int(p.maxPacketSize).WriteTo(dst)
+	}
+	return dst.Written, *err
+}
+
+func (p *connectProp) Set() {
+
 }
 
 // ---------------------------------------------------------------------
@@ -131,3 +213,42 @@ type limitedReader struct {
 	// not updated after each read.
 	width int
 }
+
+const (
+	IdentNormalDisconnection       = 0 // 0x00
+	IdentPayloadFormatIndicator    = 1 // 0x01
+	IdentMessageExpiryInterval     = 2 // 0x02
+	IdentMalformedPacket           = 3 // 0x03
+	IdentDisconnectWithWillMessage = 4 // 0x04
+	IdentVersion5                  = 5 // 0x05
+
+	IdentResponseTopic   = 8 // 0x08
+	IdentCorrelationData = 9 // 0x09
+
+	IdentSubscriptionIdent = 11 // 0x0B
+
+	IdentSessionExpiryInterval = 17 // 0x11
+	IdentAssignedClientIdent   = 18 // 0x12
+	IdentServerKeepAlive       = 19 // 0x13
+
+	IdentAuthenticationMethod       = 21 // 0x15
+	IdentAuthenticationData         = 22 // 0x16
+	IdentRequestProblemInformation  = 23 // 0x17
+	IdentWillDelayInterval          = 24 // 0x18
+	IdentRequestResponseInformation = 25 // 0x19
+	IdentResponseInformation        = 26 // 0x1A
+	IdentServerReference            = 28 // 0x1C
+
+	IdentReasonString = 31 // 0x1F
+
+	IdentReceiveMaximum                = 33 // 0x21
+	IdentTopicAliasMaximum             = 34 // 0x22
+	IdentTopicAlias                    = 35 // 0x23
+	IdentMaximumQoS                    = 36 // 0x24
+	IdentRetainAvailable               = 37 // 0x25
+	IdentUserProperty                  = 38 // 0x26
+	IdenttheMaximumPacketSize          = 39 // 0x27
+	IdentWildcardSubscriptionAvailable = 40 // 0x28
+	IdentSubscriptionIdentAvailable    = 41 // 0x29
+	IdentSharedSubscriptionAvailable   = 42 // 0x2A
+)
