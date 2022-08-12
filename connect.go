@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net"
 	"strings"
 	"time"
 
@@ -80,18 +79,6 @@ func (p *Connect) String() string {
 		sb.Write(f)
 	}
 	return sb.String()
-}
-
-func sumlen(b net.Buffers) int {
-	var l int
-	for _, v := range b {
-		l += len(v)
-	}
-	return l
-}
-
-func (p *Connect) Is(v byte) bool {
-	return p.fixed&0b1111_0000 == v
 }
 
 // UnmarshalBinary unmarshals a control packets remaining data. The
