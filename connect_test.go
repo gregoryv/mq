@@ -3,32 +3,30 @@ package mqtt
 import (
 	"bytes"
 	"io/ioutil"
-	"strings"
 	"testing"
 	"unsafe"
 )
 
-func TestConnect_Buffers(t *testing.T) {
+func TestConnect(t *testing.T) {
 	p := NewConnect()
+	data := []byte{1}
+	p.payload = &limitedReader{
+		src:   bytes.NewReader(data),
+		width: len(data),
+	}
+
 	var buf bytes.Buffer
 	n, err := p.WriteTo(&buf)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if data, exp := buf.Bytes(), int64(10); n != exp {
+	if data, exp := buf.Bytes(), int64(11); n != exp {
 		t.Log(data)
 		t.Errorf("len(data) = %v, expected %v", n, exp)
 	}
-}
 
-func TestConnect_String(t *testing.T) {
-	cases := map[string]*Connect{
-		"CONNECT": NewConnect(),
-	}
-	for exp, p := range cases {
-		if got := p.String(); !strings.HasPrefix(got, exp) {
-			t.Error(got)
-		}
+	if got, exp := p.String(), "CONNECT ----"; got != exp {
+		t.Errorf("got %q, expected %q", got, exp)
 	}
 }
 
