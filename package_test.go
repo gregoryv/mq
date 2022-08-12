@@ -244,15 +244,15 @@ func TestBinaryData(t *testing.T) {
 
 // ................................................ Data representations
 
-func TestUTF8StringPair(t *testing.T) {
-	b := UTF8StringPair{"key", "value"}
+func Testu8pair(t *testing.T) {
+	b := u8pair{"key", "value"}
 
 	data, err := b.MarshalBinary()
 	if err != nil {
 		t.Error("MarshalBinary", err)
 	}
 
-	var a UTF8StringPair
+	var a u8pair
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
 	}
@@ -276,19 +276,19 @@ func TestUTF8StringPair(t *testing.T) {
 
 	// large key
 	large := u8str(strings.Repeat(" ", MaxUint16+1))
-	c := UTF8StringPair{large, ""}
+	c := u8pair{large, ""}
 	if _, err := c.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed key")
 	}
 	// large value
-	d := UTF8StringPair{"key", large}
+	d := u8pair{"key", large}
 	if _, err := d.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed value")
 	}
 }
 
 func ExampleUTF8StringPair() {
-	_, err := (&UTF8StringPair{large, ""}).MarshalBinary()
+	_, err := (&u8pair{large, ""}).MarshalBinary()
 	fmt.Println(err)
 	// output:
 	// malformed mqtt.UTF8StringPair marshal: key size exceeded

@@ -222,7 +222,7 @@ type RequestResponseInfo byte
 type RequestProblemInfo byte
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901054
-type UserProperty UTF8StringPair
+type UserProperty u8pair
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901055
 type AuthMethod u8str
