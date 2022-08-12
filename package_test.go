@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
@@ -273,6 +274,14 @@ func Test_spair(t *testing.T) {
 var large = u8str(strings.Repeat(" ", MaxUint16+1))
 
 // ................................................ Data representations
+
+func Test_src(t *testing.T) {
+	data := make([]byte, MaxUint16+1)
+	v := bindat(data)
+	if _, err := src(v).WriteTo(ioutil.Discard); err == nil {
+		t.Error("should fail")
+	}
+}
 
 func ExampleMalformed_Error() {
 	e := Malformed{
