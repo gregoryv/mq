@@ -36,7 +36,16 @@ type Connect struct {
 	protocolVersion uint8 // 1
 	protocolName    string
 
-	payload []byte
+	payload limitedReader
+}
+
+// limitedReader is a reader with a known length
+type limitedReader interface {
+	io.Reader
+
+	// Len returns the number of bytes the above reader will ever
+	// read before returning EOF
+	Len() int
 }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
@@ -44,23 +53,25 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 
 	// variable header
 	p.Write([]byte{c.fixed})
-	// size of the remaining things, we need to know this before
+	// todo implement vbint.WriteTo
+	remainingLen, e := vbint(c.width()).MarshalBinary()
+	*err = e
+	p.Write(remainingLen)
 
 	proto, e := u8str(c.protocolName).MarshalBinary()
 	*err = e
 	p.Write(proto)
 	p.Write([]byte{c.protocolVersion, c.flags})
 
-	varhead, e := c.variableHeader()
-	*err = e
-
-	remlen := sumlen(varhead) + len(c.payload)
-	rem, e := vbint(remlen).MarshalBinary()
-	*err = e
-	p.Write(rem)
-	varhead.WriteTo(p)
-	p.Write(c.payload)
+	if c.payload != nil {
+		io.Copy(p, c.payload)
+	}
 	return p.Written, *err
+}
+
+// Width returns the remaining length
+func (p *Connect) width() int {
+	return 0 // todo
 }
 
 func (p *Connect) String() string {
@@ -79,20 +90,6 @@ func sumlen(b net.Buffers) int {
 		l += len(v)
 	}
 	return l
-}
-
-func (p *Connect) variableHeader() (net.Buffers, error) {
-	buf := make(net.Buffers, 0)
-
-	if p.Is(CONNECT) {
-		namelen, _ := b2int(len(p.protocolName)).MarshalBinary()
-		buf = append(buf, namelen)
-		buf = append(buf, []byte(p.protocolName))
-		buf = append(buf, []byte{p.protocolVersion, p.flags})
-
-		return nil, fmt.Errorf(": todo")
-	}
-	return buf, nil
 }
 
 func (p *Connect) Is(v byte) bool {
