@@ -108,8 +108,8 @@ func Testb2int(t *testing.T) {
 	}
 }
 
-func TestFourByteInt(t *testing.T) {
-	b := FourByteInt(76)
+func Testb4int(t *testing.T) {
+	b := b4int(76)
 
 	data, err := b.MarshalBinary()
 	if err != nil {
@@ -119,7 +119,7 @@ func TestFourByteInt(t *testing.T) {
 		t.Error("unexpected data ", data)
 	}
 
-	var a FourByteInt
+	var a b4int
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}

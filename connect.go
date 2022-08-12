@@ -196,7 +196,7 @@ type KeepAlive b2int
 type PropertyLen vbint
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
-type SessionExpiryInterval FourByteInt
+type SessionExpiryInterval b4int
 
 func (s SessionExpiryInterval) String() string {
 	return s.Duration().String()
@@ -210,7 +210,7 @@ func (s SessionExpiryInterval) Duration() time.Duration {
 type ReceiveMax b2int
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901050
-type MaxPacketSize FourByteInt
+type MaxPacketSize b4int
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901051
 type TopicAliasMax b2int

@@ -253,16 +253,16 @@ func (v *b2int) UnmarshalBinary(data []byte) error {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
-type FourByteInt uint32
+type b4int uint32
 
-func (v FourByteInt) MarshalBinary() ([]byte, error) {
+func (v b4int) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, uint32(v))
 	return data, nil
 }
 
-func (v *FourByteInt) UnmarshalBinary(data []byte) error {
-	*v = FourByteInt(binary.BigEndian.Uint32(data))
+func (v *b4int) UnmarshalBinary(data []byte) error {
+	*v = b4int(binary.BigEndian.Uint32(data))
 	return nil
 }
 
