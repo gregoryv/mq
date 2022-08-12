@@ -25,7 +25,7 @@ import (
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 type FixedHeader struct {
 	header       byte
-	remainingLen VarByteInt
+	remainingLen vbint
 }
 
 func (f *FixedHeader) MarshalBinary() ([]byte, error) {
@@ -173,10 +173,10 @@ func (v *BinaryData) UnmarshalBinary(data []byte) error {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
-type VarByteInt uint
+type vbint uint
 
 // MarshalBinary always returns nil error
-func (v VarByteInt) MarshalBinary() ([]byte, error) {
+func (v vbint) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 0, 4) // max four
 	if v == 0 {
 		data = append(data, 0)
@@ -194,7 +194,7 @@ func (v VarByteInt) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary data, returns nil or *Malformed error
-func (v *VarByteInt) UnmarshalBinary(data []byte) error {
+func (v *vbint) UnmarshalBinary(data []byte) error {
 	if len(data) == 0 {
 		return unmarshalErr(v, "", "missing data")
 	}
@@ -210,11 +210,11 @@ func (v *VarByteInt) UnmarshalBinary(data []byte) error {
 		}
 		multiplier = multiplier * 128
 	}
-	*v = VarByteInt(value)
+	*v = vbint(value)
 	return nil
 }
 
-func (v VarByteInt) Width() int {
+func (v vbint) Width() int {
 	switch {
 	case v < 128:
 		return 1

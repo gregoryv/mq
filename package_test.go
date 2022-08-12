@@ -161,9 +161,9 @@ func Testu8str(t *testing.T) {
 	}
 }
 
-func TestVarByteInt(t *testing.T) {
+func Testvbint(t *testing.T) {
 	cases := []struct {
-		x   VarByteInt
+		x   vbint
 		exp []byte
 	}{
 		{0, []byte{0x00}},
@@ -183,7 +183,7 @@ func TestVarByteInt(t *testing.T) {
 		if !reflect.DeepEqual(data, c.exp) {
 			t.Error("got", data, "exp", c.exp)
 		}
-		var after VarByteInt
+		var after vbint
 		if err := after.UnmarshalBinary(data); err != nil {
 			t.Error("Unmarshal", data)
 		}
@@ -197,7 +197,7 @@ func TestVarByteInt(t *testing.T) {
 	}
 
 	// error case
-	var v VarByteInt
+	var v vbint
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
 	if err := v.UnmarshalBinary(badData); err == nil {
 		t.Error("UnmarshalBinary should fail", badData)
@@ -296,7 +296,7 @@ func ExampleUTF8StringPair() {
 
 func ExampleVarByteInt() {
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
-	fmt.Println(new(VarByteInt).UnmarshalBinary(badData))
+	fmt.Println(new(vbint).UnmarshalBinary(badData))
 	// output:
 	// malformed mqtt.VarByteInt unmarshal: size exceeded
 }

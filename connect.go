@@ -54,7 +54,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	*err = e
 
 	remlen := sumlen(varhead) + len(c.payload)
-	rem, e := VarByteInt(remlen).MarshalBinary()
+	rem, e := vbint(remlen).MarshalBinary()
 	*err = e
 	p.Write(rem)
 	varhead.WriteTo(p)
@@ -193,7 +193,7 @@ type KeepAlive TwoByteInt
 // ---------------------------------------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901047
-type PropertyLen VarByteInt
+type PropertyLen vbint
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901048
 type SessionExpiryInterval FourByteInt
