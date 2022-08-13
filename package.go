@@ -99,6 +99,9 @@ func (v *spair) UnmarshalBinary(data []byte) error {
 func (v spair) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
+func (v spair) width() int {
+	return v[0].width() + v[1].width()
+}
 
 // ----------------------------------------
 
@@ -124,6 +127,10 @@ func (v *u8str) UnmarshalBinary(data []byte) error {
 	}
 	*v = u8str(b)
 	return nil
+}
+
+func (v u8str) width() int {
+	return bindat(v).width()
 }
 
 // ----------------------------------------
@@ -155,6 +162,10 @@ func (v *bindat) UnmarshalBinary(data []byte) error {
 	*v = make([]byte, l)
 	copy(*v, data[2:l+2])
 	return nil
+}
+
+func (v bindat) width() int {
+	return 2 + len(v)
 }
 
 // ----------------------------------------
@@ -224,6 +235,13 @@ func (v vbint) width() int {
 type bits byte
 
 func (v bits) Has(b byte) bool { return byte(v)&b == b }
+func (v bits) Toggle(on bool, bit byte) {
+	if on {
+		v |= bits(bit)
+		return
+	}
+	v ^= bits(bit)
+}
 
 // ----------------------------------------
 
