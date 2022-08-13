@@ -132,7 +132,7 @@ func (p *connectProp) WriteTo(w io.Writer) (int64, error) {
 	dst, err := nexus.NewPrinter(w)
 
 	if p.sessionExpiryInterval > 0 {
-		dst.Write([]byte{IdentSessionExpiryInterval})
+		dst.Write([]byte{SessionExpiryInterval})
 		b4int(p.sessionExpiryInterval).WriteTo(dst)
 	}
 	if p.receiveMax > 0 {
@@ -214,41 +214,32 @@ type limitedReader struct {
 	width int
 }
 
+// MQTT Packet property identifier codes
 const (
-	IdentNormalDisconnection       = 0 // 0x00
-	IdentPayloadFormatIndicator    = 1 // 0x01
-	IdentMessageExpiryInterval     = 2 // 0x02
-	IdentMalformedPacket           = 3 // 0x03
-	IdentDisconnectWithWillMessage = 4 // 0x04
-	IdentVersion5                  = 5 // 0x05
-
-	IdentResponseTopic   = 8 // 0x08
-	IdentCorrelationData = 9 // 0x09
-
-	IdentSubscriptionIdent = 11 // 0x0B
-
-	IdentSessionExpiryInterval = 17 // 0x11
-	IdentAssignedClientIdent   = 18 // 0x12
-	IdentServerKeepAlive       = 19 // 0x13
-
-	IdentAuthenticationMethod       = 21 // 0x15
-	IdentAuthenticationData         = 22 // 0x16
-	IdentRequestProblemInformation  = 23 // 0x17
-	IdentWillDelayInterval          = 24 // 0x18
-	IdentRequestResponseInformation = 25 // 0x19
-	IdentResponseInformation        = 26 // 0x1A
-	IdentServerReference            = 28 // 0x1C
-
-	IdentReasonString = 31 // 0x1F
-
-	IdentReceiveMaximum                = 33 // 0x21
-	IdentTopicAliasMaximum             = 34 // 0x22
-	IdentTopicAlias                    = 35 // 0x23
-	IdentMaximumQoS                    = 36 // 0x24
-	IdentRetainAvailable               = 37 // 0x25
-	IdentUserProperty                  = 38 // 0x26
-	IdenttheMaximumPacketSize          = 39 // 0x27
-	IdentWildcardSubscriptionAvailable = 40 // 0x28
-	IdentSubscriptionIdentAvailable    = 41 // 0x29
-	IdentSharedSubscriptionAvailable   = 42 // 0x2A
+	PayloadFormat         byte = 1
+	MessageExpiryInterval byte = 2
+	ResponseTopic         byte = 8
+	CorrelationData       byte = 9
+	SubIdent              byte = 11
+	SessionExpiryInterval byte = 17
+	AssignedClientIdent   byte = 18
+	ServerKeepAlive       byte = 19
+	AuthMethod            byte = 21
+	AuthData              byte = 22
+	RequestProblemInfo    byte = 23
+	WillDelayInterval     byte = 24
+	RequestResponseInfo   byte = 25
+	ResponseInformation   byte = 26
+	ServerReference       byte = 28
+	ReasonString          byte = 31
+	ReceiveMax            byte = 33
+	TopicAliasMax         byte = 34
+	TopicAlias            byte = 35
+	MaximumQoS            byte = 36
+	RetainAvailable       byte = 37
+	UserProperty          byte = 38
+	MaxPacketSize         byte = 39
+	WildcardSubAvailable  byte = 40
+	SubIdentAvailable     byte = 41
+	SharedSubAvailable    byte = 42
 )
