@@ -273,6 +273,18 @@ func (v b4int) width() int { return 4 }
 // Readers and writers
 // ---------------------------------------------------------------------
 
+// limitedReader is a reader with a known size. This is needed to
+// calculate the remaining length of a control packet without loading
+// everything into memory.
+type limitedReader struct {
+	src io.ReadSeeker
+
+	// width is the number of bytes the above reader will ever read
+	// before returning EOF. Similar to io.LimitedReader, though it's
+	// not updated after each read.
+	width int
+}
+
 // WriteTo copies the source to the given writer and then resets the
 // src.
 func (l *limitedReader) WriteTo(w io.Writer) (int64, error) {
@@ -444,5 +456,3 @@ var codeNames = map[byte]string{
 	SubscriptionIdentifiersNotSupported: "Subscription Identifiers not supported",
 	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
 }
-
-

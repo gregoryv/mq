@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 
 	"github.com/gregoryv/nexus"
 )
+
+func connect() {
+
+}
 
 // If we want to be able to handle large packets each must implement
 // io.ReaderFrom This allows a client decide if it should read in all
@@ -27,74 +30,98 @@ func NewConnect() *Connect {
 }
 
 type Connect struct {
-	// fields are ordered to minimize memory allocation
-	fixed byte // 1
-	flags byte // 1
+	fixed           byte
+	flags           byte
+	protocolVersion byte
+	protocolName    string
+	clientID        string
+	keepAlive       uint16
 
-	protocolVersion byte // 1
-	protocolName    u8str
+	// properties
+	sessionExpiryInterval uint32
+	receiveMax            uint16
+	maxPacketSize         uint32
+	topicAliasMax         uint16
+	requestResponseInfo   bool
+	requestProblemInfo    bool
+	userProperties        []property
+	authMethod            string
+	authData              []byte
 
-	clientID u8str
+	willDelayInterval uint32
+	willTopic         string
+	willPayload       string
 
-	prop connectProp
-	// will *willProp todo
-
-	willDelayInterval b4int
+	messageExpiryInterval uint32
+	contentType           string
+	responseTopic         string
+	correlationData       []byte
+	username              string
+	password              []byte
 }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
-	p, err := nexus.NewPrinter(w)
+	{
+		w := nexus.NewWriter(w)
 
-	// ----------------------------------------
-	// variable header
-	w.Write([]byte{c.fixed})
-	vbint(c.width()).WriteTo(p)
-	c.protocolName.WriteTo(p)
-	w.Write([]byte{
-		c.protocolVersion,
-		c.flags,
-	})
+		conprop := c.properties()
 
-	// connect properties
-	c.prop.WriteTo(p)
+		w.WriteBinary(
+			// Fixed header
+			c.fixed,
+			vbint(c.width()),
 
-	// ----------------------------------------
-	// payload
-	// Client Identifier
-	u8str(c.clientID).WriteTo(w)
+			// Variable header
+			c.protocolVersion,     // Protocol Name
+			u8str(c.protocolName), // Protocol Level
+			c.flags,               // Connect Flags
+			b2int(c.keepAlive),    // Keep Alive
 
-	// Will Properties
-	if bits(c.flags).Has(WillFlag) {
-		c.willDelayInterval.WriteTo(p)
+			// Properties
+			vbint(len(conprop)),
+			conprop,
+
+			// Payload
+			u8str(c.clientID), // Client Identifier
+		)
+		// will
+		if bits(c.flags).Has(WillFlag) {
+			willprop := c.will()
+			w.WriteBinary(
+				vbint(len(willprop)),
+				willprop,
+			)
+
+		}
+
+		// User Name
+		// Password
+
+		return w.Done()
 	}
-	// Will Topic
-	// Will Payload
-	// User Name
-	// Password
-
-	return p.Written, *err
 }
 
 // width returns the remaining length
 func (c *Connect) width() int {
 	n := 10 // always there
-
-	n += c.willPropertiesWidth()
-	n += c.prop.width()
 	return n
 }
 
-func (c *Connect) willPropertiesWidth() int {
-	var n int
-	if bits(c.flags).Has(WillFlag) {
-		n += c.willDelayInterval.width()
-	}
-	return n
+func (c *Connect) properties() []byte {
+	var width int // todo
+	p := make([]byte, width)
+	return p
 }
 
-func (c *Connect) SetWillDelayInterval(v b4int) {
-	c.flags = c.flags | WillFlag
-	c.willDelayInterval = v
+func (c *Connect) will() []byte {
+	var buf bytes.Buffer
+	w := nexus.NewWriter(&buf)
+	w.WriteBinary(
+	// Will Properties
+	// Will Topic
+	// Will Payload
+	)
+	return buf.Bytes()
 }
 
 func (c *Connect) String() string {
@@ -105,68 +132,15 @@ func (c *Connect) check() error {
 	return newMalformed(c, "", fmt.Errorf("todo"))
 }
 
-func (c *Connect) Flags() ConnectFlags {
-	return ConnectFlags(c.flags)
-}
-
-// ----------------------------------------
-
-type connectProp struct {
-	sessionExpiryInterval uint32     // 0x11
-	receiveMax            uint16     // 0x21
-	maxPacketSize         uint32     // 0x27
-	topicAliasMax         uint16     // 0x22
-	requestResponseInfo   bool       // 0x19
-	requestProblemInfo    bool       // 0x17
-	userProperties        []property // 0x26
-	authMethod            string     // 0x15
-	authData              []byte     // 0x16
-}
-
-func (p *connectProp) width() int {
-	n, _ := p.WriteTo(ioutil.Discard)
-	return int(n)
-}
-
-func (p *connectProp) WriteTo(w io.Writer) (int64, error) {
-	dst, err := nexus.NewPrinter(w)
-
-	if p.sessionExpiryInterval > 0 {
-		dst.Write([]byte{SessionExpiryInterval})
-		b4int(p.sessionExpiryInterval).WriteTo(dst)
-	}
-	if p.receiveMax > 0 {
-		b2int(p.receiveMax).WriteTo(dst)
-	}
-	if p.maxPacketSize > 0 {
-		b2int(p.maxPacketSize).WriteTo(dst)
-	}
-	if p.maxPacketSize > 0 {
-		b4int(p.maxPacketSize).WriteTo(dst)
-	}
-	return dst.Written, *err
-}
-
-func (p *connectProp) Set() {
-
+func (c *Connect) Flags() connectFlags {
+	return connectFlags(c.flags)
 }
 
 // ---------------------------------------------------------------------
 // 3.1.2.3 Connect Flags
 // ---------------------------------------------------------------------
 
-const (
-	Reserved byte = 1 << iota
-	CleanStart
-	WillFlag
-	WillQoS1
-	WillQoS2
-	WillRetain
-	PasswordFlag
-	UsernameFlag
-)
-
-type ConnectFlags byte
+type connectFlags byte
 
 // String returns flags represented with a letter.
 // Improper flags are marked with '!' and unset are marked with '-'.
@@ -178,7 +152,7 @@ type ConnectFlags byte
 //   WillFlag      2
 //   CleanStart    s
 //   Reserved      !
-func (c ConnectFlags) String() string {
+func (c connectFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 7)
 
 	mark := func(i int, flag byte, v byte) {
@@ -200,19 +174,18 @@ func (c ConnectFlags) String() string {
 	return string(flags)
 }
 
-func (c ConnectFlags) Has(f byte) bool { return bits(c).Has(f) }
+func (c connectFlags) Has(f byte) bool { return bits(c).Has(f) }
 
-// limitedReader is a reader with a known size. This is needed to
-// calculate the remaining length of a control packet without loading
-// everything into memory.
-type limitedReader struct {
-	src io.ReadSeeker
-
-	// width is the number of bytes the above reader will ever read
-	// before returning EOF. Similar to io.LimitedReader, though it's
-	// not updated after each read.
-	width int
-}
+const (
+	Reserved byte = 1 << iota
+	CleanStart
+	WillFlag
+	WillQoS1
+	WillQoS2
+	WillRetain
+	PasswordFlag
+	UsernameFlag
+)
 
 // MQTT Packet property identifier codes
 const (
