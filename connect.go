@@ -83,7 +83,7 @@ func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
 
 func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
 func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
-func (c *Connect) SetPayloadFormat(v bool)       { c.willPayloadFormat = v }
+func (c *Connect) SetWillPayloadFormat(v bool)   { c.willPayloadFormat = v }
 func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
 
 func (c *Connect) SetContentType(v string)     { c.contentType = v }
