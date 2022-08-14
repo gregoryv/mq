@@ -1,10 +1,8 @@
 package mqtt
 
 import (
-	"bytes"
 	"crypto/rand"
 	"fmt"
-	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
@@ -50,12 +48,9 @@ func Test_bits(t *testing.T) {
 func Test_b2int(t *testing.T) {
 	b := b2int(76)
 
-	var buf bytes.Buffer
-	_, err := b.WriteTo(&buf)
-	if err != nil {
-		t.Error("MarshalBinary", err)
-	}
-	data := buf.Bytes()
+	data := make([]byte, b.width())
+	b.fill(data, 0)
+
 	if exp := []byte{0, 76}; !reflect.DeepEqual(data, exp) {
 		t.Error("unexpected data ", data)
 	}
@@ -78,12 +73,9 @@ func Test_b2int(t *testing.T) {
 func Test_b4int(t *testing.T) {
 	b := b4int(76)
 
-	var buf bytes.Buffer
-	_, err := b.WriteTo(&buf)
-	if err != nil {
-		t.Error("MarshalBinary", err)
-	}
-	data := buf.Bytes()
+	data := make([]byte, b.width())
+	b.fill(data, 0)
+
 	if exp := []byte{0, 0, 0, 76}; !reflect.DeepEqual(data, exp) {
 		t.Error("unexpected data ", data)
 	}
@@ -104,13 +96,9 @@ func Test_b4int(t *testing.T) {
 func Test_u8str(t *testing.T) {
 	b := u8str("۞ gopher från sverige")
 
-	var buf bytes.Buffer
-	_, err := b.WriteTo(&buf)
-	if err != nil {
-		t.Error("MarshalBinary", err)
-	}
+	data := make([]byte, b.width())
+	b.fill(data, 0)
 
-	data := buf.Bytes()
 	var a u8str
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
@@ -124,11 +112,6 @@ func Test_u8str(t *testing.T) {
 	// error case
 	if err := a.UnmarshalBinary(data[:len(data)-4]); err == nil {
 		t.Error("UnmarshalBinary should fail")
-	}
-
-	large := strings.Repeat(" ", MaxUint16+1)
-	if _, err := u8str(large).MarshalBinary(); err == nil {
-		t.Error("MarshalBinary should fail when len > MaxUint16")
 	}
 }
 
@@ -150,12 +133,9 @@ func Test_vbint(t *testing.T) {
 		{268_435_455, []byte{0xff, 0xff, 0xff, 0x7f}},
 	}
 	for _, c := range cases {
-		var buf bytes.Buffer
-		_, err := c.x.WriteTo(&buf)
-		if err != nil {
-			t.Fatal(err)
-		}
-		data := buf.Bytes()
+		data := make([]byte, c.x.width())
+		c.x.fill(data, 0)
+
 		if !reflect.DeepEqual(data, c.exp) {
 			t.Error("got", data, "exp", c.exp)
 		}
@@ -183,10 +163,6 @@ func Test_vbint(t *testing.T) {
 		t.Error("UnmarshalBinary should fail on empty")
 	}
 
-	var w brokenWriter
-	if _, err := vbint(268_435_455 + 10).WriteTo(&w); err == nil {
-		t.Error("should fail")
-	}
 }
 
 // ................................................ Data representations
@@ -198,13 +174,9 @@ func Test_bindat(t *testing.T) {
 	}
 
 	b := bindat(indata)
-	var buf bytes.Buffer
-	_, err := b.WriteTo(&buf)
-	if err != nil {
-		t.Error("MarshalBinary", err)
-	}
+	data := make([]byte, b.width())
+	b.fill(data, 0)
 
-	data := buf.Bytes()
 	var a bindat
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
@@ -220,13 +192,6 @@ func Test_bindat(t *testing.T) {
 		t.Error("UnmarshalBinary should fail")
 	}
 
-	large := make([]byte, MaxUint16+1)
-	if _, err = rand.Read(large); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := bindat(large).MarshalBinary(); err == nil {
-		t.Error("MarshalBinary should fail when len > MaxUint16")
-	}
 }
 
 // ................................................ Data representations
@@ -234,12 +199,9 @@ func Test_bindat(t *testing.T) {
 func Test_property(t *testing.T) {
 	b := property{"key", "value"}
 
-	var buf bytes.Buffer
-	_, err := b.WriteTo(&buf)
-	if err != nil {
-		t.Error("MarshalBinary", err)
-	}
-	data := buf.Bytes()
+	data := make([]byte, b.width())
+	b.fill(data, 0)
+
 	var a property
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
@@ -261,31 +223,11 @@ func Test_property(t *testing.T) {
 	if err := a.UnmarshalBinary(data[:7]); err == nil {
 		t.Error("UnmarshalBinary should fail on malformed value")
 	}
-
-	// large key
-	large := u8str(strings.Repeat(" ", MaxUint16+1))
-	c := property{large, ""}
-	if _, err := c.MarshalBinary(); err == nil {
-		t.Error("MarshalBinary should fail on malformed key")
-	}
-	// large value
-	d := property{"key", large}
-	if _, err := d.MarshalBinary(); err == nil {
-		t.Error("MarshalBinary should fail on malformed value")
-	}
 }
 
 var large = u8str(strings.Repeat(" ", MaxUint16+1))
 
 // ................................................ Data representations
-
-func Test_src(t *testing.T) {
-	data := make([]byte, MaxUint16+1)
-	v := bindat(data)
-	if _, err := src(v).WriteTo(ioutil.Discard); err == nil {
-		t.Error("should fail")
-	}
-}
 
 func ExampleMalformed_Error() {
 	e := Malformed{
