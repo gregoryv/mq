@@ -51,7 +51,7 @@ type Connect struct {
 	willPayload       []byte
 
 	messageExpiryInterval uint32
-	contentType           string
+	willContentType       string
 	responseTopic         string
 	correlationData       []byte
 
@@ -86,7 +86,7 @@ func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
 func (c *Connect) SetWillPayloadFormat(v bool)   { c.willPayloadFormat = v }
 func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
 
-func (c *Connect) SetContentType(v string)     { c.contentType = v }
+func (c *Connect) SetContentType(v string)     { c.willContentType = v }
 func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
 func (c *Connect) SetCorrelationData(v []byte) { c.correlationData = v }
 
@@ -346,7 +346,7 @@ func (c *Connect) will(b []byte) int {
 		i += 5
 	}
 
-	if v := c.contentType; len(v) > 0 {
+	if v := c.willContentType; len(v) > 0 {
 		if build {
 			b[i] = ContentType
 			u8str(v).MarshalInto(b[i+1:])

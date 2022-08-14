@@ -23,6 +23,8 @@ func TestCompareConnect(t *testing.T) {
 
 		willtop     = "topic/dead/clients"
 		willPayload = []byte("goodbye")
+
+		ctype = "application/json"
 	)
 
 	// our packet
@@ -35,6 +37,7 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp(property{"color", "red"})
 	our.SetAuthMethod(authMethod)
 	our.SetAuthData(authData)
+	our.SetContentType(ctype)
 
 	our.SetWillFlag(true)
 	our.SetWillTopic(willtop)
@@ -59,6 +62,7 @@ func TestCompareConnect(t *testing.T) {
 	p.User = append(p.User, packets.User{"color", "red"})
 	p.AuthMethod = authMethod
 	p.AuthData = authData
+	p.ContentType = ctype
 
 	// dump the data
 	var ourData, theirData bytes.Buffer
