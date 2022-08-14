@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"time"
 )
 
 // If we want to be able to handle large packets each must implement
@@ -82,6 +83,8 @@ func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
 
 func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
 func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
+func (c *Connect) SetPayloadFormat(v bool)       { c.payloadFormat = v }
+func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
 
 func (c *Connect) SetContentType(v string)     { c.contentType = v }
 func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
@@ -378,25 +381,21 @@ func (c *Connect) will(b []byte) int {
 	return i
 }
 
-// Settings
-
 func (c *Connect) String() string {
-	return fmt.Sprintf("%s %s %s", c.clientID,
-		firstByte(c.fixed).String(), c.Flags(),
+	return fmt.Sprintf("%s %s %s %s", c.clientID,
+		firstByte(c.fixed).String(), connectFlags(c.Flags()),
+		time.Duration(c.keepAlive)*time.Second,
 	)
 }
 
-func (c *Connect) Flags() connectFlags {
+func (c *Connect) Flags() byte {
 	c.updateFlags()
-	return connectFlags(c.flags)
+	return c.flags
 }
 
 func (c *Connect) updateFlags() {
 	c.toggle(UsernameFlag, len(c.username) > 0)
 	c.toggle(PasswordFlag, len(c.password) > 0)
-	c.toggle(WillFlag,
-		len(c.willTopic) > 0,
-	)
 
 	c.flags &= ^(WillQoS1 | WillQoS2) // reset
 	c.toggle(c.willQoS<<3, c.willQoS < 3)
@@ -409,10 +408,6 @@ func (c *Connect) toggle(flag byte, on bool) {
 	}
 	c.flags &= ^flag
 }
-
-// ---------------------------------------------------------------------
-// 3.1.2.3 Connect Flags
-// ---------------------------------------------------------------------
 
 type connectFlags byte
 
@@ -430,7 +425,7 @@ func (c connectFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 7)
 
 	mark := func(i int, flag byte, v byte) {
-		if !c.Has(flag) {
+		if !bits(c).Has(flag) {
 			return
 		}
 		flags[i] = v
@@ -448,8 +443,7 @@ func (c connectFlags) String() string {
 	return string(flags) // + fmt.Sprintf(" %08b", c)
 }
 
-func (c connectFlags) Has(f byte) bool { return bits(c).Has(f) }
-
+// CONNECT flags
 const (
 	Reserved byte = 1 << iota
 	CleanStart

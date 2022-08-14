@@ -20,7 +20,9 @@ func TestCompareConnect(t *testing.T) {
 
 		authMethod = "digest"
 		authData   = []byte("secret")
-		willtop    = "topic/dead/clients"
+
+		willtop     = "topic/dead/clients"
+		willPayload = []byte("goodbye")
 	)
 
 	// our packet
@@ -33,7 +35,11 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp(property{"color", "red"})
 	our.SetAuthMethod(authMethod)
 	our.SetAuthData(authData)
+
+	our.SetWillFlag(true)
 	our.SetWillTopic(willtop)
+	our.SetWillPayload(willPayload)
+	// our.SetPayloadFormat(true) not supported in paho.golang
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
@@ -46,6 +52,8 @@ func TestCompareConnect(t *testing.T) {
 	c.Password = pwd
 	c.WillFlag = true
 	c.WillTopic = willtop
+	c.WillMessage = willPayload
+
 	p := c.Properties
 	p.SessionExpiryInterval = &sExpiry
 	p.User = append(p.User, packets.User{"color", "red"})
@@ -84,9 +92,6 @@ func TestconnectFlags(t *testing.T) {
 	f = connectFlags(0b00000001)
 	if got, exp := f.String(), "------!"; got != exp {
 		t.Errorf("got %q != exp %q", got, exp)
-	}
-	if f.Has(WillFlag) || !f.Has(Reserved) {
-		t.Errorf("Has %08b", f)
 	}
 }
 
