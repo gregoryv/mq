@@ -100,7 +100,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 		i    int
 	)
 
-	// FirstByte header
+	// firstByte header
 	b[0] = c.fixed
 	i++
 	// remaining length
@@ -379,7 +379,7 @@ func (c *Connect) will(b []byte) int {
 
 func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s", c.clientID,
-		FirstByte(c.fixed).String(), c.Flags(),
+		firstByte(c.fixed).String(), c.Flags(),
 	)
 }
 

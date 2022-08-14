@@ -14,16 +14,16 @@ import (
 // Headers
 // ---------------------------------------------------------------------
 
-func TestFirstByte(t *testing.T) {
+func TestfirstByte(t *testing.T) {
 	cases := []struct {
-		h   FirstByte
+		h   firstByte
 		exp string
 	}{
-		{FirstByte(PUBLISH | QoS2 | RETAIN), "PUBLISH -2-r"},
-		{FirstByte(PUBLISH | QoS1 | QoS2), "PUBLISH -!!-"},
-		{FirstByte(PUBLISH | DUP | QoS2), "PUBLISH d2--"},
-		{FirstByte(PUBLISH | QoS1), "PUBLISH --1-"},
-		{FirstByte(CONNECT), "CONNECT ----"},
+		{firstByte(PUBLISH | QoS2 | RETAIN), "PUBLISH -2-r"},
+		{firstByte(PUBLISH | QoS1 | QoS2), "PUBLISH -!!-"},
+		{firstByte(PUBLISH | DUP | QoS2), "PUBLISH d2--"},
+		{firstByte(PUBLISH | QoS1), "PUBLISH --1-"},
+		{firstByte(CONNECT), "CONNECT ----"},
 	}
 	for _, c := range cases {
 		if got, exp := c.h.String(), c.exp; got != exp {
