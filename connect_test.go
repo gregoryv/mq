@@ -37,7 +37,7 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp(property{"color", "red"})
 	our.SetAuthMethod(authMethod)
 	our.SetAuthData(authData)
-	our.SetContentType(ctype)
+	// our.SetWillContentType(ctype) not supported in paho.golang (bug in Properties.Pack)
 
 	our.SetWillFlag(true)
 	our.SetWillTopic(willtop)
@@ -53,16 +53,20 @@ func TestCompareConnect(t *testing.T) {
 	c.Username = user
 	c.PasswordFlag = true
 	c.Password = pwd
+
 	c.WillFlag = true
 	c.WillTopic = willtop
 	c.WillMessage = willPayload
+
+	var wp packets.Properties
+	wp.ContentType = ctype // set here but has no affect, (bug in Properties.Pack)
+	c.WillProperties = &wp
 
 	p := c.Properties
 	p.SessionExpiryInterval = &sExpiry
 	p.User = append(p.User, packets.User{"color", "red"})
 	p.AuthMethod = authMethod
 	p.AuthData = authData
-	p.ContentType = ctype
 
 	// dump the data
 	var ourData, theirData bytes.Buffer

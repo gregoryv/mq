@@ -231,8 +231,8 @@ func Test_bindat(t *testing.T) {
 
 // ................................................ Data representations
 
-func Test_spair(t *testing.T) {
-	b := spair{"key", "value"}
+func Test_property(t *testing.T) {
+	b := property{"key", "value"}
 
 	var buf bytes.Buffer
 	_, err := b.WriteTo(&buf)
@@ -240,7 +240,7 @@ func Test_spair(t *testing.T) {
 		t.Error("MarshalBinary", err)
 	}
 	data := buf.Bytes()
-	var a spair
+	var a property
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
 	}
@@ -264,12 +264,12 @@ func Test_spair(t *testing.T) {
 
 	// large key
 	large := u8str(strings.Repeat(" ", MaxUint16+1))
-	c := spair{large, ""}
+	c := property{large, ""}
 	if _, err := c.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed key")
 	}
 	// large value
-	d := spair{"key", large}
+	d := property{"key", large}
 	if _, err := d.MarshalBinary(); err == nil {
 		t.Error("MarshalBinary should fail on malformed value")
 	}

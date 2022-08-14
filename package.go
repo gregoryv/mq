@@ -61,16 +61,14 @@ func (f firstByte) String() string {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-type property = spair
-
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
-type spair [2]u8str
+type property [2]u8str
 
-func (v spair) WriteTo(w io.Writer) (int64, error) {
+func (v property) WriteTo(w io.Writer) (int64, error) {
 	return src(v).WriteTo(w)
 }
 
-func (v spair) MarshalBinary() ([]byte, error) {
+func (v property) MarshalBinary() ([]byte, error) {
 	key, err := v[0].MarshalBinary()
 	if err != nil {
 		return nil, marshalErr(v, "key", err.(*Malformed))
@@ -82,14 +80,14 @@ func (v spair) MarshalBinary() ([]byte, error) {
 	return append(key, val...), nil
 }
 
-func (v spair) MarshalInto(data []byte) {
+func (v property) MarshalInto(data []byte) {
 	_ = data[v.width()-1]
 	v[0].MarshalInto(data)
 	i := v[0].width()
 	v[1].MarshalInto(data[i:])
 }
 
-func (v *spair) UnmarshalBinary(data []byte) error {
+func (v *property) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
 	}
@@ -99,10 +97,10 @@ func (v *spair) UnmarshalBinary(data []byte) error {
 	}
 	return nil
 }
-func (v spair) String() string {
+func (v property) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
-func (v spair) width() int {
+func (v property) width() int {
 	return v[0].width() + v[1].width()
 }
 

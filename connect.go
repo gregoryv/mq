@@ -86,7 +86,7 @@ func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
 func (c *Connect) SetWillPayloadFormat(v bool)   { c.willPayloadFormat = v }
 func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
 
-func (c *Connect) SetContentType(v string)     { c.willContentType = v }
+func (c *Connect) SetWillContentType(v string) { c.willContentType = v }
 func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
 func (c *Connect) SetCorrelationData(v []byte) { c.correlationData = v }
 
