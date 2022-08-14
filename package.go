@@ -29,15 +29,11 @@ type Packet interface {
 // Headers
 // ---------------------------------------------------------------------
 
-// Fixed represents the first byte in a control packet.
-//
-//
-// 2.1.1 Fixed Header
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
-type Fixed byte
+// FirstByte represents the first byte in a control packet.
+type FirstByte byte
 
 // String returns a string TYPE-FLAGS REMAINING_LENGTH
-func (f Fixed) String() string {
+func (f FirstByte) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")
@@ -467,13 +463,13 @@ var typeNames = map[byte]string{
 	AUTH:        "AUTH",
 }
 
-// Fixed header flags
+// FirstByte header flags
 const (
 	RETAIN byte = 0b0000_0001
 	QoS0   byte = 0b0000_0000
 	QoS1   byte = 0b0000_0010
 	QoS2   byte = 0b0000_0100
-	//QoS3 Fixed = 0b0000_0110   malformed!
+	//QoS3 FirstByte = 0b0000_0110   malformed!
 	DUP byte = 0b0000_1000
 )
 
