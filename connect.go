@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-
-	"github.com/gregoryv/nexus"
 )
 
 // If we want to be able to handle large packets each must implement
@@ -59,187 +57,271 @@ type Connect struct {
 	password              []byte
 }
 
-func (c *Connect) WriteTo(dst io.Writer) (int64, error) {
-	varhead := c.variableHeader()
-	payload := c.payload()
+func (c *Connect) WriteTo(w io.Writer) (int64, error) {
+	var (
+		hl = c.variableHeader(nil)
+		pl = c.payload(nil)
 
-	remainingLen := varhead.Len() + len(payload)
-
-	w := nexus.NewWriter(dst)
-	w.WriteBinary(
-		c.fixed, vbint(remainingLen), // Fixed header
-		varhead.Bytes(), // Variable header
-		payload,         // Payload
+		rem  = hl + pl
+		size = 1 + vbint(rem).width() + rem
+		b    = make([]byte, size)
+		i    int
 	)
-	return w.Done()
+
+	b[0] = c.fixed
+	i++
+
+	vbint(rem).MarshalInto(b[i:])
+	i += vbint(rem).width()
+
+	c.variableHeader(b[i:])
+	i += hl
+
+	c.payload(b[i:])
+
+	n, err := w.Write(b)
+	return int64(n), err
 }
 
-func (c *Connect) variableHeader() *bytes.Buffer {
+func (c *Connect) variableHeader(b []byte) int {
+	var (
+		i     int
+		build = (b != nil)
+	)
+	if build {
+		u8str(c.protocolName).MarshalInto(b)
+	}
+	i += u8str(c.protocolName).width()
+
+	if build {
+		b[i] = c.protocolVersion
+	}
+	i++
+
+	if build {
+		b[i] = c.flags
+	}
+	i++
+
+	if build {
+		b2int(c.keepAlive).MarshalInto(b[i:])
+	}
+	i += 2
+
+	proplen := c.properties(nil)
+	if build {
+		vbint(proplen).MarshalInto(b[i:])
+	}
+	i += vbint(proplen).width()
+
+	if build {
+		c.properties(b[i:])
+	}
+	i += proplen
+
+	return i
+}
+
+// properties returns length properties in wire format, if b is nil
+// nothing is written, used to calculate length.
+func (c *Connect) properties(b []byte) int {
 	c.updateFlags()
-	var buf bytes.Buffer
-	conprop := c.properties()
-
-	nexus.NewWriter(&buf).WriteBinary(
-		u8str(c.protocolName),        // Protocol Name
-		c.protocolVersion,            // Protocol Level
-		c.flags,                      // Connect Flags
-		b2int(c.keepAlive),           // Keep Alive
-		vbint(len(conprop)), conprop, // Properties
+	var (
+		i     int
+		build = (b != nil)
 	)
-	return &buf
-}
-
-func (c *Connect) properties() []byte {
-	var buf bytes.Buffer
-	w := nexus.NewWriter(&buf)
 
 	if v := c.sessionExpiryInterval; v > 0 {
-		w.WriteBinary(SessionExpiryInterval, b4int(v))
+		if build {
+			b[i] = SessionExpiryInterval
+			b4int(v).MarshalInto(b[i+1:])
+		}
+		i += 5
 	}
 
 	if v := c.receiveMax; v > 0 {
-		w.WriteBinary(ReceiveMax, b2int(v))
+		if build {
+			b[i] = ReceiveMax
+			b2int(v).MarshalInto(b[i+1:])
+		}
+		i += 3
 	}
 
 	if v := c.maxPacketSize; v > 0 {
-		w.WriteBinary(MaxPacketSize, b4int(v))
+		if build {
+			b[i] = MaxPacketSize
+			b4int(v).MarshalInto(b[i+1:])
+		}
+		i += 5
 	}
 
 	if v := c.topicAliasMax; v > 0 {
-		w.WriteBinary(TopicAliasMax, b2int(v))
+		if build {
+			b[i] = TopicAliasMax
+			b2int(v).MarshalInto(b[i+1:])
+		}
+		i += 3
 	}
 
 	if c.requestResponseInfo {
-		w.WriteBinary(RequestResponseInfo, byte(1))
+		if build {
+			b[i] = RequestResponseInfo
+			b[i+1] = byte(1)
+		}
+		i += 2
 	}
 
 	if c.requestProblemInfo {
-		w.WriteBinary(RequestProblemInfo, byte(1))
+		if build {
+			b[i] = RequestProblemInfo
+			b[i+1] = byte(1)
+		}
+		i += 2
 	}
 
 	for _, prop := range c.userProperties {
-		w.WriteBinary(UserProperty, prop)
+		if build {
+			b[i] = UserProperty
+			prop.MarshalInto(b[i+1:])
+		}
+		i += 1 + prop.width()
 	}
 
 	if v := c.authMethod; len(v) > 0 {
-		w.WriteBinary(AuthMethod, u8str(v))
+		if build {
+			b[i] = AuthMethod
+			u8str(v).MarshalInto(b[i+1:])
+		}
+		i += 1 + u8str(v).width()
 	}
 
 	if v := c.authData; len(v) > 0 {
-		w.WriteBinary(AuthData, v)
+		if build {
+			b[i] = AuthData
+			bindat(v).MarshalInto(b[i+1:])
+		}
+		i += 1 + bindat(v).width()
 	}
-
-	fmt.Println("buf len", buf.Len())
-	fmt.Println("propLen", c.propertiesLen())
-	return buf.Bytes()
+	return i
 }
 
-func (c *Connect) propertiesLen() int {
-	var n int
-	if v := c.sessionExpiryInterval; v > 0 {
-		n += 5
-	}
-
-	if v := c.receiveMax; v > 0 {
-		n += 3
-	}
-
-	if v := c.maxPacketSize; v > 0 {
-		n += 5
-	}
-
-	if v := c.topicAliasMax; v > 0 {
-		n += 3
-	}
-
-	if c.requestResponseInfo {
-		n += 2
-	}
-
-	if c.requestProblemInfo {
-		n += 2
-	}
-
-	for _, prop := range c.userProperties {
-		n += 1
-		n += prop.width()
-	}
-
-	if v := c.authMethod; len(v) > 0 {
-		n += 1
-		n += u8str(v).width()
-	}
-
-	if v := c.authData; len(v) > 0 {
-		n += 1
-		n += len(v)
-	}
-
-	return n
-}
-
-func (c *Connect) payload() []byte {
-	var buf bytes.Buffer
-	w := nexus.NewWriter(&buf)
-	w.WriteBinary(
-		u8str(c.clientID),
+func (c *Connect) payload(b []byte) int {
+	var (
+		i     int
+		build = (b != nil)
 	)
+
+	if build {
+		u8str(c.clientID).MarshalInto(b)
+	}
+	i += u8str(c.clientID).width()
+
 	// will
 	if bits(c.flags).Has(WillFlag) {
-		willprop := c.will()
-		w.WriteBinary(
-			vbint(len(willprop)),
-			willprop,
-			u8str(c.willTopic),
-			c.willPayload,
-		)
+		willLen := c.will(nil)
+		if build {
+			vbint(willLen).MarshalInto(b[i:])
+		}
+		i += vbint(willLen).width()
+
+		if build {
+			c.will(b[i:])
+		}
+		i += willLen
+
+		if build {
+			u8str(c.willTopic).MarshalInto(b[i:])
+		}
+		i += u8str(c.willTopic).width()
+
+		if build {
+			copy(b[i:], c.willPayload)
+		}
+		i += len(c.willPayload)
 	}
+
 	// User Name
 	if bits(c.flags).Has(UsernameFlag) {
-		w.WriteBinary(u8str(c.username))
+		if build {
+			u8str(c.username).MarshalInto(b[i:])
+		}
+		i += u8str(c.username).width()
 	}
 	// Password
 	if bits(c.flags).Has(PasswordFlag) {
-		w.WriteBinary(u8str(c.password))
+		if build {
+			u8str(c.password).MarshalInto(b[i:])
+		}
+		i += u8str(c.password).width()
 	}
 
-	return buf.Bytes()
+	return i
 }
 
-func (c *Connect) will() []byte {
-	var buf bytes.Buffer
-	w := nexus.NewWriter(&buf)
+func (c *Connect) will(b []byte) int {
+	var (
+		i     int
+		build = (b != nil)
+	)
 
 	// Will Properties
 	if v := c.willDelayInterval; v > 0 {
-		w.WriteBinary(WillDelayInterval, b4int(v))
+		if build {
+			b[i] = WillDelayInterval
+			b4int(v).MarshalInto(b[i+1:])
+		}
+		i += 5
 	}
 
 	if c.payloadFormat {
-		w.WriteBinary(PayloadFormatIndicator, byte(1))
+		if build {
+			b[i] = PayloadFormatIndicator
+			b[i+1] = byte(1)
+		}
+		i += 2
 	}
 
 	if v := c.messageExpiryInterval; v > 0 {
-		w.WriteBinary(MessageExpiryInterval, b4int(v))
+		if build {
+			b[i] = MessageExpiryInterval
+			b4int(v).MarshalInto(b[i+1:])
+		}
+		i += 5
 	}
 
 	if v := c.contentType; len(v) > 0 {
-		w.WriteBinary(ContentType, u8str(v))
+		if build {
+			b[i] = ContentType
+			u8str(v).MarshalInto(b[i+1:])
+		}
+		i += 1 + u8str(v).width()
 	}
 
 	if v := c.responseTopic; len(v) > 0 {
-		w.WriteBinary(ResponseTopic, u8str(v))
+		if build {
+			b[i] = ResponseTopic
+			u8str(v).MarshalInto(b[i+1:])
+		}
+		i += 1 + u8str(v).width()
 	}
 
 	if v := c.correlationData; len(v) > 0 {
-		w.WriteBinary(CorrelationData, v)
+		if build {
+			b[i] = CorrelationData
+			copy(b[i+1:], v)
+		}
+		i += 1 + len(v)
 	}
 
 	for _, prop := range c.willProperties {
-		w.WriteBinary(UserProperty, prop)
+		if build {
+			b[i] = UserProperty
+			prop.MarshalInto(b[i+1:])
+		}
+		i += 1 + prop.width()
 	}
 
-	return buf.Bytes()
+	return i
 }
 
 // Settings

@@ -104,7 +104,7 @@ func BenchmarkCreateAndWriteTo(b *testing.B) {
 			c.PasswordFlag = true
 			c.Password = pwd
 			c.Properties.SessionExpiryInterval = &sExpiry
-			our.WriteTo(ioutil.Discard)
+			their.WriteTo(ioutil.Discard)
 		}
 	})
 

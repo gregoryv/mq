@@ -86,6 +86,13 @@ func (v spair) MarshalBinary() ([]byte, error) {
 	return append(key, val...), nil
 }
 
+func (v spair) MarshalInto(data []byte) {
+	_ = data[v.width()-1]
+	v[0].MarshalInto(data)
+	i := v[0].width()
+	v[1].MarshalInto(data[i:])
+}
+
 func (v *spair) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
@@ -120,6 +127,10 @@ func (v u8str) MarshalBinary() ([]byte, error) {
 	return data, nil
 }
 
+func (v u8str) MarshalInto(data []byte) {
+	bindat(v).MarshalInto(data)
+}
+
 func (v *u8str) UnmarshalBinary(data []byte) error {
 	var b bindat
 	if err := b.UnmarshalBinary(data); err != nil {
@@ -146,11 +157,15 @@ func (v bindat) MarshalBinary() ([]byte, error) {
 	if len(v) > MaxUint16 {
 		return nil, marshalErr(v, "", "size exceeded")
 	}
-	data := make([]byte, len(v)+2)
-	l, _ := b2int(len(v)).MarshalBinary()
-	copy(data[:2], l)
-	copy(data[2:], []byte(v))
+	data := make([]byte, v.width())
+	v.MarshalInto(data)
 	return data, nil
+}
+
+func (v bindat) MarshalInto(data []byte) {
+	_ = data[v.width()-1]
+	b2int(len(v)).MarshalInto(data)
+	copy(data[2:], []byte(v))
 }
 
 func (v *bindat) UnmarshalBinary(data []byte) error {
@@ -177,12 +192,11 @@ func (v vbint) WriteTo(w io.Writer) (int64, error) {
 	return src(v).WriteTo(w)
 }
 
-// MarshalBinary always returns nil error
-func (v vbint) MarshalBinary() ([]byte, error) {
-	data := make([]byte, 0, 4) // max four
+func (v vbint) MarshalInto(data []byte) {
+	_ = data[v.width()-1]
+	var i int
 	if v == 0 {
-		data = append(data, 0)
-		return data, nil
+		return
 	}
 	for v > 0 {
 		encodedByte := byte(v % 128)
@@ -190,8 +204,19 @@ func (v vbint) MarshalBinary() ([]byte, error) {
 		if v > 0 {
 			encodedByte = encodedByte | 128
 		}
-		data = append(data, encodedByte)
+		if i == len(data) {
+			break
+		}
+		data[i] = encodedByte
+		i++
+		//fmt.Printf("%v %v %v\n", i, v, encodedByte)
 	}
+}
+
+// MarshalBinary always returns nil error
+func (v vbint) MarshalBinary() ([]byte, error) {
+	data := make([]byte, v.width()) // max four
+	v.MarshalInto(data)
 	return data, nil
 }
 
@@ -252,6 +277,11 @@ func (v b2int) WriteTo(w io.Writer) (int64, error) {
 	return src(v).WriteTo(w)
 }
 
+func (v b2int) MarshalInto(data []byte) {
+	_ = data[1]
+	binary.BigEndian.PutUint16(data, uint16(v))
+}
+
 func (v b2int) MarshalBinary() ([]byte, error) {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, uint16(v))
@@ -272,6 +302,11 @@ type b4int uint32
 
 func (v b4int) WriteTo(w io.Writer) (int64, error) {
 	return src(v).WriteTo(w)
+}
+
+func (v b4int) MarshalInto(data []byte) {
+	_ = data[3]
+	binary.BigEndian.PutUint32(data, uint32(v))
 }
 
 func (v b4int) MarshalBinary() ([]byte, error) {
