@@ -5,17 +5,21 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 	"testing"
+	"unsafe"
 
 	"github.com/eclipse/paho.golang/packets"
 )
 
-func TestConnect(t *testing.T) {
+func TestCompareConnect(t *testing.T) {
 	var (
 		alive   = uint16(30)
 		cid     = "macy"
 		user    = "john.doe"
 		pwd     = []byte("secret")
 		sExpiry = uint32(30)
+
+		authMethod = "digest"
+		authData   = []byte("secret")
 	)
 
 	// our packet
@@ -25,9 +29,9 @@ func TestConnect(t *testing.T) {
 	our.SetUsername(user)
 	our.SetPassword(pwd)
 	our.SetSessionExpiryInterval(sExpiry)
-
-	var ourData bytes.Buffer
-	our.WriteTo(&ourData)
+	our.AddUserProp(property{"color", "red"})
+	our.SetAuthMethod(authMethod)
+	our.SetAuthData(authData)
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
@@ -38,7 +42,17 @@ func TestConnect(t *testing.T) {
 	c.Username = user
 	c.PasswordFlag = true
 	c.Password = pwd
-	c.Properties.SessionExpiryInterval = &sExpiry
+
+	p := c.Properties
+	p.SessionExpiryInterval = &sExpiry
+	p.User = append(p.User, packets.User{"color", "red"})
+	p.AuthMethod = authMethod
+	p.AuthData = authData
+
+	// dump the data
+	var ourData bytes.Buffer
+	our.WriteTo(&ourData)
+
 	var theirData bytes.Buffer
 	their.WriteTo(&theirData)
 
@@ -48,6 +62,10 @@ func TestConnect(t *testing.T) {
 	if a != b {
 		t.Logf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), a)
 		t.Logf("\n\nour %v bytes\n%s\n\n", ourData.Len(), b)
+	} else {
+		t.Logf("their size of %T %v bytes", their, unsafe.Sizeof(their))
+		t.Logf("our size of %T %v bytes", our, unsafe.Sizeof(our))
+		t.Logf("\n\n%s\n\n%s\n\n", our, a)
 	}
 }
 

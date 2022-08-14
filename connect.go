@@ -26,7 +26,7 @@ func NewConnect() *Connect {
 type Connect struct {
 	fixed           byte
 	flags           byte
-	protocolVersion byte
+	protocolVersion uint8
 	protocolName    string
 	clientID        string
 	keepAlive       uint16
@@ -39,8 +39,8 @@ type Connect struct {
 	topicAliasMax         uint16
 	requestResponseInfo   bool
 	requestProblemInfo    bool
-	userProperties        []property
-	willProperties        []property
+	userProp              []property
+	willProp              []property
 	authMethod            string
 	authData              []byte
 
@@ -53,9 +53,40 @@ type Connect struct {
 	contentType           string
 	responseTopic         string
 	correlationData       []byte
-	username              string
-	password              []byte
+
+	username string
+	password []byte
 }
+
+// flags settings
+func (c *Connect) SetWillRetain(v bool) { c.toggle(WillRetain, v) }
+func (c *Connect) SetWillFlag(v bool)   { c.toggle(WillFlag, v) }
+func (c *Connect) SetCleanStart(v bool) { c.toggle(CleanStart, v) }
+
+func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = v }
+func (c *Connect) SetProtocolName(v string)   { c.protocolName = v }
+func (c *Connect) SetClientID(v string)       { c.clientID = v }
+func (c *Connect) SetKeepAlive(v uint16)      { c.keepAlive = v }
+
+func (c *Connect) SetWillQoS(v uint8)                { c.willQoS = v }
+func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
+func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
+func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
+func (c *Connect) SetTopicAliasMax(v uint16)         { c.topicAliasMax = v }
+func (c *Connect) SetRequestResponseInfo(v bool)     { c.requestResponseInfo = v }
+func (c *Connect) SetRequestProblemInfo(v bool)      { c.requestProblemInfo = v }
+func (c *Connect) AddUserProp(v property)            { c.userProp = append(c.userProp, v) }
+func (c *Connect) AddWillProp(v property)            { c.willProp = append(c.willProp, v) }
+func (c *Connect) SetAuthMethod(v string)            { c.authMethod = v }
+func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
+
+func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
+func (c *Connect) SetContentType(v string)       { c.contentType = v }
+func (c *Connect) SetResponseTopic(v string)     { c.responseTopic = v }
+func (c *Connect) SetCorrelationData(v []byte)   { c.correlationData = v }
+
+func (c *Connect) SetUsername(v string) { c.username = v }
+func (c *Connect) SetPassword(v []byte) { c.password = v }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	var (
@@ -131,6 +162,7 @@ func (c *Connect) properties(b []byte) int {
 		build = (b != nil)
 	)
 
+	// Session expiry interval
 	if v := c.sessionExpiryInterval; v > 0 {
 		if build {
 			b[i] = SessionExpiryInterval
@@ -139,6 +171,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 5
 	}
 
+	// Receive maximum
 	if v := c.receiveMax; v > 0 {
 		if build {
 			b[i] = ReceiveMax
@@ -147,6 +180,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 3
 	}
 
+	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
 		if build {
 			b[i] = MaxPacketSize
@@ -155,6 +189,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 5
 	}
 
+	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
 		if build {
 			b[i] = TopicAliasMax
@@ -163,6 +198,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 3
 	}
 
+	// Request response information
 	if c.requestResponseInfo {
 		if build {
 			b[i] = RequestResponseInfo
@@ -171,6 +207,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 2
 	}
 
+	// Request problem information
 	if c.requestProblemInfo {
 		if build {
 			b[i] = RequestProblemInfo
@@ -179,14 +216,7 @@ func (c *Connect) properties(b []byte) int {
 		i += 2
 	}
 
-	for _, prop := range c.userProperties {
-		if build {
-			b[i] = UserProperty
-			prop.MarshalInto(b[i+1:])
-		}
-		i += 1 + prop.width()
-	}
-
+	// Authentication method
 	if v := c.authMethod; len(v) > 0 {
 		if build {
 			b[i] = AuthMethod
@@ -195,12 +225,24 @@ func (c *Connect) properties(b []byte) int {
 		i += 1 + u8str(v).width()
 	}
 
+	// Authentication data
 	if v := c.authData; len(v) > 0 {
 		if build {
 			b[i] = AuthData
 			bindat(v).MarshalInto(b[i+1:])
 		}
 		i += 1 + bindat(v).width()
+	}
+
+	// User properties, in the spec it's defined before authentication
+	// method. Though order should not matter, placed here to mimic
+	// pahos order.
+	for _, prop := range c.userProp {
+		if build {
+			b[i] = UserProperty
+			prop.MarshalInto(b[i+1:])
+		}
+		i += 1 + prop.width()
 	}
 	return i
 }
@@ -313,7 +355,7 @@ func (c *Connect) will(b []byte) int {
 		i += 1 + len(v)
 	}
 
-	for _, prop := range c.willProperties {
+	for _, prop := range c.willProp {
 		if build {
 			b[i] = UserProperty
 			prop.MarshalInto(b[i+1:])
@@ -325,22 +367,6 @@ func (c *Connect) will(b []byte) int {
 }
 
 // Settings
-
-func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
-func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
-func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
-func (c *Connect) SetTopicAliasMax(v uint16)         { c.topicAliasMax = v }
-func (c *Connect) SetRequestResponseInfo(v bool)     { c.requestResponseInfo = v }
-func (c *Connect) SetClientID(v string)              { c.clientID = v }
-func (c *Connect) SetKeepAlive(v uint16)             { c.keepAlive = v }
-func (c *Connect) SetWillRetain(v bool)              { c.toggle(WillRetain, v) }
-func (c *Connect) SetWillFlag(v bool)                { c.toggle(WillFlag, v) }
-func (c *Connect) SetCleanStart(v bool)              { c.toggle(CleanStart, v) }
-func (c *Connect) SetUsername(v string)              { c.username = v }
-func (c *Connect) SetPassword(v []byte)              { c.password = v }
-
-// SetWillQoS, valid values are 0, 1 or 2
-func (c *Connect) SetWillQoS(v uint8) { c.willQoS = v }
 
 func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s", c.clientID,
