@@ -46,8 +46,8 @@ type Connect struct {
 
 	willDelayInterval uint32
 	willTopic         string
-	willPayload       []byte
 	payloadFormat     bool
+	willPayload       []byte
 
 	messageExpiryInterval uint32
 	contentType           string
@@ -81,9 +81,11 @@ func (c *Connect) SetAuthMethod(v string)            { c.authMethod = v }
 func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
 
 func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
-func (c *Connect) SetContentType(v string)       { c.contentType = v }
-func (c *Connect) SetResponseTopic(v string)     { c.responseTopic = v }
-func (c *Connect) SetCorrelationData(v []byte)   { c.correlationData = v }
+func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
+
+func (c *Connect) SetContentType(v string)     { c.contentType = v }
+func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
+func (c *Connect) SetCorrelationData(v []byte) { c.correlationData = v }
 
 func (c *Connect) SetUsername(v string) { c.username = v }
 func (c *Connect) SetPassword(v []byte) { c.password = v }
@@ -285,10 +287,11 @@ func (c *Connect) payload(b []byte) int {
 		}
 		i += u8str(c.willTopic).width()
 
+		// payload
 		if build {
-			copy(b[i:], c.willPayload)
+			bindat(c.willPayload).MarshalInto(b[i:])
 		}
-		i += len(c.willPayload)
+		i += bindat(c.willPayload).width()
 	}
 
 	// User Name
@@ -391,6 +394,10 @@ func (c *Connect) Flags() connectFlags {
 func (c *Connect) updateFlags() {
 	c.toggle(UsernameFlag, len(c.username) > 0)
 	c.toggle(PasswordFlag, len(c.password) > 0)
+	c.toggle(WillFlag,
+		len(c.willTopic) > 0,
+	)
+
 	c.flags &= ^(WillQoS1 | WillQoS2) // reset
 	c.toggle(c.willQoS<<3, c.willQoS < 3)
 }

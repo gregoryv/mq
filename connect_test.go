@@ -20,6 +20,7 @@ func TestCompareConnect(t *testing.T) {
 
 		authMethod = "digest"
 		authData   = []byte("secret")
+		willtop    = "topic/dead/clients"
 	)
 
 	// our packet
@@ -32,6 +33,7 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp(property{"color", "red"})
 	our.SetAuthMethod(authMethod)
 	our.SetAuthData(authData)
+	our.SetWillTopic(willtop)
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
@@ -42,6 +44,8 @@ func TestCompareConnect(t *testing.T) {
 	c.Username = user
 	c.PasswordFlag = true
 	c.Password = pwd
+	c.WillFlag = true
+	c.WillTopic = willtop
 	p := c.Properties
 	p.SessionExpiryInterval = &sExpiry
 	p.User = append(p.User, packets.User{"color", "red"})
@@ -49,10 +53,8 @@ func TestCompareConnect(t *testing.T) {
 	p.AuthData = authData
 
 	// dump the data
-	var ourData bytes.Buffer
+	var ourData, theirData bytes.Buffer
 	our.WriteTo(&ourData)
-
-	var theirData bytes.Buffer
 	their.WriteTo(&theirData)
 
 	a := hex.Dump(theirData.Bytes())
