@@ -47,7 +47,7 @@ type Connect struct {
 
 	willDelayInterval uint32
 	willTopic         string
-	payloadFormat     bool
+	willPayloadFormat bool
 	willPayload       []byte
 
 	messageExpiryInterval uint32
@@ -83,7 +83,7 @@ func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
 
 func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
 func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
-func (c *Connect) SetPayloadFormat(v bool)       { c.payloadFormat = v }
+func (c *Connect) SetPayloadFormat(v bool)       { c.willPayloadFormat = v }
 func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
 
 func (c *Connect) SetContentType(v string)     { c.contentType = v }
@@ -330,7 +330,7 @@ func (c *Connect) will(b []byte) int {
 		i += 5
 	}
 
-	if c.payloadFormat {
+	if c.willPayloadFormat {
 		if build {
 			b[i] = PayloadFormatIndicator
 			b[i+1] = byte(1)
