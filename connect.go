@@ -90,24 +90,28 @@ func (c *Connect) SetPassword(v []byte) { c.password = v }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	var (
-		hl = c.variableHeader(nil)
-		pl = c.payload(nil)
-
+		// calculate full size of packet to make it as efficient as
+		// possible and allocate one []byte for everything
+		hl   = c.variableHeader(nil)
+		pl   = c.payload(nil)
 		rem  = hl + pl
 		size = 1 + vbint(rem).width() + rem
 		b    = make([]byte, size)
 		i    int
 	)
 
+	// Fixed header
 	b[0] = c.fixed
 	i++
-
+	// remaining length
 	vbint(rem).MarshalInto(b[i:])
 	i += vbint(rem).width()
 
+	// Variable header
 	c.variableHeader(b[i:])
 	i += hl
 
+	// Packet payload
 	c.payload(b[i:])
 
 	n, err := w.Write(b)
@@ -119,26 +123,31 @@ func (c *Connect) variableHeader(b []byte) int {
 		i     int
 		build = (b != nil)
 	)
+	// Protocol name
 	if build {
 		u8str(c.protocolName).MarshalInto(b)
 	}
 	i += u8str(c.protocolName).width()
 
+	// Protocol version
 	if build {
 		b[i] = c.protocolVersion
 	}
 	i++
 
+	// Flags
 	if build {
 		b[i] = c.flags
 	}
 	i++
 
+	// Keep alive
 	if build {
 		b2int(c.keepAlive).MarshalInto(b[i:])
 	}
 	i += 2
 
+	// Properties
 	proplen := c.properties(nil)
 	if build {
 		vbint(proplen).MarshalInto(b[i:])

@@ -42,7 +42,6 @@ func TestCompareConnect(t *testing.T) {
 	c.Username = user
 	c.PasswordFlag = true
 	c.Password = pwd
-
 	p := c.Properties
 	p.SessionExpiryInterval = &sExpiry
 	p.User = append(p.User, packets.User{"color", "red"})
