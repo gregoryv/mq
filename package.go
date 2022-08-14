@@ -87,6 +87,12 @@ func (v property) MarshalInto(data []byte) {
 	v[1].MarshalInto(data[i:])
 }
 
+func (v property) fill(data []byte, i int) int {
+	i += v[0].fill(data, i)
+	_ = v[1].fill(data, i)
+	return v.width()
+}
+
 func (v *property) UnmarshalBinary(data []byte) error {
 	if err := v[0].UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
@@ -125,6 +131,10 @@ func (v u8str) MarshalInto(data []byte) {
 	bindat(v).MarshalInto(data)
 }
 
+func (v u8str) fill(data []byte, i int) int {
+	return bindat(v).fill(data, i)
+}
+
 func (v *u8str) UnmarshalBinary(data []byte) error {
 	var b bindat
 	if err := b.UnmarshalBinary(data); err != nil {
@@ -160,6 +170,14 @@ func (v bindat) MarshalInto(data []byte) {
 	_ = data[v.width()-1]
 	b2int(len(v)).MarshalInto(data)
 	copy(data[2:], []byte(v))
+}
+
+func (v bindat) fill(data []byte, i int) int {
+	if len(data) >= i+v.width() {
+		i += b2int(len(v)).fill(data, i)
+		copy(data[i:], []byte(v))
+	}
+	return v.width()
 }
 
 func (v *bindat) UnmarshalBinary(data []byte) error {
@@ -205,6 +223,24 @@ func (v vbint) MarshalInto(data []byte) {
 		i++
 		//fmt.Printf("%v %v %v\n", i, v, encodedByte)
 	}
+}
+
+func (v vbint) fill(data []byte, i int) int {
+	if len(data) >= i+v.width() {
+		for v > 0 {
+			encodedByte := byte(v % 128)
+			v = v / 128
+			if v > 0 {
+				encodedByte = encodedByte | 128
+			}
+			if i == len(data) {
+				break
+			}
+			data[i] = encodedByte
+			i++
+		}
+	}
+	return v.width()
 }
 
 // MarshalBinary always returns nil error
@@ -261,6 +297,12 @@ func (v bits) Toggle(on bool, bit byte) {
 	}
 	v ^= bits(bit)
 }
+func (v bits) fill(data []byte, i int) int {
+	if len(data) >= i+1 {
+		data[i] = byte(v)
+	}
+	return 1
+}
 
 // ----------------------------------------
 
@@ -274,6 +316,13 @@ func (v b2int) WriteTo(w io.Writer) (int64, error) {
 func (v b2int) MarshalInto(data []byte) {
 	_ = data[1]
 	binary.BigEndian.PutUint16(data, uint16(v))
+}
+
+func (v b2int) fill(data []byte, i int) int {
+	if len(data) >= i+v.width() {
+		binary.BigEndian.PutUint16(data[i:], uint16(v))
+	}
+	return v.width()
 }
 
 func (v b2int) MarshalBinary() ([]byte, error) {
@@ -301,6 +350,13 @@ func (v b4int) WriteTo(w io.Writer) (int64, error) {
 func (v b4int) MarshalInto(data []byte) {
 	_ = data[3]
 	binary.BigEndian.PutUint32(data, uint32(v))
+}
+
+func (v b4int) fill(data []byte, i int) int {
+	if len(data) >= i+v.width() {
+		binary.BigEndian.PutUint32(data[i:], uint32(v))
+	}
+	return v.width()
 }
 
 func (v b4int) MarshalBinary() ([]byte, error) {

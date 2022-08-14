@@ -97,288 +97,163 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	var (
 		// calculate full size of packet to make it as efficient as
 		// possible and allocate one []byte for everything
-		hl   = c.variableHeader(nil)
-		pl   = c.payload(nil)
-		rem  = hl + pl
+		rem  = c.variableHeader(nil, 0) + c.payload(nil, 0)
 		size = 1 + vbint(rem).width() + rem
 		b    = make([]byte, size)
 		i    int
 	)
 
-	// firstByte header
-	b[0] = c.fixed
-	i++
-	// remaining length
-	vbint(rem).MarshalInto(b[i:])
-	i += vbint(rem).width()
-
-	// Variable header
-	c.variableHeader(b[i:])
-	i += hl
-
-	// Packet payload
-	c.payload(b[i:])
+	i += bits(c.fixed).fill(b, i) // firstByte header
+	i += vbint(rem).fill(b, i)    // remaining length
+	i += c.variableHeader(b, i)   // Variable header
+	_ = c.payload(b, i)           // Packet payload
 
 	n, err := w.Write(b)
 	return int64(n), err
 }
 
-func (c *Connect) variableHeader(b []byte) int {
-	var (
-		i     int
-		build = (b != nil)
-	)
-	// Protocol name
-	if build {
-		u8str(c.protocolName).MarshalInto(b)
-	}
-	i += u8str(c.protocolName).width()
+func (c *Connect) variableHeader(b []byte, i int) int {
+	n := i
 
-	// Protocol version
-	if build {
-		b[i] = c.protocolVersion
-	}
-	i++
+	i += u8str(c.protocolName).fill(b, i)       // Protocol name
+	i += bits(c.protocolVersion).fill(b, i)     // Protocol version
+	i += bits(c.flags).fill(b, i)               // Flags
+	i += b2int(c.keepAlive).fill(b, i)          // Keep alive
+	i += vbint(c.properties(nil, 0)).fill(b, i) // Properties len
+	i += c.properties(b, i)                     // Properties
 
-	// Flags
-	if build {
-		b[i] = c.flags
-	}
-	i++
-
-	// Keep alive
-	if build {
-		b2int(c.keepAlive).MarshalInto(b[i:])
-	}
-	i += 2
-
-	// Properties
-	proplen := c.properties(nil)
-	if build {
-		vbint(proplen).MarshalInto(b[i:])
-	}
-	i += vbint(proplen).width()
-
-	if build {
-		c.properties(b[i:])
-	}
-	i += proplen
-
-	return i
+	return i - n
 }
 
 // properties returns length properties in wire format, if b is nil
 // nothing is written, used to calculate length.
-func (c *Connect) properties(b []byte) int {
+func (c *Connect) properties(b []byte, i int) int {
 	c.updateFlags()
-	var (
-		i     int
-		build = (b != nil)
-	)
+	n := i
 
 	// Session expiry interval
 	if v := c.sessionExpiryInterval; v > 0 {
-		if build {
-			b[i] = SessionExpiryInterval
-			b4int(v).MarshalInto(b[i+1:])
-		}
-		i += 5
+		i += bits(SessionExpiryInterval).fill(b, i)
+		i += b4int(v).fill(b, i)
 	}
 
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
-		if build {
-			b[i] = ReceiveMax
-			b2int(v).MarshalInto(b[i+1:])
-		}
-		i += 3
+		i += bits(ReceiveMax).fill(b, i)
+		i += b2int(v).fill(b, i)
 	}
 
 	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
-		if build {
-			b[i] = MaxPacketSize
-			b4int(v).MarshalInto(b[i+1:])
-		}
-		i += 5
+		i += bits(MaxPacketSize).fill(b, i)
+		i += b4int(v).fill(b, i)
 	}
 
 	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
-		if build {
-			b[i] = TopicAliasMax
-			b2int(v).MarshalInto(b[i+1:])
-		}
-		i += 3
+		i += bits(TopicAliasMax).fill(b, i)
+		i += b2int(v).fill(b, i)
 	}
 
 	// Request response information
 	if c.requestResponseInfo {
-		if build {
-			b[i] = RequestResponseInfo
-			b[i+1] = byte(1)
-		}
-		i += 2
+		i += bits(RequestResponseInfo).fill(b, i)
+		i += bits(1).fill(b, i)
 	}
 
 	// Request problem information
 	if c.requestProblemInfo {
-		if build {
-			b[i] = RequestProblemInfo
-			b[i+1] = byte(1)
-		}
-		i += 2
+		i += bits(RequestProblemInfo).fill(b, i)
+		i += bits(1).fill(b, i)
 	}
 
 	// Authentication method
 	if v := c.authMethod; len(v) > 0 {
-		if build {
-			b[i] = AuthMethod
-			u8str(v).MarshalInto(b[i+1:])
-		}
-		i += 1 + u8str(v).width()
+		i += bits(AuthMethod).fill(b, i)
+		i += u8str(v).fill(b, i)
 	}
 
 	// Authentication data
 	if v := c.authData; len(v) > 0 {
-		if build {
-			b[i] = AuthData
-			bindat(v).MarshalInto(b[i+1:])
-		}
-		i += 1 + bindat(v).width()
+		i += bits(AuthData).fill(b, i)
+		i += bindat(v).fill(b, i)
 	}
 
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
 	// pahos order.
 	for _, prop := range c.userProp {
-		if build {
-			b[i] = UserProperty
-			prop.MarshalInto(b[i+1:])
-		}
-		i += 1 + prop.width()
+		i += bits(UserProperty).fill(b, i)
+		i += prop.fill(b, i)
 	}
-	return i
+	return i - n
 }
 
-func (c *Connect) payload(b []byte) int {
-	var (
-		i     int
-		build = (b != nil)
-	)
+func (c *Connect) payload(b []byte, i int) int {
+	n := i
 
-	if build {
-		u8str(c.clientID).MarshalInto(b)
-	}
-	i += u8str(c.clientID).width()
+	i += u8str(c.clientID).fill(b, i)
 
 	// will
 	if bits(c.flags).Has(WillFlag) {
-		willLen := c.will(nil)
-		if build {
-			vbint(willLen).MarshalInto(b[i:])
-		}
-		i += vbint(willLen).width()
-
-		if build {
-			c.will(b[i:])
-		}
-		i += willLen
-
-		if build {
-			u8str(c.willTopic).MarshalInto(b[i:])
-		}
-		i += u8str(c.willTopic).width()
-
-		// payload
-		if build {
-			bindat(c.willPayload).MarshalInto(b[i:])
-		}
-		i += bindat(c.willPayload).width()
+		i += vbint(c.will(nil, 0)).fill(b, i)
+		i += c.will(b, i)
+		i += u8str(c.willTopic).fill(b, i)    // topic
+		i += bindat(c.willPayload).fill(b, i) // payload
 	}
 
 	// User Name
 	if bits(c.flags).Has(UsernameFlag) {
-		if build {
-			u8str(c.username).MarshalInto(b[i:])
-		}
-		i += u8str(c.username).width()
+		i += u8str(c.username).fill(b, i)
 	}
 	// Password
 	if bits(c.flags).Has(PasswordFlag) {
-		if build {
-			u8str(c.password).MarshalInto(b[i:])
-		}
-		i += u8str(c.password).width()
+		i += u8str(c.password).fill(b, i)
 	}
 
-	return i
+	return i - n
 }
 
-func (c *Connect) will(b []byte) int {
-	var (
-		i     int
-		build = (b != nil)
-	)
+func (c *Connect) will(b []byte, i int) int {
+	n := i
 
 	// Will Properties
 	if v := c.willDelayInterval; v > 0 {
-		if build {
-			b[i] = WillDelayInterval
-			b4int(v).MarshalInto(b[i+1:])
-		}
-		i += 5
+		i += bits(WillDelayInterval).fill(b, i)
+		i += b4int(v).fill(b, i)
 	}
 
 	if c.willPayloadFormat {
-		if build {
-			b[i] = PayloadFormatIndicator
-			b[i+1] = byte(1)
-		}
-		i += 2
+		i += bits(PayloadFormatIndicator).fill(b, i)
+		i += bits(1).fill(b, i)
 	}
 
 	if v := c.messageExpiryInterval; v > 0 {
-		if build {
-			b[i] = MessageExpiryInterval
-			b4int(v).MarshalInto(b[i+1:])
-		}
-		i += 5
+		i += bits(MessageExpiryInterval).fill(b, i)
+		i += b4int(v).fill(b, i)
 	}
 
 	if v := c.willContentType; len(v) > 0 {
-		if build {
-			b[i] = ContentType
-			u8str(v).MarshalInto(b[i+1:])
-		}
-		i += 1 + u8str(v).width()
+		i += bits(ContentType).fill(b, i)
+		i += u8str(v).fill(b, i)
 	}
 
 	if v := c.responseTopic; len(v) > 0 {
-		if build {
-			b[i] = ResponseTopic
-			u8str(v).MarshalInto(b[i+1:])
-		}
-		i += 1 + u8str(v).width()
+		i += bits(ResponseTopic).fill(b, i)
+		i += u8str(v).fill(b, i)
 	}
 
 	if v := c.correlationData; len(v) > 0 {
-		if build {
-			b[i] = CorrelationData
-			copy(b[i+1:], v)
-		}
-		i += 1 + len(v)
+		i += bits(CorrelationData).fill(b, i)
+		i += bindat(v).fill(b, i)
 	}
 
 	for _, prop := range c.willProp {
-		if build {
-			b[i] = UserProperty
-			prop.MarshalInto(b[i+1:])
-		}
-		i += 1 + prop.width()
+		i += bits(UserProperty).fill(b, i)
+		i += prop.fill(b, i)
 	}
 
-	return i
+	return i - n
 }
 
 func (c *Connect) String() string {
