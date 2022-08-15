@@ -92,10 +92,30 @@ func (c *Connect) SetWillQoS(v uint8) {
 func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
 func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
 func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
-func (c *Connect) SetTopicAliasMax(v uint16)         { c.topicAliasMax = v }
-func (c *Connect) SetRequestResponseInfo(v bool)     { c.requestResponseInfo = v }
-func (c *Connect) SetRequestProblemInfo(v bool)      { c.requestProblemInfo = v }
 
+// This value indicates the highest value that the Client will accept
+// as a Topic Alias sent by the Server. The Client uses this value to
+// limit the number of Topic Aliases that it is willing to hold on
+// this Connection.
+func (c *Connect) SetTopicAliasMax(v uint16) {
+	c.topicAliasMax = v
+}
+
+// The Client uses this value to request the Server to return Response
+// Information in the CONNACK
+func (c *Connect) SetRequestResponseInfo(v bool) {
+	c.requestResponseInfo = v
+}
+
+// The Client uses this value to indicate whether the Reason String or
+// User Properties are sent in the case of failures.
+func (c *Connect) SetRequestProblemInfo(v bool) {
+	c.requestProblemInfo = v
+}
+
+// AddUserProp adds a user property. The User Property is allowed to
+// appear multiple times to represent multiple name, value pairs. The
+// same name is allowed to appear more than once.
 func (c *Connect) AddUserProp(key, val string) {
 	c.userProp = append(c.userProp, property{key, val})
 }
@@ -104,14 +124,43 @@ func (c *Connect) AddWillProp(v property) { c.willProp = append(c.willProp, v) }
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
 func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
 
-func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
-func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }
-func (c *Connect) SetWillPayloadFormat(v bool)   { c.willPayloadFormat = v }
-func (c *Connect) SetWillPayload(v []byte)       { c.willPayload = v }
+// SetWillDelayInterval in seconds. The Server delays publishing the
+// Client’s Will Message until the Will Delay Interval has passed or
+// the Session ends, whichever happens first.
+func (c *Connect) SetWillDelayInterval(v uint32) {
+	c.willDelayInterval = v
+}
 
-func (c *Connect) SetWillContentType(v string) { c.willContentType = v }
-func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
-func (c *Connect) SetCorrelationData(v []byte) { c.correlationData = v }
+func (c *Connect) SetWillTopic(v string) { c.willTopic = v }
+
+// SetWillPayloadFormat, false indicates that the Will Message is
+// unspecified bytes. True indicates that the Will Message is UTF-8
+// Encoded Character Data.
+func (c *Connect) SetWillPayloadFormat(v bool) {
+	c.willPayloadFormat = v
+}
+
+func (c *Connect) SetWillPayload(v []byte) { c.willPayload = v }
+
+// The value of the Content Type is defined by the sending and
+// receiving application, e.g. it may be a mime type like
+// application/json.
+func (c *Connect) SetWillContentType(v string) {
+	c.willContentType = v
+}
+
+// SetResponseTopic a UTF-8 encoded string which is used as the topic
+// name for a response message.
+func (c *Connect) SetResponseTopic(v string) {
+	c.responseTopic = v
+}
+
+// The Correlation Data is used by the sender of the Request Message
+// to identify which request the Response Message is for when it is
+// received.
+func (c *Connect) SetCorrelationData(v []byte) {
+	c.correlationData = v
+}
 
 func (c *Connect) SetUsername(v string) {
 	c.username = v

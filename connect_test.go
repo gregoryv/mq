@@ -22,6 +22,19 @@ func TestConnect(t *testing.T) {
 	c.SetWillFlag(true) // would be nice not to have to think about this one
 	c.SetWillTopic("topic/dead/clients")
 	c.SetWillPayload([]byte("goodbye"))
+	c.SetMaxPacketSize(4096)
+	c.SetTopicAliasMax(128)
+	c.SetRequestResponseInfo(true)
+	c.SetRequestProblemInfo(true)
+	c.SetWillDelayInterval(111)
+	c.SetWillPayloadFormat(true)
+	c.SetWillContentType("application/json")
+	c.SetResponseTopic("response/to/macy")
+	c.SetCorrelationData([]byte("perhaps a uuid"))
+	c.AddWillProp(property{
+		"connected",
+		"2022-01-01 14:44:32",
+	})
 
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
