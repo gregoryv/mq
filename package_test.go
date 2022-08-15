@@ -167,17 +167,17 @@ func Test_vbint(t *testing.T) {
 
 // ................................................ Data representations
 
-func Test_bindat(t *testing.T) {
+func Test_bindata(t *testing.T) {
 	indata := make([]byte, 64)
 	if _, err := rand.Read(indata); err != nil {
 		t.Fatal(err)
 	}
 
-	b := bindat(indata)
+	b := bindata(indata)
 	data := make([]byte, b.width())
 	b.fill(data, 0)
 
-	var a bindat
+	var a bindata
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}

@@ -97,11 +97,11 @@ func (v property) width() int {
 type u8str string
 
 func (v u8str) fill(data []byte, i int) int {
-	return bindat(v).fill(data, i)
+	return bindata(v).fill(data, i)
 }
 
 func (v *u8str) UnmarshalBinary(data []byte) error {
-	var b bindat
+	var b bindata
 	if err := b.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "", err.(*Malformed))
 	}
@@ -110,15 +110,15 @@ func (v *u8str) UnmarshalBinary(data []byte) error {
 }
 
 func (v u8str) width() int {
-	return bindat(v).width()
+	return bindata(v).width()
 }
 
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
-type bindat []byte
+type bindata []byte
 
-func (v bindat) fill(data []byte, i int) int {
+func (v bindata) fill(data []byte, i int) int {
 	if len(data) >= i+v.width() {
 		i += b2int(len(v)).fill(data, i)
 		copy(data[i:], []byte(v))
@@ -126,7 +126,7 @@ func (v bindat) fill(data []byte, i int) int {
 	return v.width()
 }
 
-func (v *bindat) UnmarshalBinary(data []byte) error {
+func (v *bindata) UnmarshalBinary(data []byte) error {
 	var l b2int
 	_ = l.UnmarshalBinary(data)
 	if len(data) < int(l)+2 {
@@ -137,7 +137,7 @@ func (v *bindat) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-func (v bindat) width() int {
+func (v bindata) width() int {
 	return 2 + len(v)
 }
 

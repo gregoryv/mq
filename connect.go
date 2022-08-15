@@ -259,7 +259,7 @@ func (c *Connect) properties(b []byte, i int) int {
 	// Authentication data
 	if v := c.authData; len(v) > 0 {
 		i += Bits(AuthData).fill(b, i)
-		i += bindat(v).fill(b, i)
+		i += bindata(v).fill(b, i)
 	}
 
 	// User properties, in the spec it's defined before authentication
@@ -281,8 +281,8 @@ func (c *Connect) payload(b []byte, i int) int {
 	if Bits(c.flags).Has(WillFlag) {
 		i += vbint(c.will(_LENGTH, 0)).fill(b, i)
 		i += c.will(b, i)
-		i += u8str(c.willTopic).fill(b, i)    // topic
-		i += bindat(c.willPayload).fill(b, i) // payload
+		i += u8str(c.willTopic).fill(b, i)     // topic
+		i += bindata(c.willPayload).fill(b, i) // payload
 	}
 
 	// User Name
@@ -328,7 +328,7 @@ func (c *Connect) will(b []byte, i int) int {
 
 	if v := c.correlationData; len(v) > 0 {
 		i += Bits(CorrelationData).fill(b, i)
-		i += bindat(v).fill(b, i)
+		i += bindata(v).fill(b, i)
 	}
 
 	for _, prop := range c.willProp {
