@@ -34,11 +34,11 @@ func TestCompareConnect(t *testing.T) {
 	c := their.Content.(*packets.Connect)
 	c.KeepAlive = our.KeepAlive()
 	c.ClientID = our.ClientID()
-	c.UsernameFlag = true
+	c.UsernameFlag = our.HasFlag(UsernameFlag)
 	c.Username = our.Username()
-	c.PasswordFlag = true
+	c.PasswordFlag = our.HasFlag(PasswordFlag)
 	c.Password = our.Password()
-	c.WillFlag = true
+	c.WillFlag = our.HasFlag(WillFlag)
 	c.WillTopic = "topic/dead/clients"
 	c.WillMessage = []byte("goodbye")
 

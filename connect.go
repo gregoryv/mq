@@ -65,10 +65,8 @@ func (c *Connect) ClientID() string  { return c.clientID }
 func (c *Connect) Username() string  { return c.username }
 func (c *Connect) Password() []byte  { return c.password }
 
-func (c *Connect) Flags() byte {
-	c.updateFlags()
-	return c.flags
-}
+func (c *Connect) Flags() Bits         { return Bits(c.flags) }
+func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) { c.toggle(WillRetain, v) }
@@ -80,7 +78,11 @@ func (c *Connect) SetProtocolName(v string)   { c.protocolName = v }
 func (c *Connect) SetClientID(v string)       { c.clientID = v }
 func (c *Connect) SetKeepAlive(v uint16)      { c.keepAlive = v }
 
-func (c *Connect) SetWillQoS(v uint8)                { c.willQoS = v }
+func (c *Connect) SetWillQoS(v uint8) {
+	c.willQoS = v
+	c.flags &= ^(WillQoS1 | WillQoS2) // reset
+	c.toggle(c.willQoS<<3, c.willQoS < 3)
+}
 func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
 func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
 func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
@@ -105,8 +107,14 @@ func (c *Connect) SetWillContentType(v string) { c.willContentType = v }
 func (c *Connect) SetResponseTopic(v string)   { c.responseTopic = v }
 func (c *Connect) SetCorrelationData(v []byte) { c.correlationData = v }
 
-func (c *Connect) SetUsername(v string) { c.username = v }
-func (c *Connect) SetPassword(v []byte) { c.password = v }
+func (c *Connect) SetUsername(v string) {
+	c.username = v
+	c.toggle(UsernameFlag, len(c.username) > 0)
+}
+func (c *Connect) SetPassword(v []byte) {
+	c.password = v
+	c.toggle(PasswordFlag, len(c.password) > 0)
+}
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	var (
@@ -143,7 +151,6 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 // properties returns length properties in wire format, if b is nil
 // nothing is written, used to calculate length.
 func (c *Connect) properties(b []byte, i int) int {
-	c.updateFlags()
 	n := i
 
 	// Session expiry interval
@@ -276,14 +283,6 @@ func (c *Connect) String() string {
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),
 		time.Duration(c.keepAlive)*time.Second,
 	)
-}
-
-func (c *Connect) updateFlags() {
-	c.toggle(UsernameFlag, len(c.username) > 0)
-	c.toggle(PasswordFlag, len(c.password) > 0)
-
-	c.flags &= ^(WillQoS1 | WillQoS2) // reset
-	c.toggle(c.willQoS<<3, c.willQoS < 3)
 }
 
 func (c *Connect) toggle(flag byte, on bool) {
