@@ -34,8 +34,8 @@ func TestfirstByte(t *testing.T) {
 // Data representations, the low level data types
 // ---------------------------------------------------------------------
 
-func Test_bits(t *testing.T) {
-	v := bits(0b0001_0000)
+func Test_Bits(t *testing.T) {
+	v := Bits(0b0001_0000)
 	switch {
 	case !v.Has(0b0001_0000):
 		t.Error("!Has")

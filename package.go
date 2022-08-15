@@ -37,19 +37,19 @@ func (f firstByte) String() string {
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")
 	flags := []byte("----")
-	if bits(f).Has(DUP) {
+	if Bits(f).Has(DUP) {
 		flags[0] = 'd'
 	}
 	switch {
-	case bits(f).Has(QoS1 | QoS2):
+	case Bits(f).Has(QoS1 | QoS2):
 		flags[1] = '!' // malformed
 		flags[2] = '!' // malformed
-	case bits(f).Has(QoS1):
+	case Bits(f).Has(QoS1):
 		flags[2] = '1'
-	case bits(f).Has(QoS2):
+	case Bits(f).Has(QoS2):
 		flags[1] = '2'
 	}
-	if bits(f).Has(RETAIN) {
+	if Bits(f).Has(RETAIN) {
 		flags[3] = 'r'
 	}
 	sb.Write(flags)
@@ -201,17 +201,10 @@ func (v vbint) width() int {
 // ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
-type bits byte
+type Bits byte
 
-func (v bits) Has(b byte) bool { return byte(v)&b == b }
-func (v bits) Toggle(on bool, bit byte) {
-	if on {
-		v |= bits(bit)
-		return
-	}
-	v ^= bits(bit)
-}
-func (v bits) fill(data []byte, i int) int {
+func (v Bits) Has(b byte) bool { return byte(v)&b == b }
+func (v Bits) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
 		data[i] = byte(v)
 	}
