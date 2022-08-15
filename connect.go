@@ -123,22 +123,23 @@ func (c *Connect) SetPassword(v []byte) {
 }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
-	var (
-		// calculate full size of packet to make it as efficient as
-		// possible and allocate one []byte for everything
-		rem  = c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0)
-		size = 1 + vbint(rem).width() + rem
-		b    = make([]byte, size)
-		i    int
-	)
-
-	i += Bits(c.fixed).fill(b, i) // firstByte header
-	i += vbint(rem).fill(b, i)    // remaining length
-	i += c.variableHeader(b, i)   // Variable header
-	_ = c.payload(b, i)           // Packet payload
+	// allocate full size of entire packet
+	b := make([]byte, c.fill(_LENGTH, 0))
+	c.fill(b, 0)
 
 	n, err := w.Write(b)
 	return int64(n), err
+}
+
+func (c *Connect) fill(b []byte, i int) int {
+	remainingLen := c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0)
+
+	i += Bits(c.fixed).fill(b, i)       // firstByte header
+	i += vbint(remainingLen).fill(b, i) // remaining length
+	i += c.variableHeader(b, i)         // Variable header
+	i += c.payload(b, i)
+
+	return i
 }
 
 func (c *Connect) variableHeader(b []byte, i int) int {
