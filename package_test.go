@@ -12,20 +12,20 @@ import (
 // Headers
 // ---------------------------------------------------------------------
 
-func TestfirstByte(t *testing.T) {
+func Test_firstByte(t *testing.T) {
 	cases := []struct {
-		h   firstByte
+		h   byte
 		exp string
 	}{
-		{firstByte(PUBLISH | QoS2 | RETAIN), "PUBLISH -2-r"},
-		{firstByte(PUBLISH | QoS1 | QoS2), "PUBLISH -!!-"},
-		{firstByte(PUBLISH | DUP | QoS2), "PUBLISH d2--"},
-		{firstByte(PUBLISH | QoS1), "PUBLISH --1-"},
-		{firstByte(CONNECT), "CONNECT ----"},
+		{PUBLISH | QoS2 | RETAIN, "PUBLISH -2-r"},
+		{PUBLISH | QoS1 | QoS2, "PUBLISH -!!-"},
+		{PUBLISH | DUP | QoS2, "PUBLISH d2--"},
+		{PUBLISH | QoS1, "PUBLISH --1-"},
+		{CONNECT, "CONNECT ----"},
 	}
 	for _, c := range cases {
-		if got, exp := c.h.String(), c.exp; got != exp {
-			t.Errorf("String: %q != %q", got, exp)
+		if got := firstByte(c.h).String(); got != c.exp {
+			t.Errorf("String: %q != %q", got, c.exp)
 		}
 	}
 }
