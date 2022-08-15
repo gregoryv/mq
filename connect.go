@@ -76,10 +76,14 @@ func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
 func (c *Connect) SetTopicAliasMax(v uint16)         { c.topicAliasMax = v }
 func (c *Connect) SetRequestResponseInfo(v bool)     { c.requestResponseInfo = v }
 func (c *Connect) SetRequestProblemInfo(v bool)      { c.requestProblemInfo = v }
-func (c *Connect) AddUserProp(v property)            { c.userProp = append(c.userProp, v) }
-func (c *Connect) AddWillProp(v property)            { c.willProp = append(c.willProp, v) }
-func (c *Connect) SetAuthMethod(v string)            { c.authMethod = v }
-func (c *Connect) SetAuthData(v []byte)              { c.authData = v }
+
+func (c *Connect) AddUserProp(key, val string) {
+	c.userProp = append(c.userProp, property{key, val})
+}
+
+func (c *Connect) AddWillProp(v property) { c.willProp = append(c.willProp, v) }
+func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
+func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
 
 func (c *Connect) SetWillDelayInterval(v uint32) { c.willDelayInterval = v }
 func (c *Connect) SetWillTopic(v string)         { c.willTopic = v }

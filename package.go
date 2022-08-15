@@ -61,29 +61,34 @@ func (f firstByte) String() string {
 // ---------------------------------------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
-type property [2]u8str
+type property [2]string
 
 func (v property) fill(data []byte, i int) int {
-	i += v[0].fill(data, i)
-	_ = v[1].fill(data, i)
+	i += u8str(v[0]).fill(data, i)
+	_ = u8str(v[1]).fill(data, i)
 	return v.width()
 }
 
 func (v *property) UnmarshalBinary(data []byte) error {
-	if err := v[0].UnmarshalBinary(data); err != nil {
+	var key u8str
+	if err := key.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
 	}
+	v[0] = string(key)
+
 	i := len(v[0]) + 2
-	if err := v[1].UnmarshalBinary(data[i:]); err != nil {
+	var val u8str
+	if err := val.UnmarshalBinary(data[i:]); err != nil {
 		return unmarshalErr(v, "value", err.(*Malformed))
 	}
+	v[1] = string(val)
 	return nil
 }
 func (v property) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
 func (v property) width() int {
-	return v[0].width() + v[1].width()
+	return u8str(v[0]).width() + u8str(v[1]).width()
 }
 
 // ----------------------------------------

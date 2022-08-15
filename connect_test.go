@@ -23,26 +23,27 @@ func TestCompareConnect(t *testing.T) {
 
 		willtop     = "topic/dead/clients"
 		willPayload = []byte("goodbye")
-
-		ctype = "application/json"
+		willctype   = "application/json"
 	)
 
 	// our packet
 	our := NewConnect()
+
 	our.SetKeepAlive(alive)
 	our.SetClientID(cid)
 	our.SetUsername(user)
 	our.SetPassword(pwd)
 	our.SetSessionExpiryInterval(sExpiry)
-	our.AddUserProp(property{"color", "red"})
+	our.AddUserProp("color", "red")
 	our.SetAuthMethod(authMethod)
 	our.SetAuthData(authData)
-	// our.SetWillContentType(ctype) not supported in paho.golang (bug in Properties.Pack)
-
-	our.SetWillFlag(true)
+	our.SetWillFlag(true) // would be nice not to have to think about this one
 	our.SetWillTopic(willtop)
 	our.SetWillPayload(willPayload)
-	// our.SetPayloadFormat(true) not supported in paho.golang
+	// These fields yield different result in paho.golang
+	//
+	// our.SetWillContentType(willctype) (maybe bug in Properties.Pack)
+	// our.SetPayloadFormat(true)
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
@@ -53,13 +54,12 @@ func TestCompareConnect(t *testing.T) {
 	c.Username = user
 	c.PasswordFlag = true
 	c.Password = pwd
-
 	c.WillFlag = true
 	c.WillTopic = willtop
 	c.WillMessage = willPayload
 
-	var wp packets.Properties
-	wp.ContentType = ctype // set here but has no affect, (bug in Properties.Pack)
+	var wp packets.Properties  // will properties
+	wp.ContentType = willctype // set here but has no affect, (bug in Properties.Pack)
 	c.WillProperties = &wp
 
 	p := c.Properties
