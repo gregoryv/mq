@@ -11,78 +11,64 @@ import (
 )
 
 func TestCompareConnect(t *testing.T) {
-	var (
-		alive   = uint16(30)
-		cid     = "macy"
-		user    = "john.doe"
-		pwd     = []byte("secret")
-		sExpiry = uint32(30)
-
-		authMethod = "digest"
-		authData   = []byte("secret")
-
-		willtop     = "topic/dead/clients"
-		willPayload = []byte("goodbye")
-		willctype   = "application/json"
-	)
-
 	// our packet
 	our := NewConnect()
-
-	our.SetKeepAlive(alive)
-	our.SetClientID(cid)
-	our.SetUsername(user)
-	our.SetPassword(pwd)
-	our.SetSessionExpiryInterval(sExpiry)
+	our.SetKeepAlive(299)
+	our.SetClientID("macy")
+	our.SetUsername("john.doe")
+	our.SetPassword([]byte("123"))
+	our.SetSessionExpiryInterval(30)
 	our.AddUserProp("color", "red")
-	our.SetAuthMethod(authMethod)
-	our.SetAuthData(authData)
+	our.SetAuthMethod("digest")
+	our.SetAuthData([]byte("secret"))
 	our.SetWillFlag(true) // would be nice not to have to think about this one
-	our.SetWillTopic(willtop)
-	our.SetWillPayload(willPayload)
+	our.SetWillTopic("topic/dead/clients")
+	our.SetWillPayload([]byte("goodbye"))
 	// These fields yield different result in paho.golang
 	//
-	// our.SetWillContentType(willctype) (maybe bug in Properties.Pack)
+	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
 	// our.SetPayloadFormat(true)
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
 	c := their.Content.(*packets.Connect)
-	c.KeepAlive = alive
-	c.ClientID = cid
+	c.KeepAlive = 299
+	c.ClientID = "macy"
 	c.UsernameFlag = true
-	c.Username = user
+	c.Username = "john.doe"
 	c.PasswordFlag = true
-	c.Password = pwd
+	c.Password = []byte("123")
 	c.WillFlag = true
-	c.WillTopic = willtop
-	c.WillMessage = willPayload
+	c.WillTopic = "topic/dead/clients"
+	c.WillMessage = []byte("goodbye")
 
-	var wp packets.Properties  // will properties
-	wp.ContentType = willctype // set here but has no affect, (bug in Properties.Pack)
+	var wp packets.Properties // will properties
 	c.WillProperties = &wp
+	// set here but has no affect, (bug in Properties.Pack)
+	wp.ContentType = "application/json"
 
 	p := c.Properties
-	p.SessionExpiryInterval = &sExpiry
+	var se uint32 = 30
+	p.SessionExpiryInterval = &se
 	p.User = append(p.User, packets.User{"color", "red"})
-	p.AuthMethod = authMethod
-	p.AuthData = authData
+	p.AuthMethod = "digest"
+	p.AuthData = []byte("secret")
 
 	// dump the data
 	var ourData, theirData bytes.Buffer
 	our.WriteTo(&ourData)
 	their.WriteTo(&theirData)
 
-	a := hex.Dump(theirData.Bytes())
-	b := hex.Dump(ourData.Bytes())
+	a := hex.Dump(ourData.Bytes())
+	b := hex.Dump(theirData.Bytes())
 
 	if a != b {
-		t.Logf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), a)
-		t.Logf("\n\nour %v bytes\n%s\n\n", ourData.Len(), b)
+		t.Logf("\n\nour %v bytes\n%s\n\n", ourData.Len(), a)
+		t.Logf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), b)
 	} else {
 		t.Logf("their size of %T %v bytes", their, unsafe.Sizeof(their))
 		t.Logf("our size of %T %v bytes", our, unsafe.Sizeof(our))
-		t.Logf("\n\n%s\n\n%s\n\n", our, a)
+		t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", our, a, ourData.Len())
 	}
 }
 
