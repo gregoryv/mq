@@ -41,6 +41,9 @@ func TestConnect(t *testing.T) {
 	c.SetUsername("") // unset toggles flag
 	c.SetPassword(nil)
 
+	if err := Check(c); err != nil {
+		t.Error(err)
+	}
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
 	dump := hex.Dump(buf.Bytes())

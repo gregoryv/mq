@@ -59,6 +59,10 @@ type Connect struct {
 	password []byte
 }
 
+func (c *Connect) check() error {
+	return fmt.Errorf(": todo")
+}
+
 // exposed fields
 func (c *Connect) KeepAlive() uint16   { return c.keepAlive }
 func (c *Connect) ClientID() string    { return c.clientID }

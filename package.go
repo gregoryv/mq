@@ -13,8 +13,8 @@ import (
 	"strings"
 )
 
-// Check verifies if the given packet is well formed, returns
-// Malformed error if not.
+// Check if the given packet is well formed, returns Malformed error
+// if not.
 func Check(p Packet) error {
 	return p.check()
 }
