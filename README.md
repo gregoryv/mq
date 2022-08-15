@@ -1,8 +1,12 @@
-mqtt - package providing an implementation of mqtt
+mqtt - package providing an implementation of the MQTT v5 protocol
 
-Versioning is meant to follow the mqtt version, so once a v5.0 is
-implemented it's tagged as 5.0
+This project prioritizes
 
-[v5.0 MQTT specification](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
+1. Correctness
+2. Performance
+3. Ease of use
 
-(Same as the local MQTT_v5.html)
+and in that order. Naming concepts follow the [v5.0 MQTT specification](
+https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
+as much as possible.
+
