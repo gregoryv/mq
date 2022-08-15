@@ -13,16 +13,6 @@ import (
 	"strings"
 )
 
-// Check if the given packet is well formed, returns Malformed error
-// if not.
-func Check(p Packet) error {
-	return p.check()
-}
-
-type Packet interface {
-	check() error
-}
-
 // ---------------------------------------------------------------------
 // Headers
 // ---------------------------------------------------------------------

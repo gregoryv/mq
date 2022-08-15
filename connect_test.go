@@ -33,17 +33,11 @@ func TestConnect(t *testing.T) {
 	c.SetWillPayloadFormat(true)
 	c.SetWillContentType("application/json")
 	c.SetWillMessageExpiryInterval(100)
-	c.AddWillProp(
-		"connected",
-		"2022-01-01 14:44:32",
-	)
+	c.AddWillProp("connected", "2022-01-01 14:44:32")
 
 	c.SetUsername("") // unset toggles flag
 	c.SetPassword(nil)
 
-	if err := Check(c); err != nil {
-		t.Error(err)
-	}
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
 	dump := hex.Dump(buf.Bytes())
