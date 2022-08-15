@@ -153,9 +153,6 @@ func (v vbint) fill(data []byte, i int) int {
 			if v > 0 {
 				encodedByte = encodedByte | 128
 			}
-			if i == len(data) {
-				break
-			}
 			data[i] = encodedByte
 			i++
 		}
