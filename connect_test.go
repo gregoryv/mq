@@ -38,6 +38,9 @@ func TestConnect(t *testing.T) {
 		"2022-01-01 14:44:32",
 	)
 
+	c.SetUsername("") // unset toggles flag
+	c.SetPassword(nil)
+
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
 	dump := hex.Dump(buf.Bytes())
