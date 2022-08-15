@@ -126,7 +126,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	var (
 		// calculate full size of packet to make it as efficient as
 		// possible and allocate one []byte for everything
-		rem  = c.variableHeader(nil, 0) + c.payload(nil, 0)
+		rem  = c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0)
 		size = 1 + vbint(rem).width() + rem
 		b    = make([]byte, size)
 		i    int
@@ -144,15 +144,19 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 func (c *Connect) variableHeader(b []byte, i int) int {
 	n := i
 
-	i += u8str(c.protocolName).fill(b, i)       // Protocol name
-	i += Bits(c.protocolVersion).fill(b, i)     // Protocol version
-	i += Bits(c.flags).fill(b, i)               // Flags
-	i += b2int(c.keepAlive).fill(b, i)          // Keep alive
-	i += vbint(c.properties(nil, 0)).fill(b, i) // Properties len
-	i += c.properties(b, i)                     // Properties
+	i += u8str(c.protocolName).fill(b, i)           // Protocol name
+	i += Bits(c.protocolVersion).fill(b, i)         // Protocol version
+	i += Bits(c.flags).fill(b, i)                   // Flags
+	i += b2int(c.keepAlive).fill(b, i)              // Keep alive
+	i += vbint(c.properties(_LENGTH, 0)).fill(b, i) // Properties len
+	i += c.properties(b, i)                         // Properties
 
 	return i - n
 }
+
+// Name an empty byte for increased readability when fill methods are
+// used to only calculate length.
+var _LENGTH []byte
 
 // properties returns length properties in wire format, if b is nil
 // nothing is written, used to calculate length.
@@ -225,7 +229,7 @@ func (c *Connect) payload(b []byte, i int) int {
 
 	// will
 	if Bits(c.flags).Has(WillFlag) {
-		i += vbint(c.will(nil, 0)).fill(b, i)
+		i += vbint(c.will(_LENGTH, 0)).fill(b, i)
 		i += c.will(b, i)
 		i += u8str(c.willTopic).fill(b, i)    // topic
 		i += bindat(c.willPayload).fill(b, i) // payload
