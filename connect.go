@@ -120,7 +120,10 @@ func (c *Connect) AddUserProp(key, val string) {
 	c.userProp = append(c.userProp, property{key, val})
 }
 
-func (c *Connect) AddWillProp(v property) { c.willProp = append(c.willProp, v) }
+func (c *Connect) AddWillProp(key, val string) {
+	c.willProp = append(c.willProp, property{key, val})
+}
+
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
 func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
 

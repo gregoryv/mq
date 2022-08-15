@@ -31,10 +31,10 @@ func TestConnect(t *testing.T) {
 	c.SetWillContentType("application/json")
 	c.SetResponseTopic("response/to/macy")
 	c.SetCorrelationData([]byte("perhaps a uuid"))
-	c.AddWillProp(property{
+	c.AddWillProp(
 		"connected",
 		"2022-01-01 14:44:32",
-	})
+	)
 
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
