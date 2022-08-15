@@ -50,10 +50,10 @@ type Connect struct {
 	willPayloadFormat bool
 	willPayload       []byte
 
-	messageExpiryInterval uint32
-	willContentType       string
-	responseTopic         string
-	correlationData       []byte
+	willMessageExpiryInterval uint32
+	willContentType           string
+	responseTopic             string
+	correlationData           []byte
 
 	username string
 	password []byte
@@ -132,6 +132,13 @@ func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
 // the Session ends, whichever happens first.
 func (c *Connect) SetWillDelayInterval(v uint32) {
 	c.willDelayInterval = v
+}
+
+// the lifetime of the Will Message in seconds and is sent as the
+// Publication Expiry Interval when the Server publishes the Will
+// Message.
+func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
+	c.willMessageExpiryInterval = v
 }
 
 func (c *Connect) SetWillTopic(v string) { c.willTopic = v }
@@ -314,7 +321,7 @@ func (c *Connect) will(b []byte, i int) int {
 		i += Bits(1).fill(b, i)
 	}
 
-	if v := c.messageExpiryInterval; v > 0 {
+	if v := c.willMessageExpiryInterval; v > 0 {
 		i += Bits(MessageExpiryInterval).fill(b, i)
 		i += b4int(v).fill(b, i)
 	}
