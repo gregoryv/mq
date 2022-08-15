@@ -60,11 +60,12 @@ type Connect struct {
 }
 
 // exposed fields
-func (c *Connect) KeepAlive() uint16 { return c.keepAlive }
-func (c *Connect) ClientID() string  { return c.clientID }
-func (c *Connect) Username() string  { return c.username }
-func (c *Connect) Password() []byte  { return c.password }
-
+func (c *Connect) KeepAlive() uint16   { return c.keepAlive }
+func (c *Connect) ClientID() string    { return c.clientID }
+func (c *Connect) Username() string    { return c.username }
+func (c *Connect) Password() []byte    { return c.password }
+func (c *Connect) WillTopic() string   { return c.willTopic }
+func (c *Connect) WillPayload() []byte { return c.willPayload }
 func (c *Connect) Flags() Bits         { return Bits(c.flags) }
 func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
 

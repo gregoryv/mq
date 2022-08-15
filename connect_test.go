@@ -5,71 +5,29 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 	"testing"
-	"unsafe"
 
 	"github.com/eclipse/paho.golang/packets"
 )
 
-func TestCompareConnect(t *testing.T) {
-	// our packet
-	our := NewConnect()
-	our.SetKeepAlive(299)
-	our.SetClientID("macy")
-	our.SetUsername("john.doe")
-	our.SetPassword([]byte("123"))
-	our.SetSessionExpiryInterval(30)
-	our.AddUserProp("color", "red")
-	our.SetAuthMethod("digest")
-	our.SetAuthData([]byte("secret"))
-	our.SetWillFlag(true) // would be nice not to have to think about this one
-	our.SetWillTopic("topic/dead/clients")
-	our.SetWillPayload([]byte("goodbye"))
-	// These fields yield different result in paho.golang
-	//
-	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
-	// our.SetPayloadFormat(true)
+func TestConnect(t *testing.T) {
+	c := NewConnect()
+	c.SetKeepAlive(299)
+	c.SetClientID("macy")
+	c.SetUsername("john.doe")
+	c.SetPassword([]byte("123"))
+	c.SetSessionExpiryInterval(30)
+	c.AddUserProp("color", "red")
+	c.SetAuthMethod("digest")
+	c.SetAuthData([]byte("secret"))
+	c.SetWillFlag(true) // would be nice not to have to think about this one
+	c.SetWillTopic("topic/dead/clients")
+	c.SetWillPayload([]byte("goodbye"))
 
-	// their packet
-	their := packets.NewControlPacket(packets.CONNECT)
-	c := their.Content.(*packets.Connect)
-	c.KeepAlive = our.KeepAlive()
-	c.ClientID = our.ClientID()
-	c.UsernameFlag = our.HasFlag(UsernameFlag)
-	c.Username = our.Username()
-	c.PasswordFlag = our.HasFlag(PasswordFlag)
-	c.Password = our.Password()
-	c.WillFlag = our.HasFlag(WillFlag)
-	c.WillTopic = "topic/dead/clients"
-	c.WillMessage = []byte("goodbye")
+	var buf bytes.Buffer
+	c.WriteTo(&buf)
+	dump := hex.Dump(buf.Bytes())
 
-	var wp packets.Properties // will properties
-	c.WillProperties = &wp
-	// set here but has no affect, (bug in Properties.Pack)
-	wp.ContentType = "application/json"
-
-	p := c.Properties
-	var se uint32 = 30
-	p.SessionExpiryInterval = &se
-	p.User = append(p.User, packets.User{"color", "red"})
-	p.AuthMethod = "digest"
-	p.AuthData = []byte("secret")
-
-	// dump the data
-	var ourData, theirData bytes.Buffer
-	our.WriteTo(&ourData)
-	their.WriteTo(&theirData)
-
-	a := hex.Dump(ourData.Bytes())
-	b := hex.Dump(theirData.Bytes())
-
-	if a != b {
-		t.Logf("\n\nour %v bytes\n%s\n\n", ourData.Len(), a)
-		t.Logf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), b)
-	} else {
-		t.Logf("their size of %T %v bytes", their, unsafe.Sizeof(their))
-		t.Logf("our size of %T %v bytes", our, unsafe.Sizeof(our))
-		t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", our, a, ourData.Len())
-	}
+	t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", c, dump, buf.Len())
 }
 
 func TestconnectFlags(t *testing.T) {
