@@ -68,6 +68,11 @@ func (c *Connect) WillTopic() string   { return c.willTopic }
 func (c *Connect) WillPayload() []byte { return c.willPayload }
 func (c *Connect) Flags() Bits         { return Bits(c.flags) }
 func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
+func (c *Connect) ReceiveMax() uint16  { return c.receiveMax }
+
+func (c *Connect) ProtocolVersion() uint8 { return c.protocolVersion }
+func (c *Connect) ProtocolName() string   { return c.protocolName }
+func (c *Connect) WillQoS() uint8         { return c.willQoS }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) { c.toggle(WillRetain, v) }
@@ -154,16 +159,17 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
-	// Session expiry interval
-	if v := c.sessionExpiryInterval; v > 0 {
-		i += Bits(SessionExpiryInterval).fill(b, i)
-		i += b4int(v).fill(b, i)
-	}
-
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
 		i += Bits(ReceiveMax).fill(b, i)
 		i += b2int(v).fill(b, i)
+	}
+
+	// Session expiry interval, in the spec this comes before receive
+	// maximum, order like this to match paho
+	if v := c.sessionExpiryInterval; v > 0 {
+		i += Bits(SessionExpiryInterval).fill(b, i)
+		i += b4int(v).fill(b, i)
 	}
 
 	// Maximum packet size

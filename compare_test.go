@@ -22,6 +22,13 @@ func TestCompareConnect(t *testing.T) {
 	our.SetAuthData([]byte("secret"))
 	our.SetWillFlag(true) // would be nice not to have to think about this one
 	our.SetWillTopic("topic/dead/clients")
+	our.SetWillRetain(true)
+	our.SetCleanStart(true)
+	our.SetProtocolVersion(5)
+	our.SetProtocolName("MQTT")
+	our.SetWillQoS(2)
+	our.SetReceiveMax(9)
+
 	// longer payload does not compare, why? todo
 	//our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
 	our.SetWillPayload([]byte(`{"clientID": "macy"}`))
@@ -42,6 +49,12 @@ func TestCompareConnect(t *testing.T) {
 	c.WillFlag = our.HasFlag(mqtt.WillFlag)
 	c.WillTopic = our.WillTopic()
 	c.WillMessage = our.WillPayload()
+	c.WillRetain = our.HasFlag(mqtt.WillRetain)
+	c.CleanStart = our.HasFlag(mqtt.CleanStart)
+	c.ProtocolVersion = our.ProtocolVersion()
+	c.ProtocolName = our.ProtocolName()
+	c.WillQOS = our.WillQoS()
+
 	// will properties
 	var wp packets.Properties
 	c.WillProperties = &wp
@@ -54,6 +67,8 @@ func TestCompareConnect(t *testing.T) {
 	p.User = append(p.User, packets.User{"color", "red"})
 	p.AuthMethod = "digest"
 	p.AuthData = []byte("secret")
+	rm := our.ReceiveMax()
+	p.ReceiveMaximum = &rm
 
 	// dump the data
 	var ourData, theirData bytes.Buffer
