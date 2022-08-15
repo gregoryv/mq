@@ -32,12 +32,12 @@ func TestCompareConnect(t *testing.T) {
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
 	c := their.Content.(*packets.Connect)
-	c.KeepAlive = 299
-	c.ClientID = "macy"
+	c.KeepAlive = our.KeepAlive()
+	c.ClientID = our.ClientID()
 	c.UsernameFlag = true
-	c.Username = "john.doe"
+	c.Username = our.Username()
 	c.PasswordFlag = true
-	c.Password = []byte("123")
+	c.Password = our.Password()
 	c.WillFlag = true
 	c.WillTopic = "topic/dead/clients"
 	c.WillMessage = []byte("goodbye")

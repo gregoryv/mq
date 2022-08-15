@@ -59,6 +59,12 @@ type Connect struct {
 	password []byte
 }
 
+// exposed fields
+func (c *Connect) KeepAlive() uint16 { return c.keepAlive }
+func (c *Connect) ClientID() string  { return c.clientID }
+func (c *Connect) Username() string  { return c.username }
+func (c *Connect) Password() []byte  { return c.password }
+
 // flags settings
 func (c *Connect) SetWillRetain(v bool) { c.toggle(WillRetain, v) }
 func (c *Connect) SetWillFlag(v bool)   { c.toggle(WillFlag, v) }
