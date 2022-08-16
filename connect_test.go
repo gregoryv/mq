@@ -10,6 +10,7 @@ import (
 )
 
 func TestConnect(t *testing.T) {
+	//
 	c := NewConnect()
 	c.SetKeepAlive(299)
 	c.SetClientID("macy")
@@ -26,7 +27,6 @@ func TestConnect(t *testing.T) {
 	c.SetResponseTopic("response/to/macy")
 	c.SetCorrelationData([]byte("perhaps a uuid"))
 
-	c.SetWillFlag(true) // would be nice not to have to think about this one
 	c.SetWillTopic("topic/dead/clients")
 	c.SetWillPayload([]byte("goodbye"))
 	c.SetWillDelayInterval(111)

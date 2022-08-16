@@ -75,8 +75,10 @@ func (c *Connect) ProtocolName() string   { return c.protocolName }
 func (c *Connect) WillQoS() uint8         { return c.willQoS }
 
 // flags settings
-func (c *Connect) SetWillRetain(v bool) { c.toggle(WillRetain, v) }
-func (c *Connect) SetWillFlag(v bool)   { c.toggle(WillFlag, v) }
+func (c *Connect) SetWillRetain(v bool) {
+	c.toggle(WillRetain, v)
+	c.toggle(WillFlag, true)
+}
 func (c *Connect) SetCleanStart(v bool) { c.toggle(CleanStart, v) }
 
 func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = v }
@@ -122,6 +124,7 @@ func (c *Connect) AddUserProp(key, val string) {
 
 func (c *Connect) AddWillProp(key, val string) {
 	c.willProp = append(c.willProp, property{key, val})
+	c.toggle(WillFlag, true)
 }
 
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
@@ -132,6 +135,7 @@ func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
 // the Session ends, whichever happens first.
 func (c *Connect) SetWillDelayInterval(v uint32) {
 	c.willDelayInterval = v
+	c.toggle(WillFlag, true)
 }
 
 // the lifetime of the Will Message in seconds and is sent as the
@@ -139,9 +143,13 @@ func (c *Connect) SetWillDelayInterval(v uint32) {
 // Message.
 func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
 	c.willMessageExpiryInterval = v
+	c.toggle(WillFlag, true)
 }
 
-func (c *Connect) SetWillTopic(v string) { c.willTopic = v }
+func (c *Connect) SetWillTopic(v string) {
+	c.willTopic = v
+	c.toggle(WillFlag, true)
+}
 
 // SetWillPayloadFormat, false indicates that the Will Message is
 // unspecified bytes. True indicates that the Will Message is UTF-8
@@ -150,13 +158,17 @@ func (c *Connect) SetWillPayloadFormat(v bool) {
 	c.willPayloadFormat = v
 }
 
-func (c *Connect) SetWillPayload(v []byte) { c.willPayload = v }
+func (c *Connect) SetWillPayload(v []byte) {
+	c.willPayload = v
+	c.toggle(WillFlag, true)
+}
 
 // The value of the Content Type is defined by the sending and
 // receiving application, e.g. it may be a mime type like
 // application/json.
 func (c *Connect) SetWillContentType(v string) {
 	c.willContentType = v
+	c.toggle(WillFlag, true)
 }
 
 // SetResponseTopic a UTF-8 encoded string which is used as the topic

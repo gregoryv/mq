@@ -20,7 +20,6 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp("color", "red")
 	our.SetAuthMethod("digest")
 	our.SetAuthData([]byte("secret"))
-	our.SetWillFlag(true) // would be nice not to have to think about this one
 	our.SetWillTopic("topic/dead/clients")
 	our.SetWillRetain(true)
 	our.SetCleanStart(true)
