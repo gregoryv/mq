@@ -20,21 +20,20 @@ func TestCompareConnect(t *testing.T) {
 	our.AddUserProp("color", "red")
 	our.SetAuthMethod("digest")
 	our.SetAuthData([]byte("secret"))
-	our.SetWillTopic("topic/dead/clients")
+
 	our.SetWillRetain(true)
+	our.SetWillTopic("topic/dead/clients")
+	//our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
+	our.SetWillPayload([]byte(`{"clientID": "macy"}`))
+	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
+	// our.SetPayloadFormat(true)
+	our.SetWillQoS(2)
+	//our.AddWillProp("connected", "2022-01-01 14:44:32")
+
 	our.SetCleanStart(true)
 	our.SetProtocolVersion(5)
 	our.SetProtocolName("MQTT")
-	our.SetWillQoS(2)
 	our.SetReceiveMax(9)
-
-	// longer payload does not compare, why? todo
-	//our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
-	our.SetWillPayload([]byte(`{"clientID": "macy"}`))
-	// These fields yield different result in paho.golang
-	//
-	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
-	// our.SetPayloadFormat(true)
 
 	// their packet
 	their := packets.NewControlPacket(packets.CONNECT)
@@ -59,6 +58,11 @@ func TestCompareConnect(t *testing.T) {
 	c.WillProperties = &wp
 	// set here but has no affect, (maybe bug in Properties.Pack)
 	wp.ContentType = "application/json"
+	// todo this fails
+	/*wp.User = append(wp.User, packets.User{
+		Key:   "connected",
+		Value: "2022-01-01 14:44:32",
+	})*/
 	// user properties
 	p := c.Properties
 	var se uint32 = 30

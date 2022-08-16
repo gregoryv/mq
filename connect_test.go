@@ -27,11 +27,12 @@ func TestConnect(t *testing.T) {
 	c.SetResponseTopic("response/to/macy")
 	c.SetCorrelationData([]byte("perhaps a uuid"))
 
+	c.SetWillRetain(true)
 	c.SetWillTopic("topic/dead/clients")
-	c.SetWillPayload([]byte("goodbye"))
+	c.SetWillPayload([]byte(`{"clientID": "macy"}`))
+	c.SetWillContentType("application/json")
 	c.SetWillDelayInterval(111)
 	c.SetWillPayloadFormat(true)
-	c.SetWillContentType("application/json")
 	c.SetWillMessageExpiryInterval(100)
 	c.AddWillProp("connected", "2022-01-01 14:44:32")
 
