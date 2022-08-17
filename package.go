@@ -104,13 +104,13 @@ func (v bindata) fill(data []byte, i int) int {
 }
 
 func (v *bindata) UnmarshalBinary(data []byte) error {
-	var l b2int
-	_ = l.UnmarshalBinary(data)
-	if len(data) < int(l)+2 {
+	var length b2int
+	_ = length.UnmarshalBinary(data)
+	if len(data) < int(length)+2 {
 		return unmarshalErr(v, "", "missing data")
 	}
-	*v = make([]byte, l)
-	copy(*v, data[2:l+2])
+	*v = make([]byte, length)
+	copy(*v, data[2:length+2])
 	return nil
 }
 
@@ -177,10 +177,10 @@ func (v Bits) fill(data []byte, i int) int {
 type b2int uint16
 
 func (v b2int) fill(data []byte, i int) int {
-	if len(data) >= i+v.width() {
+	if len(data) >= i+2 {
 		binary.BigEndian.PutUint16(data[i:], uint16(v))
 	}
-	return v.width()
+	return 2
 }
 
 func (v *b2int) UnmarshalBinary(data []byte) error {
@@ -206,50 +206,6 @@ func (v *b4int) UnmarshalBinary(data []byte) error {
 }
 
 func (v b4int) width() int { return 4 }
-
-// ---------------------------------------------------------------------
-// Errors
-// ---------------------------------------------------------------------
-
-func unmarshalErr(v interface{}, ref string, err interface{}) *Malformed {
-	e := newMalformed(v, ref, err)
-	e.method = "unmarshal"
-	return e
-}
-
-func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
-	var reason string
-	switch e := err.(type) {
-	case *Malformed:
-		reason = e.reason
-	case string:
-		reason = e
-	}
-	// remove * from type name
-	t := fmt.Sprintf("%T", v)
-	if t[0] == '*' {
-		t = t[1:]
-	}
-	return &Malformed{
-		t:      t,
-		ref:    ref,
-		reason: reason,
-	}
-}
-
-type Malformed struct {
-	method string
-	t      string
-	ref    string
-	reason string
-}
-
-func (e *Malformed) Error() string {
-	if e.ref == "" {
-		return fmt.Sprintf("malformed %s %s: %s", e.t, e.method, e.reason)
-	}
-	return fmt.Sprintf("malformed %s %s: %s %s", e.t, e.method, e.ref, e.reason)
-}
 
 // ---------------------------------------------------------------------
 // Constants
