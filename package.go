@@ -13,10 +13,6 @@ import (
 	"strings"
 )
 
-// ---------------------------------------------------------------------
-// Headers
-// ---------------------------------------------------------------------
-
 // firstByte represents the first byte in a control packet.
 type firstByte byte
 
@@ -44,10 +40,6 @@ func (f firstByte) String() string {
 	sb.Write(flags)
 	return sb.String()
 }
-
-// ---------------------------------------------------------------------
-// Data representations, the low level data types
-// ---------------------------------------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
 type property [2]string
@@ -80,8 +72,6 @@ func (v property) width() int {
 	return u8str(v[0]).width() + u8str(v[1]).width()
 }
 
-// ----------------------------------------
-
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
 type u8str string
 
@@ -101,8 +91,6 @@ func (v *u8str) UnmarshalBinary(data []byte) error {
 func (v u8str) width() int {
 	return bindata(v).width()
 }
-
-// ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
 type bindata []byte
@@ -129,8 +117,6 @@ func (v *bindata) UnmarshalBinary(data []byte) error {
 func (v bindata) width() int {
 	return 2 + len(v)
 }
-
-// ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 type vbint uint
@@ -176,8 +162,6 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-// ----------------------------------------
-
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
 type Bits byte
 
@@ -188,8 +172,6 @@ func (v Bits) fill(data []byte, i int) int {
 	}
 	return 1
 }
-
-// ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
 type b2int uint16
@@ -207,8 +189,6 @@ func (v *b2int) UnmarshalBinary(data []byte) error {
 }
 
 func (v b2int) width() int { return 2 }
-
-// ----------------------------------------
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
 type b4int uint32
