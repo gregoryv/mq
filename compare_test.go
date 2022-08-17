@@ -74,7 +74,7 @@ func TestCompareConnect(t *testing.T) {
 	})
 
 	// our.SetPayloadFormat(true)
-	// todo theirs
+	// unsupported in paho
 
 	our.SetWillQoS(2)
 	the.WillQOS = our.WillQoS()

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"io/ioutil"
+	"reflect"
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
@@ -12,31 +13,34 @@ import (
 func TestConnect(t *testing.T) {
 	//
 	c := NewConnect()
-	c.SetKeepAlive(299)
-	c.SetClientID("macy")
-	c.SetSessionExpiryInterval(30)
+	eq(t, c.SetProtocolVersion, c.ProtocolVersion, 5)
+	eq(t, c.SetProtocolName, c.ProtocolName, "MQTT")
 
-	c.SetUsername("john.doe")
-	c.SetPassword([]byte("123"))
-	c.SetAuthMethod("digest")
-	c.SetAuthData([]byte("secret"))
+	eq(t, c.SetKeepAlive, c.KeepAlive, 299)
+	eq(t, c.SetClientID, c.ClientID, "macy")
+	eq(t, c.SetSessionExpiryInterval, c.SessionExpiryInterval, 30)
+
+	eq(t, c.SetUsername, c.Username, "john.doe")
+	eq(t, c.SetPassword, c.Password, []byte("123"))
+	eq(t, c.SetAuthMethod, c.AuthMethod, "digest")
+	eq(t, c.SetAuthData, c.AuthData, []byte("secret"))
 
 	c.AddUserProp("color", "red")
 
-	c.SetMaxPacketSize(4096)
-	c.SetTopicAliasMax(128)
-	c.SetRequestResponseInfo(true)
-	c.SetRequestProblemInfo(true)
-	c.SetResponseTopic("response/to/macy")
-	c.SetCorrelationData([]byte("perhaps a uuid"))
+	eq(t, c.SetMaxPacketSize, c.MaxPacketSize, 4096)
+	eq(t, c.SetTopicAliasMax, c.TopicAliasMax, 128)
+	eq(t, c.SetRequestResponseInfo, c.RequestResponseInfo, true)
+	eq(t, c.SetRequestProblemInfo, c.RequestProblemInfo, true)
+	eq(t, c.SetResponseTopic, c.ResponseTopic, "response/to/macy")
+	eq(t, c.SetCorrelationData, c.CorrelationData, []byte("perhaps a uuid"))
 
-	c.SetWillRetain(true)
-	c.SetWillTopic("topic/dead/clients")
-	c.SetWillPayload([]byte(`{"clientID": "macy"}`))
-	c.SetWillContentType("application/json")
-	c.SetWillDelayInterval(111)
-	c.SetWillPayloadFormat(true)
-	c.SetWillMessageExpiryInterval(100)
+	eq(t, c.SetWillRetain, c.WillRetain, true)
+	eq(t, c.SetWillTopic, c.WillTopic, "topic/dead/clients")
+	eq(t, c.SetWillPayload, c.WillPayload, []byte(`{"clientID": "macy"}`))
+	eq(t, c.SetWillContentType, c.WillContentType, "application/json")
+	eq(t, c.SetWillDelayInterval, c.WillDelayInterval, 111)
+	eq(t, c.SetWillPayloadFormat, c.WillPayloadFormat, true)
+	eq(t, c.SetWillMessageExpiryInterval, c.WillMessageExpiryInterval, 100)
 	c.AddWillProp("connected", "2022-01-01 14:44:32")
 
 	c.SetUsername("") // unset toggles flag
@@ -49,14 +53,13 @@ func TestConnect(t *testing.T) {
 	t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", c, dump, buf.Len())
 }
 
-func TestConnect_fields(t *testing.T) {
-	c := NewConnect()
-	c.SetProtocolVersion(5)
-	c.SetProtocolName("MQTT")
-
-	c.ProtocolVersion()
-	c.ProtocolName()
-	c.WillContentType()
+// eq is used to check equality of set and "get" funcs
+func eq[T any](t *testing.T, set func(T), get func() T, value T) {
+	set(value)
+	if got := get(); !reflect.DeepEqual(got, value) {
+		t.Helper()
+		t.Errorf("got %v, expected %v", got, value)
+	}
 }
 
 func TestconnectFlags(t *testing.T) {

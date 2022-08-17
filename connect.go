@@ -59,7 +59,7 @@ type Connect struct {
 	password []byte
 }
 
-// exposed fields
+// exposed fields, todo group them Set+Get
 func (c *Connect) KeepAlive() uint16       { return c.keepAlive }
 func (c *Connect) ClientID() string        { return c.clientID }
 func (c *Connect) Username() string        { return c.username }
@@ -72,15 +72,20 @@ func (c *Connect) Flags() Bits         { return Bits(c.flags) }
 func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
 func (c *Connect) ReceiveMax() uint16  { return c.receiveMax }
 
-func (c *Connect) ProtocolVersion() uint8 { return c.protocolVersion }
-func (c *Connect) ProtocolName() string   { return c.protocolName }
-func (c *Connect) WillQoS() uint8         { return c.willQoS }
+func (c *Connect) ProtocolVersion() uint8        { return c.protocolVersion }
+func (c *Connect) ProtocolName() string          { return c.protocolName }
+func (c *Connect) WillQoS() uint8                { return c.willQoS }
+func (c *Connect) SessionExpiryInterval() uint32 { return c.sessionExpiryInterval }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) {
 	c.toggle(WillRetain, v)
 	c.toggle(WillFlag, true)
 }
+func (c *Connect) WillRetain() bool {
+	return c.HasFlag(WillRetain)
+}
+
 func (c *Connect) SetCleanStart(v bool) { c.toggle(CleanStart, v) }
 
 func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = v }
@@ -95,7 +100,9 @@ func (c *Connect) SetWillQoS(v uint8) {
 }
 func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
 func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
-func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
+
+func (c *Connect) SetMaxPacketSize(v uint32) { c.maxPacketSize = v }
+func (c *Connect) MaxPacketSize() uint32     { return c.maxPacketSize }
 
 // This value indicates the highest value that the Client will accept
 // as a Topic Alias sent by the Server. The Client uses this value to
@@ -104,17 +111,24 @@ func (c *Connect) SetMaxPacketSize(v uint32)         { c.maxPacketSize = v }
 func (c *Connect) SetTopicAliasMax(v uint16) {
 	c.topicAliasMax = v
 }
+func (c *Connect) TopicAliasMax() uint16 { return c.topicAliasMax }
 
 // The Client uses this value to request the Server to return Response
 // Information in the CONNACK
 func (c *Connect) SetRequestResponseInfo(v bool) {
 	c.requestResponseInfo = v
 }
+func (c *Connect) RequestResponseInfo() bool {
+	return c.requestResponseInfo
+}
 
 // The Client uses this value to indicate whether the Reason String or
 // User Properties are sent in the case of failures.
 func (c *Connect) SetRequestProblemInfo(v bool) {
 	c.requestProblemInfo = v
+}
+func (c *Connect) RequestProblemInfo() bool {
+	return c.requestProblemInfo
 }
 
 // AddUserProp adds a user property. The User Property is allowed to
@@ -130,7 +144,10 @@ func (c *Connect) AddWillProp(key, val string) {
 }
 
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
-func (c *Connect) SetAuthData(v []byte)   { c.authData = v }
+func (c *Connect) AuthMethod() string     { return c.authMethod }
+
+func (c *Connect) SetAuthData(v []byte) { c.authData = v }
+func (c *Connect) AuthData() []byte     { return c.authData }
 
 // SetWillDelayInterval in seconds. The Server delays publishing the
 // Client’s Will Message until the Will Delay Interval has passed or
@@ -139,6 +156,9 @@ func (c *Connect) SetWillDelayInterval(v uint32) {
 	c.willDelayInterval = v
 	c.toggle(WillFlag, true)
 }
+func (c *Connect) WillDelayInterval() uint32 {
+	return c.willDelayInterval
+}
 
 // the lifetime of the Will Message in seconds and is sent as the
 // Publication Expiry Interval when the Server publishes the Will
@@ -146,6 +166,9 @@ func (c *Connect) SetWillDelayInterval(v uint32) {
 func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
 	c.willMessageExpiryInterval = v
 	c.toggle(WillFlag, true)
+}
+func (c *Connect) WillMessageExpiryInterval() uint32 {
+	return c.willMessageExpiryInterval
 }
 
 func (c *Connect) SetWillTopic(v string) {
@@ -158,6 +181,9 @@ func (c *Connect) SetWillTopic(v string) {
 // Encoded Character Data.
 func (c *Connect) SetWillPayloadFormat(v bool) {
 	c.willPayloadFormat = v
+}
+func (c *Connect) WillPayloadFormat() bool {
+	return c.willPayloadFormat
 }
 
 func (c *Connect) SetWillPayload(v []byte) {
@@ -178,12 +204,18 @@ func (c *Connect) SetWillContentType(v string) {
 func (c *Connect) SetResponseTopic(v string) {
 	c.responseTopic = v
 }
+func (c *Connect) ResponseTopic() string {
+	return c.responseTopic
+}
 
 // The Correlation Data is used by the sender of the Request Message
 // to identify which request the Response Message is for when it is
 // received.
 func (c *Connect) SetCorrelationData(v []byte) {
 	c.correlationData = v
+}
+func (c *Connect) CorrelationData() []byte {
+	return c.correlationData
 }
 
 func (c *Connect) SetUsername(v string) {
