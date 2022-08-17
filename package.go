@@ -97,14 +97,14 @@ type bindata []byte
 
 func (v bindata) fill(data []byte, i int) int {
 	if len(data) >= i+v.width() {
-		i += b2int(len(v)).fill(data, i)
+		i += wuint16(len(v)).fill(data, i)
 		copy(data[i:], []byte(v))
 	}
 	return v.width()
 }
 
 func (v *bindata) UnmarshalBinary(data []byte) error {
-	var length b2int
+	var length wuint16
 	_ = length.UnmarshalBinary(data)
 	if len(data) < int(length)+2 {
 		return unmarshalErr(v, "", "missing data")
@@ -169,7 +169,6 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 // wire types
 type (
 	wuint8  = Bits  // byte
-	wuint16 = b2int // two byte integer
 	wuint32 = b4int // four byte integer
 )
 
@@ -212,21 +211,21 @@ func (v *Bits) UnmarshalBinary(data []byte) error {
 func (v Bits) width() int { return 1 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
-type b2int uint16
+type wuint16 uint16
 
-func (v b2int) fill(data []byte, i int) int {
+func (v wuint16) fill(data []byte, i int) int {
 	if len(data) >= i+2 {
 		binary.BigEndian.PutUint16(data[i:], uint16(v))
 	}
 	return 2
 }
 
-func (v *b2int) UnmarshalBinary(data []byte) error {
-	*v = b2int(binary.BigEndian.Uint16(data))
+func (v *wuint16) UnmarshalBinary(data []byte) error {
+	*v = wuint16(binary.BigEndian.Uint16(data))
 	return nil
 }
 
-func (v b2int) width() int { return 2 }
+func (v wuint16) width() int { return 2 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
 type b4int uint32

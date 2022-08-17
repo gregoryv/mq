@@ -86,7 +86,7 @@ func (c *Connect) ProtocolName() string     { return string(c.protocolName) }
 func (c *Connect) SetClientID(v string) { c.clientID = u8str(v) }
 func (c *Connect) ClientID() string     { return string(c.clientID) }
 
-func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = b2int(v) }
+func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
 func (c *Connect) SetWillQoS(v uint8) {
@@ -103,7 +103,7 @@ func (c *Connect) SessionExpiryInterval() uint32 {
 	return uint32(c.sessionExpiryInterval)
 }
 
-func (c *Connect) SetReceiveMax(v uint16) { c.receiveMax = b2int(v) }
+func (c *Connect) SetReceiveMax(v uint16) { c.receiveMax = wuint16(v) }
 func (c *Connect) ReceiveMax() uint16     { return uint16(c.receiveMax) }
 
 func (c *Connect) SetMaxPacketSize(v uint32) { c.maxPacketSize = wuint32(v) }
@@ -265,7 +265,7 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 	i += u8str(c.protocolName).fill(b, i)           // Protocol name
 	i += Bits(c.protocolVersion).fill(b, i)         // Protocol version
 	i += Bits(c.flags).fill(b, i)                   // Flags
-	i += b2int(c.keepAlive).fill(b, i)              // Keep alive
+	i += wuint16(c.keepAlive).fill(b, i)            // Keep alive
 	i += vbint(c.properties(_LENGTH, 0)).fill(b, i) // Properties len
 	i += c.properties(b, i)                         // Properties
 
@@ -284,7 +284,7 @@ func (c *Connect) properties(b []byte, i int) int {
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
 		i += Bits(ReceiveMax).fill(b, i)
-		i += b2int(v).fill(b, i)
+		i += wuint16(v).fill(b, i)
 	}
 
 	// Session expiry interval, in the spec this comes before receive
@@ -303,7 +303,7 @@ func (c *Connect) properties(b []byte, i int) int {
 	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
 		i += Bits(TopicAliasMax).fill(b, i)
-		i += b2int(v).fill(b, i)
+		i += wuint16(v).fill(b, i)
 	}
 
 	// Request response information

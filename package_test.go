@@ -38,8 +38,8 @@ func Test_Bits(t *testing.T) {
 
 }
 
-func Test_b2int(t *testing.T) {
-	b := b2int(76)
+func Test_wuint16(t *testing.T) {
+	b := wuint16(76)
 
 	data := make([]byte, b.width())
 	b.fill(data, 0)
@@ -48,7 +48,7 @@ func Test_b2int(t *testing.T) {
 		t.Error("unexpected data ", data)
 	}
 
-	var a b2int
+	var a wuint16
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
@@ -59,7 +59,7 @@ func Test_b2int(t *testing.T) {
 	}
 
 	if got := a.width(); got != 2 {
-		t.Error("invalid b2int width", got)
+		t.Error("invalid wuint16 width", got)
 	}
 }
 
