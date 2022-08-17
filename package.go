@@ -168,8 +168,7 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 
 // wire types
 type (
-	wuint8  = Bits  // byte
-	wuint32 = b4int // four byte integer
+	wuint8 = Bits // byte
 )
 
 type wbool bool
@@ -185,10 +184,13 @@ func (v wbool) fill(data []byte, i int) int {
 	return 1
 }
 func (v *wbool) UnmarshalBinary(data []byte) error {
-	if data[0] == 1 {
-		*v = wbool(true)
-	} else {
+	switch data[0] {
+	case 0:
 		*v = wbool(false)
+	case 1:
+		*v = wbool(true)
+	default:
+		return fmt.Errorf("malformed bool")
 	}
 	return nil
 }
@@ -228,21 +230,21 @@ func (v *wuint16) UnmarshalBinary(data []byte) error {
 func (v wuint16) width() int { return 2 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
-type b4int uint32
+type wuint32 uint32
 
-func (v b4int) fill(data []byte, i int) int {
+func (v wuint32) fill(data []byte, i int) int {
 	if len(data) >= i+v.width() {
 		binary.BigEndian.PutUint32(data[i:], uint32(v))
 	}
 	return v.width()
 }
 
-func (v *b4int) UnmarshalBinary(data []byte) error {
-	*v = b4int(binary.BigEndian.Uint32(data))
+func (v *wuint32) UnmarshalBinary(data []byte) error {
+	*v = wuint32(binary.BigEndian.Uint32(data))
 	return nil
 }
 
-func (v b4int) width() int { return 4 }
+func (v wuint32) width() int { return 4 }
 
 // ---------------------------------------------------------------------
 // Constants

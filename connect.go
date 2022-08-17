@@ -291,13 +291,13 @@ func (c *Connect) properties(b []byte, i int) int {
 	// maximum, order like this to match paho
 	if v := c.sessionExpiryInterval; v > 0 {
 		i += Bits(SessionExpiryInterval).fill(b, i)
-		i += b4int(v).fill(b, i)
+		i += wuint32(v).fill(b, i)
 	}
 
 	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
 		i += Bits(MaxPacketSize).fill(b, i)
-		i += b4int(v).fill(b, i)
+		i += wuint32(v).fill(b, i)
 	}
 
 	// Topic alias maximum
@@ -371,7 +371,7 @@ func (c *Connect) will(b []byte, i int) int {
 	// Will Properties
 	if v := c.willDelayInterval; v > 0 {
 		i += Bits(WillDelayInterval).fill(b, i)
-		i += b4int(v).fill(b, i)
+		i += wuint32(v).fill(b, i)
 	}
 
 	if c.willPayloadFormat {
@@ -381,7 +381,7 @@ func (c *Connect) will(b []byte, i int) int {
 
 	if v := c.willMessageExpiryInterval; v > 0 {
 		i += Bits(MessageExpiryInterval).fill(b, i)
-		i += b4int(v).fill(b, i)
+		i += wuint32(v).fill(b, i)
 	}
 
 	if v := c.willContentType; len(v) > 0 {

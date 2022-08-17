@@ -67,24 +67,47 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.flags)
 	get(&c.keepAlive)
 
+	// properties
 	var propLen vbint
 	get(&propLen)
 	end := i + int(propLen)
+
+	// fields map property code to the correct Connect field
+	fields := map[byte]wireType{
+		ReceiveMax:            &c.receiveMax,
+		SessionExpiryInterval: &c.sessionExpiryInterval,
+		MaxPacketSize:         &c.maxPacketSize,
+		TopicAliasMax:         &c.topicAliasMax,
+		RequestResponseInfo:   &c.requestResponseInfo,
+		RequestProblemInfo:    &c.requestProblemInfo,
+		AuthMethod:            &c.authMethod,
+		AuthData:              &c.authData,
+	}
+
 	for i < end {
-		var code Bits
+		var code wuint8
 		get(&code)
+		if field, ok := fields[byte(code)]; ok {
+			get(field)
+			continue
+		}
 		switch byte(code) {
-
-		case ReceiveMax:
-			get(&c.receiveMax)
-
 		case UserProperty:
 			var p property
 			get(&p)
 			c.AddUserProperty(p)
-			// todo add the other property codes
 		}
-	}
 
+	}
+	// payload
+	get(&c.clientID)
+	if Bits(c.flags).Has(WillFlag) {
+		// todo continue here
+	}
 	return err
+}
+
+type wireType interface {
+	encoding.BinaryUnmarshaler
+	fill([]byte, int) int
 }

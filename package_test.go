@@ -63,8 +63,8 @@ func Test_wuint16(t *testing.T) {
 	}
 }
 
-func Test_b4int(t *testing.T) {
-	b := b4int(76)
+func Test_wuint32(t *testing.T) {
+	b := wuint32(76)
 
 	data := make([]byte, b.width())
 	b.fill(data, 0)
@@ -73,7 +73,7 @@ func Test_b4int(t *testing.T) {
 		t.Error("unexpected data ", data)
 	}
 
-	var a b4int
+	var a wuint32
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
