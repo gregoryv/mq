@@ -9,10 +9,6 @@ import (
 	"testing"
 )
 
-// ---------------------------------------------------------------------
-// Headers
-// ---------------------------------------------------------------------
-
 func Test_firstByte(t *testing.T) {
 	cases := []struct {
 		h   byte
@@ -30,10 +26,6 @@ func Test_firstByte(t *testing.T) {
 		}
 	}
 }
-
-// ---------------------------------------------------------------------
-// Data representations, the low level data types
-// ---------------------------------------------------------------------
 
 func Test_Bits(t *testing.T) {
 	v := Bits(0b0001_0000)
@@ -92,8 +84,6 @@ func Test_b4int(t *testing.T) {
 	}
 }
 
-// ................................................ Data representations
-
 func Test_u8str(t *testing.T) {
 	b := u8str("۞ gopher från sverige")
 
@@ -112,7 +102,7 @@ func Test_u8str(t *testing.T) {
 
 	// error case
 	if err := a.UnmarshalBinary(data[:len(data)-4]); err == nil {
-		t.Error("UnmarshalBinary should fail")
+		t.Error("UnmarshalBinary should fail when data is missing")
 	}
 }
 
@@ -165,8 +155,6 @@ func Test_vbint(t *testing.T) {
 	}
 }
 
-// ................................................ Data representations
-
 func Test_bindata(t *testing.T) {
 	indata := make([]byte, 64)
 	if _, err := rand.Read(indata); err != nil {
@@ -193,8 +181,6 @@ func Test_bindata(t *testing.T) {
 	}
 
 }
-
-// ................................................ Data representations
 
 func Test_property(t *testing.T) {
 	b := property{"key", "value"}
@@ -226,8 +212,6 @@ func Test_property(t *testing.T) {
 }
 
 var large = u8str(strings.Repeat(" ", MaxUint16+1))
-
-// ................................................ Data representations
 
 func ExampleMalformed_Error() {
 	e := Malformed{
