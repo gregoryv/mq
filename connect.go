@@ -26,56 +26,45 @@ func NewConnect() *Connect {
 
 type Connect struct {
 	fixed           byte
-	flags           byte
-	protocolVersion uint8
-	protocolName    string
-	clientID        string
-	keepAlive       uint16
+	flags           Bits
+	protocolVersion wuint8 // todo rename to uint8no
+	protocolName    u8str
+	clientID        u8str
+	keepAlive       wuint16
 
 	// properties
-	willQoS               uint8
-	sessionExpiryInterval uint32
-	receiveMax            uint16
-	maxPacketSize         uint32
-	topicAliasMax         uint16
-	requestResponseInfo   bool
-	requestProblemInfo    bool
+	willQoS               wuint8
+	sessionExpiryInterval wuint32
+	receiveMax            wuint16
+	maxPacketSize         wuint32
+	topicAliasMax         wuint16
+	requestResponseInfo   wbool
+	requestProblemInfo    wbool
 	userProp              []property
 	willProp              []property
-	authMethod            string
-	authData              []byte
+	authMethod            u8str
+	authData              bindata
 
-	willDelayInterval uint32
-	willTopic         string
-	willPayloadFormat bool
-	willPayload       []byte
+	willDelayInterval wuint32
+	willTopic         u8str
+	willPayloadFormat wbool
+	willPayload       bindata
 
-	willMessageExpiryInterval uint32
-	willContentType           string
-	responseTopic             string
-	correlationData           []byte
+	willMessageExpiryInterval wuint32
+	willContentType           u8str
+	responseTopic             u8str
+	correlationData           bindata
 
-	username string
-	password []byte
+	username u8str
+	password bindata
 }
 
 // exposed fields, todo group them Set+Get
-func (c *Connect) KeepAlive() uint16       { return c.keepAlive }
-func (c *Connect) ClientID() string        { return c.clientID }
-func (c *Connect) Username() string        { return c.username }
-func (c *Connect) Password() []byte        { return c.password }
-func (c *Connect) WillTopic() string       { return c.willTopic }
-func (c *Connect) WillPayload() []byte     { return c.willPayload }
-func (c *Connect) WillContentType() string { return c.willContentType }
+func (c *Connect) Password() []byte    { return c.password }
+func (c *Connect) WillPayload() []byte { return c.willPayload }
 
 func (c *Connect) Flags() Bits         { return Bits(c.flags) }
 func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
-func (c *Connect) ReceiveMax() uint16  { return c.receiveMax }
-
-func (c *Connect) ProtocolVersion() uint8        { return c.protocolVersion }
-func (c *Connect) ProtocolName() string          { return c.protocolName }
-func (c *Connect) WillQoS() uint8                { return c.willQoS }
-func (c *Connect) SessionExpiryInterval() uint32 { return c.sessionExpiryInterval }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) {
@@ -88,54 +77,73 @@ func (c *Connect) WillRetain() bool {
 
 func (c *Connect) SetCleanStart(v bool) { c.toggle(CleanStart, v) }
 
-func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = v }
-func (c *Connect) SetProtocolName(v string)   { c.protocolName = v }
-func (c *Connect) SetClientID(v string)       { c.clientID = v }
-func (c *Connect) SetKeepAlive(v uint16)      { c.keepAlive = v }
+func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = wuint8(v) }
+func (c *Connect) ProtocolVersion() uint8     { return uint8(c.protocolVersion) }
+
+func (c *Connect) SetProtocolName(v string) { c.protocolName = u8str(v) }
+func (c *Connect) ProtocolName() string     { return string(c.protocolName) }
+
+func (c *Connect) SetClientID(v string) { c.clientID = u8str(v) }
+func (c *Connect) ClientID() string     { return string(c.clientID) }
+
+func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = b2int(v) }
+func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
 func (c *Connect) SetWillQoS(v uint8) {
-	c.willQoS = v
-	c.flags &= ^(WillQoS1 | WillQoS2) // reset
-	c.toggle(c.willQoS<<3, c.willQoS < 3)
+	c.willQoS = wuint8(v)
+	c.flags &= Bits(^(WillQoS1 | WillQoS2)) // reset
+	c.toggle(byte(c.willQoS<<3), c.willQoS < 3)
 }
-func (c *Connect) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = v }
-func (c *Connect) SetReceiveMax(v uint16)            { c.receiveMax = v }
+func (c *Connect) WillQoS() uint8 { return uint8(c.willQoS) }
 
-func (c *Connect) SetMaxPacketSize(v uint32) { c.maxPacketSize = v }
-func (c *Connect) MaxPacketSize() uint32     { return c.maxPacketSize }
+func (c *Connect) SetSessionExpiryInterval(v uint32) {
+	c.sessionExpiryInterval = wuint32(v)
+}
+func (c *Connect) SessionExpiryInterval() uint32 {
+	return uint32(c.sessionExpiryInterval)
+}
+
+func (c *Connect) SetReceiveMax(v uint16) { c.receiveMax = b2int(v) }
+func (c *Connect) ReceiveMax() uint16     { return uint16(c.receiveMax) }
+
+func (c *Connect) SetMaxPacketSize(v uint32) { c.maxPacketSize = wuint32(v) }
+func (c *Connect) MaxPacketSize() uint32     { return uint32(c.maxPacketSize) }
 
 // This value indicates the highest value that the Client will accept
 // as a Topic Alias sent by the Server. The Client uses this value to
 // limit the number of Topic Aliases that it is willing to hold on
 // this Connection.
 func (c *Connect) SetTopicAliasMax(v uint16) {
-	c.topicAliasMax = v
+	c.topicAliasMax = wuint16(v)
 }
-func (c *Connect) TopicAliasMax() uint16 { return c.topicAliasMax }
+func (c *Connect) TopicAliasMax() uint16 { return uint16(c.topicAliasMax) }
 
 // The Client uses this value to request the Server to return Response
 // Information in the CONNACK
 func (c *Connect) SetRequestResponseInfo(v bool) {
-	c.requestResponseInfo = v
+	c.requestResponseInfo = wbool(v)
 }
 func (c *Connect) RequestResponseInfo() bool {
-	return c.requestResponseInfo
+	return bool(c.requestResponseInfo)
 }
 
 // The Client uses this value to indicate whether the Reason String or
 // User Properties are sent in the case of failures.
 func (c *Connect) SetRequestProblemInfo(v bool) {
-	c.requestProblemInfo = v
+	c.requestProblemInfo = wbool(v)
 }
 func (c *Connect) RequestProblemInfo() bool {
-	return c.requestProblemInfo
+	return bool(c.requestProblemInfo)
 }
 
 // AddUserProp adds a user property. The User Property is allowed to
 // appear multiple times to represent multiple name, value pairs. The
 // same name is allowed to appear more than once.
 func (c *Connect) AddUserProp(key, val string) {
-	c.userProp = append(c.userProp, property{key, val})
+	c.AddUserProperty(property{key, val})
+}
+func (c *Connect) AddUserProperty(p property) {
+	c.userProp = append(c.userProp, p)
 }
 
 func (c *Connect) AddWillProp(key, val string) {
@@ -143,8 +151,8 @@ func (c *Connect) AddWillProp(key, val string) {
 	c.toggle(WillFlag, true)
 }
 
-func (c *Connect) SetAuthMethod(v string) { c.authMethod = v }
-func (c *Connect) AuthMethod() string     { return c.authMethod }
+func (c *Connect) SetAuthMethod(v string) { c.authMethod = u8str(v) }
+func (c *Connect) AuthMethod() string     { return string(c.authMethod) }
 
 func (c *Connect) SetAuthData(v []byte) { c.authData = v }
 func (c *Connect) AuthData() []byte     { return c.authData }
@@ -153,37 +161,38 @@ func (c *Connect) AuthData() []byte     { return c.authData }
 // Client’s Will Message until the Will Delay Interval has passed or
 // the Session ends, whichever happens first.
 func (c *Connect) SetWillDelayInterval(v uint32) {
-	c.willDelayInterval = v
+	c.willDelayInterval = wuint32(v)
 	c.toggle(WillFlag, true)
 }
 func (c *Connect) WillDelayInterval() uint32 {
-	return c.willDelayInterval
+	return uint32(c.willDelayInterval)
 }
 
 // the lifetime of the Will Message in seconds and is sent as the
 // Publication Expiry Interval when the Server publishes the Will
 // Message.
 func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
-	c.willMessageExpiryInterval = v
+	c.willMessageExpiryInterval = wuint32(v)
 	c.toggle(WillFlag, true)
 }
 func (c *Connect) WillMessageExpiryInterval() uint32 {
-	return c.willMessageExpiryInterval
+	return uint32(c.willMessageExpiryInterval)
 }
 
 func (c *Connect) SetWillTopic(v string) {
-	c.willTopic = v
+	c.willTopic = u8str(v)
 	c.toggle(WillFlag, true)
 }
+func (c *Connect) WillTopic() string { return string(c.willTopic) }
 
 // SetWillPayloadFormat, false indicates that the Will Message is
 // unspecified bytes. True indicates that the Will Message is UTF-8
 // Encoded Character Data.
 func (c *Connect) SetWillPayloadFormat(v bool) {
-	c.willPayloadFormat = v
+	c.willPayloadFormat = wbool(v)
 }
 func (c *Connect) WillPayloadFormat() bool {
-	return c.willPayloadFormat
+	return bool(c.willPayloadFormat)
 }
 
 func (c *Connect) SetWillPayload(v []byte) {
@@ -195,17 +204,18 @@ func (c *Connect) SetWillPayload(v []byte) {
 // receiving application, e.g. it may be a mime type like
 // application/json.
 func (c *Connect) SetWillContentType(v string) {
-	c.willContentType = v
+	c.willContentType = u8str(v)
 	c.toggle(WillFlag, true)
 }
+func (c *Connect) WillContentType() string { return string(c.willContentType) }
 
 // SetResponseTopic a UTF-8 encoded string which is used as the topic
 // name for a response message.
 func (c *Connect) SetResponseTopic(v string) {
-	c.responseTopic = v
+	c.responseTopic = u8str(v)
 }
 func (c *Connect) ResponseTopic() string {
-	return c.responseTopic
+	return string(c.responseTopic)
 }
 
 // The Correlation Data is used by the sender of the Request Message
@@ -219,9 +229,11 @@ func (c *Connect) CorrelationData() []byte {
 }
 
 func (c *Connect) SetUsername(v string) {
-	c.username = v
+	c.username = u8str(v)
 	c.toggle(UsernameFlag, len(c.username) > 0)
 }
+func (c *Connect) Username() string { return string(c.username) }
+
 func (c *Connect) SetPassword(v []byte) {
 	c.password = v
 	c.toggle(PasswordFlag, len(c.password) > 0)
@@ -296,14 +308,14 @@ func (c *Connect) properties(b []byte, i int) int {
 
 	// Request response information
 	if c.requestResponseInfo {
-		i += Bits(RequestResponseInfo).fill(b, i)
-		i += Bits(1).fill(b, i)
+		i += wuint8(RequestResponseInfo).fill(b, i)
+		i += c.requestResponseInfo.fill(b, i)
 	}
 
 	// Request problem information
 	if c.requestProblemInfo {
-		i += Bits(RequestProblemInfo).fill(b, i)
-		i += Bits(1).fill(b, i)
+		i += wuint8(RequestProblemInfo).fill(b, i)
+		i += c.requestProblemInfo.fill(b, i)
 	}
 
 	// Authentication method
@@ -404,10 +416,10 @@ func (c *Connect) String() string {
 
 func (c *Connect) toggle(flag byte, on bool) {
 	if on {
-		c.flags |= flag
+		c.flags |= Bits(flag)
 		return
 	}
-	c.flags &= ^flag
+	c.flags &= Bits(^flag)
 }
 
 type connectFlags byte

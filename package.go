@@ -166,6 +166,35 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
+// wire types
+type (
+	wuint8  = Bits  // byte
+	wuint16 = b2int // two byte integer
+	wuint32 = b4int // four byte integer
+)
+
+type wbool bool
+
+func (v wbool) fill(data []byte, i int) int {
+	if len(data) >= i+1 {
+		if v {
+			data[i] = 0x01
+		} else {
+			data[i] = 0x00
+		}
+	}
+	return 1
+}
+func (v *wbool) UnmarshalBinary(data []byte) error {
+	if data[0] == 1 {
+		*v = wbool(true)
+	} else {
+		*v = wbool(false)
+	}
+	return nil
+}
+func (v wbool) width() int { return 1 }
+
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
 type Bits byte
 
@@ -176,6 +205,11 @@ func (v Bits) fill(data []byte, i int) int {
 	}
 	return 1
 }
+func (v *Bits) UnmarshalBinary(data []byte) error {
+	*v = Bits(data[0])
+	return nil
+}
+func (v Bits) width() int { return 1 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
 type b2int uint16
