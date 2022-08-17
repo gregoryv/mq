@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"strings"
@@ -126,6 +127,8 @@ func Test_vbint(t *testing.T) {
 		{128, []byte{0x80, 0x01}},
 		{16_383, []byte{0xff, 0x7f}},
 
+		{148, []byte{0x94, 0x01}},
+
 		{16_384, []byte{0x80, 0x80, 0x01}},
 		{2_097_151, []byte{0xff, 0xff, 0x7f}},
 
@@ -133,11 +136,12 @@ func Test_vbint(t *testing.T) {
 		{268_435_455, []byte{0xff, 0xff, 0xff, 0x7f}},
 	}
 	for _, c := range cases {
-		data := make([]byte, c.x.width())
+		data := make([]byte, c.x.fill(_LENGTH, 0))
 		c.x.fill(data, 0)
 
 		if !reflect.DeepEqual(data, c.exp) {
-			t.Error("got", data, "exp", c.exp)
+			t.Log("got", hex.Dump(data))
+			t.Error("exp", hex.Dump(c.exp))
 		}
 		var after vbint
 		if err := after.UnmarshalBinary(data); err != nil {
@@ -146,10 +150,7 @@ func Test_vbint(t *testing.T) {
 		if after != c.x {
 			t.Errorf("%v != %v", c.x, after)
 		}
-		// widths
-		if got := c.x.width(); got != len(c.exp) {
-			t.Error("unexpected width", got, c.x)
-		}
+
 	}
 
 	// error case
@@ -162,7 +163,6 @@ func Test_vbint(t *testing.T) {
 	if err := v.UnmarshalBinary(nil); err == nil {
 		t.Error("UnmarshalBinary should fail on empty")
 	}
-
 }
 
 // ................................................ Data representations

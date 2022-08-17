@@ -28,7 +28,7 @@ func TestCompareConnect(t *testing.T) {
 	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
 	// our.SetPayloadFormat(true)
 	our.SetWillQoS(2)
-	//our.AddWillProp("connected", "2022-01-01 14:44:32")
+	our.AddWillProp("connected", "2022-01-01 14:44:32")
 
 	our.SetCleanStart(true)
 	our.SetProtocolVersion(5)
@@ -59,10 +59,10 @@ func TestCompareConnect(t *testing.T) {
 	// set here but has no affect, (maybe bug in Properties.Pack)
 	wp.ContentType = "application/json"
 	// todo this fails
-	/*wp.User = append(wp.User, packets.User{
+	wp.User = append(wp.User, packets.User{
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
-	})*/
+	})
 	// user properties
 	p := c.Properties
 	var se uint32 = 30
@@ -82,7 +82,7 @@ func TestCompareConnect(t *testing.T) {
 	b := hex.Dump(theirData.Bytes())
 
 	if a != b {
-		t.Logf("\n\nour %v bytes\n%s\n\n", ourData.Len(), a)
+		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
 		t.Errorf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), b)
 	}
 }

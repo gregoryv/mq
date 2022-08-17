@@ -20,7 +20,7 @@ import (
 // firstByte represents the first byte in a control packet.
 type firstByte byte
 
-// String returns a string TYPE-FLAGS REMAINING_LENGTH
+// String returns a readable string TYPEFLAGS, e.g. PUBLISH d1-r
 func (f firstByte) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
@@ -136,18 +136,23 @@ func (v bindata) width() int {
 type vbint uint
 
 func (v vbint) fill(data []byte, i int) int {
-	if len(data) >= i+v.width() {
-		for v > 0 {
-			encodedByte := byte(v % 128)
-			v = v / 128
-			if v > 0 {
-				encodedByte = encodedByte | 128
-			}
+	x := v
+	n := i
+	for {
+		encodedByte := byte(x % 128)
+		x = x / 128
+		if x > 0 {
+			encodedByte = encodedByte | 128
+		}
+		if i < len(data) {
 			data[i] = encodedByte
-			i++
+		}
+		i++
+		if x == 0 {
+			break
 		}
 	}
-	return v.width()
+	return i - n
 }
 
 // UnmarshalBinary data, returns nil or *Malformed error
@@ -169,19 +174,6 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 	}
 	*v = vbint(value)
 	return nil
-}
-
-func (v vbint) width() int {
-	switch {
-	case v < 128:
-		return 1
-	case v < 16_384:
-		return 2
-	case v < 2_097_152:
-		return 3
-	default:
-		return 4
-	}
 }
 
 // ----------------------------------------
