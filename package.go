@@ -141,6 +141,10 @@ func (v vbint) fill(data []byte, i int) int {
 	return i - n
 }
 
+func (v vbint) width() int {
+	return v.fill(_LENGTH, 0)
+}
+
 // UnmarshalBinary data, returns nil or *Malformed error
 func (v *vbint) UnmarshalBinary(data []byte) error {
 	if len(data) == 0 {
