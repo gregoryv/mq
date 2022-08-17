@@ -14,12 +14,15 @@ func TestConnect(t *testing.T) {
 	c := NewConnect()
 	c.SetKeepAlive(299)
 	c.SetClientID("macy")
+	c.SetSessionExpiryInterval(30)
+
 	c.SetUsername("john.doe")
 	c.SetPassword([]byte("123"))
-	c.SetSessionExpiryInterval(30)
-	c.AddUserProp("color", "red")
 	c.SetAuthMethod("digest")
 	c.SetAuthData([]byte("secret"))
+
+	c.AddUserProp("color", "red")
+
 	c.SetMaxPacketSize(4096)
 	c.SetTopicAliasMax(128)
 	c.SetRequestResponseInfo(true)
@@ -44,6 +47,16 @@ func TestConnect(t *testing.T) {
 	dump := hex.Dump(buf.Bytes())
 
 	t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", c, dump, buf.Len())
+}
+
+func TestConnect_fields(t *testing.T) {
+	c := NewConnect()
+	c.SetProtocolVersion(5)
+	c.SetProtocolName("MQTT")
+
+	c.ProtocolVersion()
+	c.ProtocolName()
+	c.WillContentType()
 }
 
 func TestconnectFlags(t *testing.T) {
@@ -76,7 +89,7 @@ func BenchmarkCreateAndWriteTo(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 
 			// our packet
-			our = NewConnect()
+			our := NewConnect()
 			our.SetKeepAlive(alive)
 			our.SetClientID(cid)
 			our.SetUsername(user)
@@ -87,7 +100,7 @@ func BenchmarkCreateAndWriteTo(b *testing.B) {
 	})
 	b.Run("their", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			their = packets.NewControlPacket(packets.CONNECT)
+			their := packets.NewControlPacket(packets.CONNECT)
 			c := their.Content.(*packets.Connect)
 			c.KeepAlive = alive
 			c.ClientID = cid
@@ -115,7 +128,7 @@ func BenchmarkNewConnect(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 
 			// our packet
-			our = NewConnect()
+			our := NewConnect()
 			our.SetKeepAlive(alive)
 			our.SetClientID(cid)
 			our.SetUsername(user)
@@ -125,7 +138,7 @@ func BenchmarkNewConnect(b *testing.B) {
 	})
 	b.Run("their", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
-			their = packets.NewControlPacket(packets.CONNECT)
+			their := packets.NewControlPacket(packets.CONNECT)
 			c := their.Content.(*packets.Connect)
 			c.KeepAlive = alive
 			c.ClientID = cid
@@ -140,23 +153,10 @@ func BenchmarkNewConnect(b *testing.B) {
 }
 
 func BenchmarkConnect_WriteTo(b *testing.B) {
-	b.Run("our", func(b *testing.B) {
-		for n := 0; n < b.N; n++ {
-			our.WriteTo(ioutil.Discard)
-		}
-	})
 
-	b.Run("their", func(b *testing.B) {
-		for n := 0; n < b.N; n++ {
-			their.WriteTo(ioutil.Discard)
-		}
-	})
-}
+	var our *Connect
+	var their *packets.ControlPacket
 
-var our *Connect
-var their *packets.ControlPacket
-
-func init() {
 	var (
 		alive   = uint16(30)
 		cid     = "macy"
@@ -183,4 +183,16 @@ func init() {
 	c.PasswordFlag = true
 	c.Password = pwd
 	c.Properties.SessionExpiryInterval = &sExpiry
+
+	b.Run("our", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			our.WriteTo(ioutil.Discard)
+		}
+	})
+
+	b.Run("their", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			their.WriteTo(ioutil.Discard)
+		}
+	})
 }

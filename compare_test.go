@@ -10,68 +10,77 @@ import (
 )
 
 func TestCompareConnect(t *testing.T) {
-	// our packet
 	our := mqtt.NewConnect()
+	// theirs is divided into a wrapping ControlPacket and content
+	their := packets.NewControlPacket(packets.CONNECT)
+	the := their.Content.(*packets.Connect)
+
 	our.SetKeepAlive(299)
+	the.KeepAlive = our.KeepAlive()
+
 	our.SetClientID("macy")
+	the.ClientID = our.ClientID()
+
+	var se uint32 = 30
+	our.SetSessionExpiryInterval(se)
+	the.Properties.SessionExpiryInterval = &se
+
+	// Username and password
 	our.SetUsername("john.doe")
+	the.UsernameFlag = our.HasFlag(mqtt.UsernameFlag)
+	the.Username = our.Username()
+
 	our.SetPassword([]byte("123"))
-	our.SetSessionExpiryInterval(30)
-	our.AddUserProp("color", "red")
+	the.PasswordFlag = our.HasFlag(mqtt.PasswordFlag)
+	the.Password = our.Password()
+
+	// Authentication method and data
 	our.SetAuthMethod("digest")
+	the.Properties.AuthMethod = "digest"
+
 	our.SetAuthData([]byte("secret"))
+	the.Properties.AuthData = []byte("secret")
+
+	// User properties
+	our.AddUserProp("color", "red")
+	the.Properties.User = append(
+		the.Properties.User, packets.User{"color", "red"},
+	)
+
+	// Receive maximum
+	our.SetReceiveMax(9)
+	rm := our.ReceiveMax()
+	the.Properties.ReceiveMaximum = &rm
 
 	our.SetWillRetain(true)
+	the.WillRetain = our.HasFlag(mqtt.WillRetain)
+	the.WillFlag = our.HasFlag(mqtt.WillFlag)
+
 	our.SetWillTopic("topic/dead/clients")
-	//our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
-	our.SetWillPayload([]byte(`{"clientID": "macy"}`))
-	// our.SetWillContentType("application/json") (maybe bug in Properties.Pack)
-	// our.SetPayloadFormat(true)
-	our.SetWillQoS(2)
+	the.WillTopic = our.WillTopic()
+
+	our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
+	the.WillMessage = our.WillPayload()
+
+	// possible bug in Properties.Pack
+	// our.SetWillContentType("application/json")
+	the.WillProperties = &packets.Properties{}
+	the.WillProperties.ContentType = "application/json" // never written
+
 	our.AddWillProp("connected", "2022-01-01 14:44:32")
-
-	our.SetCleanStart(true)
-	our.SetProtocolVersion(5)
-	our.SetProtocolName("MQTT")
-	our.SetReceiveMax(9)
-
-	// their packet
-	their := packets.NewControlPacket(packets.CONNECT)
-	c := their.Content.(*packets.Connect)
-	c.KeepAlive = our.KeepAlive()
-	c.ClientID = our.ClientID()
-	c.UsernameFlag = our.HasFlag(mqtt.UsernameFlag)
-	c.Username = our.Username()
-	c.PasswordFlag = our.HasFlag(mqtt.PasswordFlag)
-	c.Password = our.Password()
-	c.WillFlag = our.HasFlag(mqtt.WillFlag)
-	c.WillTopic = our.WillTopic()
-	c.WillMessage = our.WillPayload()
-	c.WillRetain = our.HasFlag(mqtt.WillRetain)
-	c.CleanStart = our.HasFlag(mqtt.CleanStart)
-	c.ProtocolVersion = our.ProtocolVersion()
-	c.ProtocolName = our.ProtocolName()
-	c.WillQOS = our.WillQoS()
-
-	// will properties
-	var wp packets.Properties
-	c.WillProperties = &wp
-	// set here but has no affect, (maybe bug in Properties.Pack)
-	wp.ContentType = "application/json"
-	// todo this fails
-	wp.User = append(wp.User, packets.User{
+	the.WillProperties.User = append(the.WillProperties.User, packets.User{
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
 	})
-	// user properties
-	p := c.Properties
-	var se uint32 = 30
-	p.SessionExpiryInterval = &se
-	p.User = append(p.User, packets.User{"color", "red"})
-	p.AuthMethod = "digest"
-	p.AuthData = []byte("secret")
-	rm := our.ReceiveMax()
-	p.ReceiveMaximum = &rm
+
+	// our.SetPayloadFormat(true)
+	// todo theirs
+
+	our.SetWillQoS(2)
+	the.WillQOS = our.WillQoS()
+
+	our.SetCleanStart(true)
+	the.CleanStart = our.HasFlag(mqtt.CleanStart)
 
 	// dump the data
 	var ourData, theirData bytes.Buffer
