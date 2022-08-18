@@ -225,6 +225,13 @@ func (v *Bits) UnmarshalBinary(data []byte) error {
 	return nil
 }
 func (v Bits) width() int { return 1 }
+func (v *Bits) toggle(flag byte, on bool) {
+	if on {
+		*v = *v | Bits(flag)
+		return
+	}
+	*v = *v & Bits(^flag)
+}
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
 type wuint16 uint16

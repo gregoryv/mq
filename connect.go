@@ -69,14 +69,16 @@ func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) {
-	c.toggle(WillRetain, v)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillRetain, v)
+	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillRetain() bool {
 	return c.HasFlag(WillRetain)
 }
 
-func (c *Connect) SetCleanStart(v bool) { c.toggle(CleanStart, v) }
+func (c *Connect) SetCleanStart(v bool) {
+	c.flags.toggle(CleanStart, v)
+}
 
 func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = wuint8(v) }
 func (c *Connect) ProtocolVersion() uint8     { return uint8(c.protocolVersion) }
@@ -93,7 +95,7 @@ func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 func (c *Connect) SetWillQoS(v uint8) {
 	c.willQoS = wuint8(v)
 	c.flags &= Bits(^(WillQoS1 | WillQoS2)) // reset
-	c.toggle(byte(c.willQoS<<3), c.willQoS < 3)
+	c.flags.toggle(byte(c.willQoS<<3), c.willQoS < 3)
 }
 func (c *Connect) WillQoS() uint8 { return uint8(c.willQoS) }
 
@@ -152,7 +154,7 @@ func (c *Connect) AddWillProp(key, val string) {
 }
 func (c *Connect) AddWillProperty(p property) {
 	c.willProp = append(c.willProp, p)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = u8str(v) }
@@ -166,7 +168,7 @@ func (c *Connect) AuthData() []byte     { return c.authData }
 // the Session ends, whichever happens first.
 func (c *Connect) SetWillDelayInterval(v uint32) {
 	c.willDelayInterval = wuint32(v)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillDelayInterval() uint32 {
 	return uint32(c.willDelayInterval)
@@ -177,7 +179,7 @@ func (c *Connect) WillDelayInterval() uint32 {
 // Message.
 func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
 	c.willMessageExpiryInterval = wuint32(v)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillMessageExpiryInterval() uint32 {
 	return uint32(c.willMessageExpiryInterval)
@@ -185,7 +187,7 @@ func (c *Connect) WillMessageExpiryInterval() uint32 {
 
 func (c *Connect) SetWillTopic(v string) {
 	c.willTopic = u8str(v)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillTopic() string { return string(c.willTopic) }
 
@@ -201,7 +203,7 @@ func (c *Connect) WillPayloadFormat() bool {
 
 func (c *Connect) SetWillPayload(v []byte) {
 	c.willPayload = v
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 
 // The value of the Content Type is defined by the sending and
@@ -209,7 +211,7 @@ func (c *Connect) SetWillPayload(v []byte) {
 // application/json.
 func (c *Connect) SetWillContentType(v string) {
 	c.willContentType = u8str(v)
-	c.toggle(WillFlag, true)
+	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillContentType() string { return string(c.willContentType) }
 
@@ -234,13 +236,13 @@ func (c *Connect) CorrelationData() []byte {
 
 func (c *Connect) SetUsername(v string) {
 	c.username = u8str(v)
-	c.toggle(UsernameFlag, len(c.username) > 0)
+	c.flags.toggle(UsernameFlag, len(c.username) > 0)
 }
 func (c *Connect) Username() string { return string(c.username) }
 
 func (c *Connect) SetPassword(v []byte) {
 	c.password = v
-	c.toggle(PasswordFlag, len(c.password) > 0)
+	c.flags.toggle(PasswordFlag, len(c.password) > 0)
 }
 
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
@@ -515,14 +517,6 @@ func (c *Connect) String() string {
 		time.Duration(c.keepAlive)*time.Second,
 		c.fill(_LENGTH, 0),
 	)
-}
-
-func (c *Connect) toggle(flag byte, on bool) {
-	if on {
-		c.flags |= Bits(flag)
-		return
-	}
-	c.flags &= Bits(^flag)
 }
 
 type connectFlags byte
