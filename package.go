@@ -25,6 +25,9 @@ type wireType interface {
 	// enables efficient calculation of partial lengths without
 	// actually allocating a buf.
 	fill(buf []byte, i int) int
+
+	// returns the width of the wire data in bytes
+	width() int
 }
 
 // firstByte represents the first byte in a control packet.

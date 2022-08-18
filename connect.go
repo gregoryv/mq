@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"bytes"
-	"encoding"
 	"fmt"
 	"io"
 	"time"
@@ -417,14 +416,14 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	// get guards against errors, it also advances the index
 	var i int
 	var err error
-	get := func(v encoding.BinaryUnmarshaler) {
+	get := func(v wireType) {
 		if err != nil {
 			return
 		}
 		if err = v.UnmarshalBinary(p[i:]); err != nil {
 			return
 		}
-		i += v.(interface{ width() int }).width()
+		i += v.width()
 	}
 	get(&c.protocolName)
 	get(&c.protocolVersion)
