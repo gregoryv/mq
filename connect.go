@@ -483,14 +483,17 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 				get(field)
 				continue
 			}
-			switch id {
-			case UserProperty:
+			if id == UserProperty {
 				var p property
 				get(&p)
 				c.willProp = append(c.willProp, p)
 				continue
 			}
-			break
+			return &Malformed{
+				method: "unmarshal",
+				t:      fmt.Sprintf("%T", c),
+				reason: fmt.Sprintf("unknown property id 0x%02x", id),
+			}
 		}
 		get(&c.willTopic)
 		get(&c.willPayload)

@@ -29,8 +29,8 @@ func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
 }
 
 type Malformed struct {
-	method string
-	t      string
+	method string // fill or unmarshal
+	t      string // the control packet
 	ref    string
 	reason string
 }

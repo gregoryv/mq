@@ -43,13 +43,13 @@ func TestConnect(t *testing.T) {
 	eq(t, c.SetWillMessageExpiryInterval, c.WillMessageExpiryInterval, 100)
 	c.AddWillProp("connected", "2022-01-01 14:44:32")
 
-	c.SetUsername("") // unset toggles flag
-	c.SetPassword(nil)
-
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
-
 	t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
+	t.Logf("data := []byte{ %v }", buf.Bytes())
+
+	c.SetUsername("") // unset toggles flag
+	c.SetPassword(nil)
 }
 
 // eq is used to check equality of set and "get" funcs
