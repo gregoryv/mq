@@ -39,7 +39,7 @@ func TestConnect_UnmarshalBinary(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := Connect{fixed: f}
+	c := Connect{fixed: Bits(f)}
 	if err := c.UnmarshalBinary(buf[1+rem.width() : n]); err != nil {
 		t.Log(c.String())
 		t.Fatal(err)
@@ -72,8 +72,10 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&propLen)
 	end := i + int(propLen)
 
+	var id Ident
+
 	// fields map property code to the correct Connect field
-	fields := map[byte]wireType{
+	fields := map[Ident]wireType{
 		ReceiveMax:            &c.receiveMax,
 		SessionExpiryInterval: &c.sessionExpiryInterval,
 		MaxPacketSize:         &c.maxPacketSize,
@@ -82,16 +84,23 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		RequestProblemInfo:    &c.requestProblemInfo,
 		AuthMethod:            &c.authMethod,
 		AuthData:              &c.authData,
+
+		// will fields
+		WillDelayInterval:      &c.willDelayInterval,
+		PayloadFormatIndicator: &c.willPayloadFormat,
+		MessageExpiryInterval:  &c.willMessageExpiryInterval,
+		ContentType:            &c.willContentType,
+		ResponseTopic:          &c.responseTopic,
+		CorrelationData:        &c.correlationData,
 	}
 
 	for i < end {
-		var code wuint8
-		get(&code)
-		if field, ok := fields[byte(code)]; ok {
+		get(&id)
+		if field, ok := fields[id]; ok {
 			get(field)
 			continue
 		}
-		switch byte(code) {
+		switch id {
 		case UserProperty:
 			var p property
 			get(&p)
@@ -102,6 +111,25 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
+		var willLen vbint
+		get(&willLen)
+		end := i + int(willLen)
+
+		for i < end {
+			get(&id)
+			if field, ok := fields[id]; ok {
+				get(field)
+				continue
+			}
+			switch id {
+			case UserProperty:
+				var p property
+				get(&p)
+				c.willProp = append(c.willProp, p)
+				continue
+			}
+			break
+		}
 		// todo continue here
 	}
 	return err

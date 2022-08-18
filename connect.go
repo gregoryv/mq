@@ -18,14 +18,14 @@ import (
 // NewConnect returns an empty MQTT v5 connect packet.
 func NewConnect() *Connect {
 	return &Connect{
-		fixed:           CONNECT,
+		fixed:           Bits(CONNECT),
 		protocolName:    "MQTT",
 		protocolVersion: 5,
 	}
 }
 
 type Connect struct {
-	fixed           byte
+	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8 // todo rename to uint8no
 	protocolName    u8str
@@ -147,7 +147,10 @@ func (c *Connect) AddUserProperty(p property) {
 }
 
 func (c *Connect) AddWillProp(key, val string) {
-	c.willProp = append(c.willProp, property{key, val})
+	c.AddWillProperty(property{key, val})
+}
+func (c *Connect) AddWillProperty(p property) {
+	c.willProp = append(c.willProp, p)
 	c.toggle(WillFlag, true)
 }
 
@@ -251,7 +254,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 func (c *Connect) fill(b []byte, i int) int {
 	remainingLen := c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0)
 
-	i += Bits(c.fixed).fill(b, i)       // firstByte header
+	i += c.fixed.fill(b, i)             // firstByte header
 	i += vbint(remainingLen).fill(b, i) // remaining length
 	i += c.variableHeader(b, i)         // Variable header
 	i += c.payload(b, i)
@@ -283,50 +286,50 @@ func (c *Connect) properties(b []byte, i int) int {
 
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
-		i += Bits(ReceiveMax).fill(b, i)
+		i += ReceiveMax.fill(b, i)
 		i += wuint16(v).fill(b, i)
 	}
 
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho
 	if v := c.sessionExpiryInterval; v > 0 {
-		i += Bits(SessionExpiryInterval).fill(b, i)
+		i += SessionExpiryInterval.fill(b, i)
 		i += wuint32(v).fill(b, i)
 	}
 
 	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
-		i += Bits(MaxPacketSize).fill(b, i)
+		i += MaxPacketSize.fill(b, i)
 		i += wuint32(v).fill(b, i)
 	}
 
 	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
-		i += Bits(TopicAliasMax).fill(b, i)
+		i += TopicAliasMax.fill(b, i)
 		i += wuint16(v).fill(b, i)
 	}
 
 	// Request response information
 	if c.requestResponseInfo {
-		i += wuint8(RequestResponseInfo).fill(b, i)
+		i += RequestResponseInfo.fill(b, i)
 		i += c.requestResponseInfo.fill(b, i)
 	}
 
 	// Request problem information
 	if c.requestProblemInfo {
-		i += wuint8(RequestProblemInfo).fill(b, i)
+		i += RequestProblemInfo.fill(b, i)
 		i += c.requestProblemInfo.fill(b, i)
 	}
 
 	// Authentication method
 	if v := c.authMethod; len(v) > 0 {
-		i += Bits(AuthMethod).fill(b, i)
+		i += AuthMethod.fill(b, i)
 		i += u8str(v).fill(b, i)
 	}
 
 	// Authentication data
 	if v := c.authData; len(v) > 0 {
-		i += Bits(AuthData).fill(b, i)
+		i += AuthData.fill(b, i)
 		i += bindata(v).fill(b, i)
 	}
 
@@ -334,7 +337,7 @@ func (c *Connect) properties(b []byte, i int) int {
 	// method. Though order should not matter, placed here to mimic
 	// pahos order.
 	for _, prop := range c.userProp {
-		i += Bits(UserProperty).fill(b, i)
+		i += UserProperty.fill(b, i)
 		i += prop.fill(b, i)
 	}
 	return i - n
@@ -346,7 +349,7 @@ func (c *Connect) payload(b []byte, i int) int {
 	i += u8str(c.clientID).fill(b, i)
 
 	// will
-	if Bits(c.flags).Has(WillFlag) {
+	if c.flags.Has(WillFlag) {
 		i += vbint(c.will(_LENGTH, 0)).fill(b, i)
 		i += c.will(b, i)
 		i += u8str(c.willTopic).fill(b, i)     // topic
@@ -354,11 +357,11 @@ func (c *Connect) payload(b []byte, i int) int {
 	}
 
 	// User Name
-	if Bits(c.flags).Has(UsernameFlag) {
+	if c.flags.Has(UsernameFlag) {
 		i += u8str(c.username).fill(b, i)
 	}
 	// Password
-	if Bits(c.flags).Has(PasswordFlag) {
+	if c.flags.Has(PasswordFlag) {
 		i += u8str(c.password).fill(b, i)
 	}
 
@@ -370,37 +373,37 @@ func (c *Connect) will(b []byte, i int) int {
 
 	// Will Properties
 	if v := c.willDelayInterval; v > 0 {
-		i += Bits(WillDelayInterval).fill(b, i)
+		i += WillDelayInterval.fill(b, i)
 		i += wuint32(v).fill(b, i)
 	}
 
 	if c.willPayloadFormat {
-		i += Bits(PayloadFormatIndicator).fill(b, i)
+		i += PayloadFormatIndicator.fill(b, i)
 		i += Bits(1).fill(b, i)
 	}
 
 	if v := c.willMessageExpiryInterval; v > 0 {
-		i += Bits(MessageExpiryInterval).fill(b, i)
+		i += MessageExpiryInterval.fill(b, i)
 		i += wuint32(v).fill(b, i)
 	}
 
 	if v := c.willContentType; len(v) > 0 {
-		i += Bits(ContentType).fill(b, i)
+		i += ContentType.fill(b, i)
 		i += u8str(v).fill(b, i)
 	}
 
 	if v := c.responseTopic; len(v) > 0 {
-		i += Bits(ResponseTopic).fill(b, i)
+		i += ResponseTopic.fill(b, i)
 		i += u8str(v).fill(b, i)
 	}
 
 	if v := c.correlationData; len(v) > 0 {
-		i += Bits(CorrelationData).fill(b, i)
+		i += CorrelationData.fill(b, i)
 		i += bindata(v).fill(b, i)
 	}
 
 	for _, prop := range c.willProp {
-		i += Bits(UserProperty).fill(b, i)
+		i += UserProperty.fill(b, i)
 		i += prop.fill(b, i)
 	}
 
@@ -466,41 +469,4 @@ const (
 	WillRetain
 	PasswordFlag
 	UsernameFlag
-)
-
-// MQTT Packet property identifier codes
-const (
-	PayloadFormatIndicator byte = 0x01
-	MessageExpiryInterval  byte = 0x02
-	ContentType            byte = 0x03
-
-	ResponseTopic   byte = 0x08
-	CorrelationData byte = 0x09
-
-	SubIdent byte = 0x0b
-
-	SessionExpiryInterval byte = 0x11
-	AssignedClientIdent   byte = 0x12
-	ServerKeepAlive       byte = 0x13
-
-	AuthMethod          byte = 0x15
-	AuthData            byte = 0x16
-	RequestProblemInfo  byte = 0x17
-	WillDelayInterval   byte = 0x18
-	RequestResponseInfo byte = 0x19
-	ResponseInformation byte = 0x1a
-
-	ServerReference byte = 0x1c
-	ReasonString    byte = 0x1f
-
-	ReceiveMax           byte = 0x21
-	TopicAliasMax        byte = 0x22
-	TopicAlias           byte = 0x23
-	MaximumQoS           byte = 0x24
-	RetainAvailable      byte = 0x25
-	UserProperty         byte = 0x26
-	MaxPacketSize        byte = 0x27
-	WildcardSubAvailable byte = 0x28
-	SubIdentAvailable    byte = 0x29
-	SharedSubAvailable   byte = 0x30
 )

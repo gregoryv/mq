@@ -246,9 +246,64 @@ func (v *wuint32) UnmarshalBinary(data []byte) error {
 
 func (v wuint32) width() int { return 4 }
 
+// Ident is the same as wuint16 but is used to name the identifier codes
+type Ident uint8
+
+func (v Ident) fill(data []byte, i int) int {
+	if len(data) >= i+1 {
+		data[i] = byte(v)
+	}
+	return 1
+}
+
+func (v *Ident) UnmarshalBinary(data []byte) error {
+	*v = Ident(data[0])
+	return nil
+}
+
+func (v Ident) width() int { return 1 }
+
 // ---------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------
+
+// MQTT Packet property identifier codes
+
+const (
+	PayloadFormatIndicator Ident = 0x01
+	MessageExpiryInterval  Ident = 0x02
+	ContentType            Ident = 0x03
+
+	ResponseTopic   Ident = 0x08
+	CorrelationData Ident = 0x09
+
+	SubIdent Ident = 0x0b
+
+	SessionExpiryInterval Ident = 0x11
+	AssignedClientIdent   Ident = 0x12
+	ServerKeepAlive       Ident = 0x13
+
+	AuthMethod          Ident = 0x15
+	AuthData            Ident = 0x16
+	RequestProblemInfo  Ident = 0x17
+	WillDelayInterval   Ident = 0x18
+	RequestResponseInfo Ident = 0x19
+	ResponseInformation Ident = 0x1a
+
+	ServerReference Ident = 0x1c
+	ReasonString    Ident = 0x1f
+
+	ReceiveMax           Ident = 0x21
+	TopicAliasMax        Ident = 0x22
+	TopicAlias           Ident = 0x23
+	MaximumQoS           Ident = 0x24
+	RetainAvailable      Ident = 0x25
+	UserProperty         Ident = 0x26
+	MaxPacketSize        Ident = 0x27
+	WildcardSubAvailable Ident = 0x28
+	SubIdentAvailable    Ident = 0x29
+	SharedSubAvailable   Ident = 0x30
+)
 
 const (
 	MQTT      = "MQTT" // 3.1.2.1 Protocol Name
