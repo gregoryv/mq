@@ -8,10 +8,24 @@ https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
 package mqtt
 
 import (
+	"encoding"
 	"encoding/binary"
 	"fmt"
 	"strings"
 )
+
+// wireType defines the interface for types that can be send over the
+// wire
+type wireType interface {
+	encoding.BinaryUnmarshaler
+
+	// fill unmarshals the data type into buf at position i. The
+	// returned value is the width of the data marshaled.  fill should
+	// work with a nil buf as a noop but return the width.  This
+	// enables efficient calculation of partial lengths without
+	// actually allocating a buf.
+	fill(buf []byte, i int) int
+}
 
 // firstByte represents the first byte in a control packet.
 type firstByte byte

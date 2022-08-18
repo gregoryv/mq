@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"bytes"
-	"encoding"
 	"encoding/hex"
 	"reflect"
 	"testing"
@@ -51,104 +50,4 @@ func TestConnect_UnmarshalBinary(t *testing.T) {
 	if got := out.Bytes(); !reflect.DeepEqual(got, data) {
 		t.Logf("\n\n%s\n\n%s\n\n", c.String(), hex.Dump(out.Bytes()))
 	}
-}
-
-func (c *Connect) UnmarshalBinary(p []byte) error {
-	// get guards against errors, it also advances the index
-	var i int
-	var err error
-	get := func(v encoding.BinaryUnmarshaler) {
-		if err != nil {
-			return
-		}
-		if err = v.UnmarshalBinary(p[i:]); err != nil {
-			return
-		}
-		i += v.(interface{ width() int }).width()
-	}
-	get(&c.protocolName)
-	get(&c.protocolVersion)
-	get(&c.flags)
-	get(&c.keepAlive)
-
-	// properties
-	var propLen vbint
-	get(&propLen)
-	end := i + int(propLen)
-
-	var id Ident
-
-	// fields map property code to the correct Connect field
-	fields := map[Ident]wireType{
-		ReceiveMax:            &c.receiveMax,
-		SessionExpiryInterval: &c.sessionExpiryInterval,
-		MaxPacketSize:         &c.maxPacketSize,
-		TopicAliasMax:         &c.topicAliasMax,
-		RequestResponseInfo:   &c.requestResponseInfo,
-		RequestProblemInfo:    &c.requestProblemInfo,
-		AuthMethod:            &c.authMethod,
-		AuthData:              &c.authData,
-
-		// will fields
-		WillDelayInterval:      &c.willDelayInterval,
-		PayloadFormatIndicator: &c.willPayloadFormat,
-		MessageExpiryInterval:  &c.willMessageExpiryInterval,
-		ContentType:            &c.willContentType,
-		ResponseTopic:          &c.responseTopic,
-		CorrelationData:        &c.correlationData,
-	}
-
-	for i < end {
-		get(&id)
-		if field, ok := fields[id]; ok {
-			get(field)
-			continue
-		}
-		switch id {
-		case UserProperty:
-			var p property
-			get(&p)
-			c.AddUserProperty(p)
-		}
-
-	}
-	// payload
-	get(&c.clientID)
-	if Bits(c.flags).Has(WillFlag) {
-		var willLen vbint
-		get(&willLen)
-		end := i + int(willLen)
-
-		for i < end {
-			get(&id)
-			if field, ok := fields[id]; ok {
-				get(field)
-				continue
-			}
-			switch id {
-			case UserProperty:
-				var p property
-				get(&p)
-				c.willProp = append(c.willProp, p)
-				continue
-			}
-			break
-		}
-		get(&c.willTopic)
-		get(&c.willPayload)
-	}
-	// User Name
-	if c.flags.Has(UsernameFlag) {
-		get(&c.username)
-	}
-	// Password
-	if c.flags.Has(PasswordFlag) {
-		get(&c.password)
-	}
-	return err
-}
-
-type wireType interface {
-	encoding.BinaryUnmarshaler
-	fill([]byte, int) int
 }
