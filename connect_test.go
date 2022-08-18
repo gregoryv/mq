@@ -48,9 +48,8 @@ func TestConnect(t *testing.T) {
 
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
-	dump := hex.Dump(buf.Bytes())
 
-	t.Logf("\n\n%s\n\n%s\n\n%v bytes\n\n", c, dump, buf.Len())
+	t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
 }
 
 // eq is used to check equality of set and "get" funcs

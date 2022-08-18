@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding"
 	"encoding/hex"
+	"reflect"
 	"testing"
 )
 
@@ -44,9 +45,12 @@ func TestConnect_UnmarshalBinary(t *testing.T) {
 		t.Log(c.String())
 		t.Fatal(err)
 	}
+	// write the unmarshaled back out and compare
 	var out bytes.Buffer
 	c.WriteTo(&out)
-	t.Logf("\n\n%s\n\n", hex.Dump(out.Bytes()))
+	if got := out.Bytes(); !reflect.DeepEqual(got, data) {
+		t.Logf("\n\n%s\n\n%s\n\n", c.String(), hex.Dump(out.Bytes()))
+	}
 }
 
 func (c *Connect) UnmarshalBinary(p []byte) error {
@@ -130,7 +134,16 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 			}
 			break
 		}
-		// todo continue here
+		get(&c.willTopic)
+		get(&c.willPayload)
+	}
+	// User Name
+	if c.flags.Has(UsernameFlag) {
+		get(&c.username)
+	}
+	// Password
+	if c.flags.Has(PasswordFlag) {
+		get(&c.password)
 	}
 	return err
 }

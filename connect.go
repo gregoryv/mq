@@ -411,9 +411,10 @@ func (c *Connect) will(b []byte, i int) int {
 }
 
 func (c *Connect) String() string {
-	return fmt.Sprintf("%s %s %s %s", c.clientID,
+	return fmt.Sprintf("%s %s %s %s %v bytes", c.clientID,
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),
 		time.Duration(c.keepAlive)*time.Second,
+		c.fill(_LENGTH, 0),
 	)
 }
 
