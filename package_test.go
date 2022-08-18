@@ -35,7 +35,6 @@ func Test_Bits(t *testing.T) {
 	case v.Has(0b0000_0001):
 		t.Error("Has")
 	}
-
 }
 
 func Test_wuint16(t *testing.T) {
@@ -152,6 +151,28 @@ func Test_vbint(t *testing.T) {
 
 	if err := v.UnmarshalBinary(nil); err == nil {
 		t.Error("UnmarshalBinary should fail on empty")
+	}
+}
+
+func Test_wbool(t *testing.T) {
+	var b wbool // false
+
+	data := make([]byte, b.width())
+	b.fill(data, 0)
+
+	var a wbool
+	if err := a.UnmarshalBinary(data); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
+
+	// before and after are equal
+	if b != a {
+		t.Errorf("b(%v) != a(%v)", b, a)
+	}
+	// error case
+	data[0] = 3
+	if err := a.UnmarshalBinary(data); err == nil {
+		t.Error("UnmarshalBinary should fail")
 	}
 }
 
