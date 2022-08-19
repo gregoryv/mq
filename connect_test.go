@@ -46,7 +46,7 @@ func TestConnect(t *testing.T) {
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
 	t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
-	t.Logf("data := []byte{ %v }", buf.Bytes())
+	//t.Logf("data := []byte{ %v }", buf.Bytes())
 
 	c.SetUsername("") // unset toggles flag
 	c.SetPassword(nil)

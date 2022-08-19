@@ -294,6 +294,8 @@ func (v Ident) width() int { return 1 }
 // MQTT Packet property identifier codes
 
 const (
+	// maybe todo rename with prefix Id and create value types for
+	// each property, e.g.  type ContentType u8str
 	PayloadFormatIndicator Ident = 0x01
 	MessageExpiryInterval  Ident = 0x02
 	ContentType            Ident = 0x03

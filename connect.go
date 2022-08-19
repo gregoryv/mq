@@ -25,6 +25,11 @@ func NewConnect() *Connect {
 }
 
 type Connect struct {
+	// fields are kept hidden so we can optimize memory storage
+	// without affecting callers of the api. There are also
+	// dependencies between flags and fields which we can help callers
+	// to fill out correctly when setting values. E.g. SetUsername
+	// sets/unsets the UsernameFlag in the flags field.
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8 // todo rename to uint8no
