@@ -50,6 +50,6 @@ func TestConnect_UnmarshalBinary(t *testing.T) {
 	var out bytes.Buffer
 	c.WriteTo(&out)
 	if got := out.Bytes(); !reflect.DeepEqual(got, data) {
-		t.Logf("\n\n%s\n\n%s\n\n", c.String(), hex.Dump(out.Bytes()))
+		t.Errorf("\n\n%s\n\n%s\n\n", c.String(), hex.Dump(out.Bytes()))
 	}
 }
