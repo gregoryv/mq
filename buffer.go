@@ -4,36 +4,33 @@ import (
 	"fmt"
 )
 
-type fields map[Ident]wireType
-
-func (f fields) getAny(buf *buffer, addProp func(property)) {
-	var propLen vbint
-	get := buf.get
-	get(&propLen)
-	end := buf.Index() + int(propLen)
-	var id Ident
-	for buf.Index() < end {
-		get(&id)
-		field, hasField := f[id]
-		switch {
-		case hasField:
-			get(field)
-
-		case id == UserProperty:
-			var p property
-			get(&p)
-			addProp(p)
-
-		default:
-			buf.err = fmt.Errorf("unknown property id 0x%02x", id)
-		}
-	}
-}
-
 type buffer struct {
 	data []byte
 	i    int
 	err  error
+}
+
+func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
+	var propLen vbint
+	b.get(&propLen)
+	end := b.i + int(propLen)
+	var id Ident
+	for b.i < end {
+		b.get(&id)
+		field, hasField := fields[id]
+		switch {
+		case hasField:
+			b.get(field)
+
+		case id == UserProperty:
+			var p property
+			b.get(&p)
+			addProp(p)
+
+		default:
+			b.err = fmt.Errorf("unknown property id 0x%02x", id)
+		}
+	}
 }
 
 func (b *buffer) get(v wireType) {

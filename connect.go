@@ -423,9 +423,8 @@ func (c *Connect) will(b []byte, i int) int {
 
 func (c *Connect) UnmarshalBinary(p []byte) error {
 	// get guards against errors, it also advances the index
-	var i int
-	var err error
-	get := newGetter(p, &i, &err)
+	buf := &buffer{data: p}
+	get := buf.get
 
 	// variable header
 	get(&c.protocolName)
@@ -454,68 +453,28 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	}
 
 	// length of the properties
-	var propLen vbint
-	get(&propLen)
-	end := i + int(propLen)
-	var id Ident
-	for i < end {
-		get(&id)
-		field, hasField := fields[id]
-		switch {
-		case hasField:
-			get(field)
-
-		case id == UserProperty:
-			var p property
-			get(&p)
-			c.AddUserProperty(p)
-
-		default:
-			return &Malformed{
-				method: "unmarshal",
-				t:      fmt.Sprintf("%T", c),
-				reason: fmt.Sprintf("unknown property id 0x%02x", id),
-			}
-		}
-	}
+	buf.getAny(fields, func(p property) {
+		c.userProp = append(c.userProp, p)
+	})
 
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
-		var willLen vbint
-		get(&willLen)
-		end := i + int(willLen)
-
-		for i < end {
-			get(&id)
-			if field, ok := fields[id]; ok {
-				get(field)
-				continue
-			}
-			if id == UserProperty {
-				var p property
-				get(&p)
-				c.willProp = append(c.willProp, p)
-				continue
-			}
-			return &Malformed{
-				method: "unmarshal",
-				t:      fmt.Sprintf("%T", c),
-				reason: fmt.Sprintf("unknown will property id 0x%02x", id),
-			}
-		}
+		buf.getAny(fields, func(p property) {
+			c.willProp = append(c.willProp, p)
+		})
 		get(&c.willTopic)
 		get(&c.willPayload)
 	}
-	// User Name
+	// username
 	if c.flags.Has(UsernameFlag) {
 		get(&c.username)
 	}
-	// Password
+	// password
 	if c.flags.Has(PasswordFlag) {
 		get(&c.password)
 	}
-	return err
+	return buf.Err()
 }
 
 func (c *Connect) String() string {
