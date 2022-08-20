@@ -290,10 +290,6 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 	return i - n
 }
 
-// Name an empty byte for increased readability when fill methods are
-// used to only calculate length.
-var _LENGTH []byte
-
 // properties returns length properties in wire format, if b is nil
 // nothing is written, used to calculate length.
 func (c *Connect) properties(b []byte, i int) int {

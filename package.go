@@ -420,3 +420,7 @@ var codeNames = map[byte]string{
 	SubscriptionIdentifiersNotSupported: "Subscription Identifiers not supported",
 	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
 }
+
+// Name an empty byte for increased readability when fill methods are
+// used to only calculate length.
+var _LENGTH []byte
