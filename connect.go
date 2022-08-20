@@ -362,8 +362,50 @@ func (c *Connect) payload(b []byte, i int) int {
 
 	// Will
 	if c.flags.Has(WillFlag) {
-		i += vbint(c.will(_LENGTH, 0)).fill(b, i)
-		i += c.will(b, i)
+		will := func(b []byte, i int) int {
+			n := i
+
+			// Will Properties
+			if v := c.willDelayInterval; v > 0 {
+				i += WillDelayInterval.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			if v := c.willPayloadFormat; v {
+				i += PayloadFormatIndicator.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			if v := c.willMessageExpiryInterval; v > 0 {
+				i += MessageExpiryInterval.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			if v := c.willContentType; len(v) > 0 {
+				i += ContentType.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			if v := c.responseTopic; len(v) > 0 {
+				i += ResponseTopic.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			if v := c.correlationData; len(v) > 0 {
+				i += CorrelationData.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			for _, v := range c.willProp {
+				i += UserProperty.fill(b, i)
+				i += v.fill(b, i)
+			}
+
+			return i - n
+		}
+
+		i += vbint(will(_LENGTH, 0)).fill(b, i)
+		i += will(b, i)
 		i += u8str(c.willTopic).fill(b, i)     // topic
 		i += bindata(c.willPayload).fill(b, i) // payload
 	}
@@ -376,48 +418,6 @@ func (c *Connect) payload(b []byte, i int) int {
 	// Password
 	if c.flags.Has(PasswordFlag) {
 		i += u8str(c.password).fill(b, i)
-	}
-
-	return i - n
-}
-
-func (c *Connect) will(b []byte, i int) int {
-	n := i
-
-	// Will Properties
-	if v := c.willDelayInterval; v > 0 {
-		i += WillDelayInterval.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	if v := c.willPayloadFormat; v {
-		i += PayloadFormatIndicator.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	if v := c.willMessageExpiryInterval; v > 0 {
-		i += MessageExpiryInterval.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	if v := c.willContentType; len(v) > 0 {
-		i += ContentType.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	if v := c.responseTopic; len(v) > 0 {
-		i += ResponseTopic.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	if v := c.correlationData; len(v) > 0 {
-		i += CorrelationData.fill(b, i)
-		i += v.fill(b, i)
-	}
-
-	for _, v := range c.willProp {
-		i += UserProperty.fill(b, i)
-		i += v.fill(b, i)
 	}
 
 	return i - n
