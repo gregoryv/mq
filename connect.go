@@ -353,9 +353,10 @@ func (c *Connect) properties(b []byte, i int) int {
 func (c *Connect) payload(b []byte, i int) int {
 	n := i
 
+	// ClientID
 	i += u8str(c.clientID).fill(b, i)
 
-	// will
+	// Will
 	if c.flags.Has(WillFlag) {
 		i += vbint(c.will(_LENGTH, 0)).fill(b, i)
 		i += c.will(b, i)
@@ -367,6 +368,7 @@ func (c *Connect) payload(b []byte, i int) int {
 	if c.flags.Has(UsernameFlag) {
 		i += u8str(c.username).fill(b, i)
 	}
+
 	// Password
 	if c.flags.Has(PasswordFlag) {
 		i += u8str(c.password).fill(b, i)
@@ -381,37 +383,37 @@ func (c *Connect) will(b []byte, i int) int {
 	// Will Properties
 	if v := c.willDelayInterval; v > 0 {
 		i += WillDelayInterval.fill(b, i)
-		i += wuint32(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
-	if c.willPayloadFormat {
+	if v := c.willPayloadFormat; v {
 		i += PayloadFormatIndicator.fill(b, i)
-		i += Bits(1).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	if v := c.willMessageExpiryInterval; v > 0 {
 		i += MessageExpiryInterval.fill(b, i)
-		i += wuint32(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	if v := c.willContentType; len(v) > 0 {
 		i += ContentType.fill(b, i)
-		i += u8str(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	if v := c.responseTopic; len(v) > 0 {
 		i += ResponseTopic.fill(b, i)
-		i += u8str(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	if v := c.correlationData; len(v) > 0 {
 		i += CorrelationData.fill(b, i)
-		i += bindata(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
-	for _, prop := range c.willProp {
+	for _, v := range c.willProp {
 		i += UserProperty.fill(b, i)
-		i += prop.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	return i - n
@@ -461,20 +463,18 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		ResponseTopic:          &c.responseTopic,
 		CorrelationData:        &c.correlationData,
 	}
-
 	for i < end {
+		// fixed properties go into each mapped field
 		get(&id)
 		if field, ok := fields[id]; ok {
 			get(field)
 			continue
 		}
-		switch id {
-		case UserProperty:
+		if id == UserProperty {
 			var p property
 			get(&p)
 			c.AddUserProperty(p)
 		}
-
 	}
 	// payload
 	get(&c.clientID)
