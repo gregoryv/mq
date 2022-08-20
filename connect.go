@@ -249,6 +249,8 @@ func (c *Connect) SetPassword(v []byte) {
 	c.flags.toggle(PasswordFlag, len(c.password) > 0)
 }
 
+// WriteTo writes this connect control packet in wire format to the
+// given writer.
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	// allocate full size of entire packet
 	b := make([]byte, c.fill(_LENGTH, 0))
@@ -423,15 +425,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	// get guards against errors, it also advances the index
 	var i int
 	var err error
-	get := func(v wireType) {
-		if err != nil {
-			return
-		}
-		if err = v.UnmarshalBinary(p[i:]); err != nil {
-			return
-		}
-		i += v.width()
-	}
+	get := newGetter(p, &i, &err)
 
 	// variable header
 	get(&c.protocolName)
@@ -440,7 +434,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.keepAlive)
 
 	// properties
-	// fields map property code to the correct Connect field
+	// map property ids to the correct Connect field
 	fields := map[Ident]wireType{
 		ReceiveMax:            &c.receiveMax,
 		SessionExpiryInterval: &c.sessionExpiryInterval,
@@ -450,7 +444,6 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		RequestProblemInfo:    &c.requestProblemInfo,
 		AuthMethod:            &c.authMethod,
 		AuthData:              &c.authData,
-
 		// will fields
 		WillDelayInterval:      &c.willDelayInterval,
 		PayloadFormatIndicator: &c.willPayloadFormat,
@@ -459,6 +452,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		ResponseTopic:          &c.responseTopic,
 		CorrelationData:        &c.correlationData,
 	}
+
 	// length of the properties
 	var propLen vbint
 	get(&propLen)
@@ -484,6 +478,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 			}
 		}
 	}
+
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
