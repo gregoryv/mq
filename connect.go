@@ -150,6 +150,9 @@ func (c *Connect) AddUserProp(key, val string) {
 	c.AddUserProperty(property{key, val})
 }
 func (c *Connect) AddUserProperty(p property) {
+	c.appendUserProperty(p)
+}
+func (c *Connect) appendUserProperty(p property) {
 	c.userProp = append(c.userProp, p)
 }
 
@@ -157,8 +160,11 @@ func (c *Connect) AddWillProp(key, val string) {
 	c.AddWillProperty(property{key, val})
 }
 func (c *Connect) AddWillProperty(p property) {
-	c.willProp = append(c.willProp, p)
+	c.appendWillProperty(p)
 	c.flags.toggle(WillFlag, true)
+}
+func (c *Connect) appendWillProperty(p property) {
+	c.willProp = append(c.willProp, p)
 }
 
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = u8str(v) }
@@ -443,26 +449,21 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		RequestProblemInfo:    &c.requestProblemInfo,
 		AuthMethod:            &c.authMethod,
 		AuthData:              &c.authData,
-		// will fields
-		WillDelayInterval:      &c.willDelayInterval,
-		PayloadFormatIndicator: &c.willPayloadFormat,
-		MessageExpiryInterval:  &c.willMessageExpiryInterval,
-		ContentType:            &c.willContentType,
-		ResponseTopic:          &c.responseTopic,
-		CorrelationData:        &c.correlationData,
 	}
-
-	// length of the properties
-	buf.getAny(fields, func(p property) {
-		c.userProp = append(c.userProp, p)
-	})
+	buf.getAny(fields, c.appendUserProperty)
 
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
-		buf.getAny(fields, func(p property) {
-			c.willProp = append(c.willProp, p)
-		})
+		fields := map[Ident]wireType{
+			WillDelayInterval:      &c.willDelayInterval,
+			PayloadFormatIndicator: &c.willPayloadFormat,
+			MessageExpiryInterval:  &c.willMessageExpiryInterval,
+			ContentType:            &c.willContentType,
+			ResponseTopic:          &c.responseTopic,
+			CorrelationData:        &c.correlationData,
+		}
+		buf.getAny(fields, c.appendWillProperty)
 		get(&c.willTopic)
 		get(&c.willPayload)
 	}
