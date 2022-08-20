@@ -432,18 +432,14 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		}
 		i += v.width()
 	}
+
+	// variable header
 	get(&c.protocolName)
 	get(&c.protocolVersion)
 	get(&c.flags)
 	get(&c.keepAlive)
 
 	// properties
-	var propLen vbint
-	get(&propLen)
-	end := i + int(propLen)
-
-	var id Ident
-
 	// fields map property code to the correct Connect field
 	fields := map[Ident]wireType{
 		ReceiveMax:            &c.receiveMax,
@@ -463,17 +459,29 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		ResponseTopic:          &c.responseTopic,
 		CorrelationData:        &c.correlationData,
 	}
+	// length of the properties
+	var propLen vbint
+	get(&propLen)
+	end := i + int(propLen)
+	var id Ident
 	for i < end {
-		// fixed properties go into each mapped field
 		get(&id)
-		if field, ok := fields[id]; ok {
+		field, hasField := fields[id]
+		switch {
+		case hasField:
 			get(field)
-			continue
-		}
-		if id == UserProperty {
+
+		case id == UserProperty:
 			var p property
 			get(&p)
 			c.AddUserProperty(p)
+
+		default:
+			return &Malformed{
+				method: "unmarshal",
+				t:      fmt.Sprintf("%T", c),
+				reason: fmt.Sprintf("unknown property id 0x%02x", id),
+			}
 		}
 	}
 	// payload
@@ -498,7 +506,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 			return &Malformed{
 				method: "unmarshal",
 				t:      fmt.Sprintf("%T", c),
-				reason: fmt.Sprintf("unknown property id 0x%02x", id),
+				reason: fmt.Sprintf("unknown will property id 0x%02x", id),
 			}
 		}
 		get(&c.willTopic)
