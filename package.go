@@ -31,7 +31,7 @@ type wireType interface {
 }
 
 // FirstByte represents the first byte in a control packet.
-type FirstByte byte
+type FirstByte Bits
 
 // String returns a readable string TYPEFLAGS, e.g. PUBLISH d1-r
 func (f FirstByte) String() string {
@@ -39,7 +39,7 @@ func (f FirstByte) String() string {
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")
 	flags := []byte("----")
-	if Bits(f).Has(DUP) {
+	if Bits(f).Has(DUPLICATE) {
 		flags[0] = 'd'
 	}
 	switch {
@@ -385,7 +385,7 @@ const (
 	QoS1   byte = 0b0000_0010
 	QoS2   byte = 0b0000_0100
 	//QoS3 FirstByte = 0b0000_0110   malformed!
-	DUP byte = 0b0000_1000
+	DUPLICATE byte = 0b0000_1000
 )
 
 const (

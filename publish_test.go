@@ -7,14 +7,14 @@ import (
 	"testing"
 )
 
-var _ wireType = &Publish{}
-
 func TestPublish(t *testing.T) {
 	p := NewPublish()
-	eq(t, p.SetTopicName, p.TopicName, "topic/temp")
-	eq(t, p.SetPacketID, p.PacketID, 1)
 	eq(t, p.SetRetain, p.Retain, true)
 	eq(t, p.SetQoS, p.QoS, 1)
+	eq(t, p.SetDuplicate, p.Duplicate, true)
+
+	eq(t, p.SetTopicName, p.TopicName, "topic/temp")
+	eq(t, p.SetPacketID, p.PacketID, 1)
 	eq(t, p.SetTopicAlias, p.TopicAlias, 4)
 	eq(t, p.SetMessageExpiryInterval, p.MessageExpiryInterval, 199)
 	eq(t, p.SetPayloadFormat, p.PayloadFormat, true)
@@ -34,10 +34,7 @@ func TestPublish(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
-	//
-	if got := p.width(); got < 0 {
-		t.Error(got)
-	}
+
 }
 
 func Test_QoS(t *testing.T) {

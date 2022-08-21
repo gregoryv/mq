@@ -29,6 +29,9 @@ type Publish struct {
 	payload       bindata
 }
 
+func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUPLICATE, v) }
+func (p *Publish) Duplicate() bool     { return p.fixed.Has(DUPLICATE) }
+
 func (p *Publish) SetRetain(v bool) { p.fixed.toggle(RETAIN, v) }
 func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
 
@@ -192,6 +195,6 @@ func (p *Publish) width() int {
 func (p *Publish) String() string {
 	return fmt.Sprintf("%s %v bytes",
 		FirstByte(p.fixed).String(),
-		p.fill(_LEN, 0),
+		p.width(),
 	)
 }
