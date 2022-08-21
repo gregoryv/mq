@@ -125,7 +125,7 @@ func Test_vbint(t *testing.T) {
 		{268_435_455, []byte{0xff, 0xff, 0xff, 0x7f}},
 	}
 	for _, c := range cases {
-		data := make([]byte, c.x.fill(_LENGTH, 0))
+		data := make([]byte, c.x.fill(_LEN, 0))
 		c.x.fill(data, 0)
 
 		if !reflect.DeepEqual(data, c.exp) {

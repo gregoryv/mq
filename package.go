@@ -159,7 +159,7 @@ func (v vbint) fill(data []byte, i int) int {
 }
 
 func (v vbint) width() int {
-	return v.fill(_LENGTH, 0)
+	return v.fill(_LEN, 0)
 }
 
 // UnmarshalBinary data, returns nil or *Malformed error
@@ -421,6 +421,6 @@ var codeNames = map[byte]string{
 	WildcardSubscriptionsNotSupported:   "Wildcard Subscriptions not supported",
 }
 
-// Name an empty byte for increased readability when fill methods are
+// Name an empty slice for increased readability when fill methods are
 // used to only calculate length.
-var _LENGTH []byte
+var _LEN []byte

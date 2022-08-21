@@ -259,7 +259,7 @@ func (c *Connect) SetPassword(v []byte) {
 // given writer.
 func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 	// allocate full size of entire packet
-	b := make([]byte, c.fill(_LENGTH, 0))
+	b := make([]byte, c.fill(_LEN, 0))
 	c.fill(b, 0)
 
 	n, err := w.Write(b)
@@ -267,7 +267,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (c *Connect) fill(b []byte, i int) int {
-	remainingLen := vbint(c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0))
+	remainingLen := vbint(c.variableHeader(_LEN, 0) + c.payload(_LEN, 0))
 
 	i += c.fixed.fill(b, i)      // firstByte header
 	i += remainingLen.fill(b, i) // remaining length
@@ -280,12 +280,12 @@ func (c *Connect) fill(b []byte, i int) int {
 func (c *Connect) variableHeader(b []byte, i int) int {
 	n := i
 
-	i += c.protocolName.fill(b, i)                  // Protocol name
-	i += c.protocolVersion.fill(b, i)               // Protocol version
-	i += c.flags.fill(b, i)                         // Flags
-	i += c.keepAlive.fill(b, i)                     // Keep alive
-	i += vbint(c.properties(_LENGTH, 0)).fill(b, i) // Properties len
-	i += c.properties(b, i)                         // Properties
+	i += c.protocolName.fill(b, i)               // Protocol name
+	i += c.protocolVersion.fill(b, i)            // Protocol version
+	i += c.flags.fill(b, i)                      // Flags
+	i += c.keepAlive.fill(b, i)                  // Keep alive
+	i += vbint(c.properties(_LEN, 0)).fill(b, i) // Properties len
+	i += c.properties(b, i)                      // Properties
 
 	return i - n
 }
@@ -396,7 +396,7 @@ func (c *Connect) payload(b []byte, i int) int {
 			return i - n
 		}
 
-		i += vbint(will(_LENGTH, 0)).fill(b, i)
+		i += vbint(will(_LEN, 0)).fill(b, i)
 		i += will(b, i)
 		i += c.willTopic.fill(b, i)   // topic
 		i += c.willPayload.fill(b, i) // payload
@@ -470,7 +470,7 @@ func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s %s %v bytes", c.clientID,
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),
 		time.Duration(c.keepAlive)*time.Second,
-		c.fill(_LENGTH, 0),
+		c.fill(_LEN, 0),
 	)
 }
 
