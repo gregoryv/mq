@@ -294,30 +294,30 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 // nothing is written, used to calculate length.
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
+	fill := func(id Ident, v wireType) {
+		i += id.fill(b, i)
+		i += v.fill(b, i)
+	}
 
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
-		i += ReceiveMax.fill(b, i)
-		i += wuint16(v).fill(b, i)
+		fill(ReceiveMax, &v)
 	}
 
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho
 	if v := c.sessionExpiryInterval; v > 0 {
-		i += SessionExpiryInterval.fill(b, i)
-		i += wuint32(v).fill(b, i)
+		fill(SessionExpiryInterval, &v)
 	}
 
 	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
-		i += MaxPacketSize.fill(b, i)
-		i += wuint32(v).fill(b, i)
+		fill(MaxPacketSize, &v)
 	}
 
 	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
-		i += TopicAliasMax.fill(b, i)
-		i += wuint16(v).fill(b, i)
+		fill(TopicAliasMax, &v)
 	}
 
 	// Request response information
