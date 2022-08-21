@@ -267,12 +267,12 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (c *Connect) fill(b []byte, i int) int {
-	remainingLen := c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0)
+	remainingLen := vbint(c.variableHeader(_LENGTH, 0) + c.payload(_LENGTH, 0))
 
-	i += c.fixed.fill(b, i)             // firstByte header
-	i += vbint(remainingLen).fill(b, i) // remaining length
-	i += c.variableHeader(b, i)         // Variable header
-	i += c.payload(b, i)
+	i += c.fixed.fill(b, i)      // firstByte header
+	i += remainingLen.fill(b, i) // remaining length
+	i += c.variableHeader(b, i)  // variable header
+	i += c.payload(b, i)         // payload
 
 	return i
 }
@@ -280,10 +280,10 @@ func (c *Connect) fill(b []byte, i int) int {
 func (c *Connect) variableHeader(b []byte, i int) int {
 	n := i
 
-	i += u8str(c.protocolName).fill(b, i)           // Protocol name
-	i += Bits(c.protocolVersion).fill(b, i)         // Protocol version
-	i += Bits(c.flags).fill(b, i)                   // Flags
-	i += wuint16(c.keepAlive).fill(b, i)            // Keep alive
+	i += c.protocolName.fill(b, i)                  // Protocol name
+	i += c.protocolVersion.fill(b, i)               // Protocol version
+	i += c.flags.fill(b, i)                         // Flags
+	i += c.keepAlive.fill(b, i)                     // Keep alive
 	i += vbint(c.properties(_LENGTH, 0)).fill(b, i) // Properties len
 	i += c.properties(b, i)                         // Properties
 
@@ -294,54 +294,54 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 // nothing is written, used to calculate length.
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
-	fill := func(id Ident, v wireType) {
-		i += id.fill(b, i)
-		i += v.fill(b, i)
-	}
 
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
-		fill(ReceiveMax, &v)
+		i += ReceiveMax.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho
 	if v := c.sessionExpiryInterval; v > 0 {
-		fill(SessionExpiryInterval, &v)
+		i += SessionExpiryInterval.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
-		fill(MaxPacketSize, &v)
+		i += MaxPacketSize.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
-		fill(TopicAliasMax, &v)
+		i += TopicAliasMax.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Request response information
-	if c.requestResponseInfo {
+	if v := c.requestResponseInfo; v {
 		i += RequestResponseInfo.fill(b, i)
-		i += c.requestResponseInfo.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Request problem information
-	if c.requestProblemInfo {
+	if v := c.requestProblemInfo; v {
 		i += RequestProblemInfo.fill(b, i)
-		i += c.requestProblemInfo.fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Authentication method
 	if v := c.authMethod; len(v) > 0 {
 		i += AuthMethod.fill(b, i)
-		i += u8str(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// Authentication data
 	if v := c.authData; len(v) > 0 {
 		i += AuthData.fill(b, i)
-		i += bindata(v).fill(b, i)
+		i += v.fill(b, i)
 	}
 
 	// User properties, in the spec it's defined before authentication
@@ -373,23 +373,18 @@ func (c *Connect) payload(b []byte, i int) int {
 			if v := c.willDelayInterval; v > 0 {
 				fill(WillDelayInterval, &v)
 			}
-
 			if v := c.willPayloadFormat; v {
 				fill(PayloadFormatIndicator, &v)
 			}
-
 			if v := c.willMessageExpiryInterval; v > 0 {
 				fill(MessageExpiryInterval, &v)
 			}
-
 			if v := c.willContentType; len(v) > 0 {
 				fill(ContentType, &v)
 			}
-
 			if v := c.responseTopic; len(v) > 0 {
 				fill(ResponseTopic, &v)
 			}
-
 			if v := c.correlationData; len(v) > 0 {
 				fill(CorrelationData, &v)
 			}
