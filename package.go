@@ -462,6 +462,11 @@ type FixedHeader struct {
 	remainingLen vbint
 }
 
-func (f *FixedHeader) ReadFrom(r io.Reader) error {
-	return fmt.Errorf(": todo")
+func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
+	n, err := f.fixed.ReadFrom(r)
+	if err != nil {
+		return n, err
+	}
+	m, err := f.remainingLen.ReadFrom(r)
+	return n + m, err
 }
