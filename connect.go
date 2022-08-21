@@ -365,40 +365,37 @@ func (c *Connect) payload(b []byte, i int) int {
 		will := func(b []byte, i int) int {
 			n := i
 
+			fill := func(id Ident, v wireType) {
+				i += id.fill(b, i)
+				i += v.fill(b, i)
+			}
 			// Will Properties
 			if v := c.willDelayInterval; v > 0 {
-				i += WillDelayInterval.fill(b, i)
-				i += v.fill(b, i)
+				fill(WillDelayInterval, &v)
 			}
 
 			if v := c.willPayloadFormat; v {
-				i += PayloadFormatIndicator.fill(b, i)
-				i += v.fill(b, i)
+				fill(PayloadFormatIndicator, &v)
 			}
 
 			if v := c.willMessageExpiryInterval; v > 0 {
-				i += MessageExpiryInterval.fill(b, i)
-				i += v.fill(b, i)
+				fill(MessageExpiryInterval, &v)
 			}
 
 			if v := c.willContentType; len(v) > 0 {
-				i += ContentType.fill(b, i)
-				i += v.fill(b, i)
+				fill(ContentType, &v)
 			}
 
 			if v := c.responseTopic; len(v) > 0 {
-				i += ResponseTopic.fill(b, i)
-				i += v.fill(b, i)
+				fill(ResponseTopic, &v)
 			}
 
 			if v := c.correlationData; len(v) > 0 {
-				i += CorrelationData.fill(b, i)
-				i += v.fill(b, i)
+				fill(CorrelationData, &v)
 			}
 
 			for _, v := range c.willProp {
-				i += UserProperty.fill(b, i)
-				i += v.fill(b, i)
+				fill(UserProperty, &v)
 			}
 
 			return i - n
