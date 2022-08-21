@@ -196,7 +196,10 @@ func (p *Publish) width() int {
 
 func (p *Publish) UnmarshalBinary(data []byte) error {
 	// get guards against errors, it also advances the index
-	buf := &buffer{data: data}
+	buf := &buffer{
+		data:              data,
+		addSubscriptionID: p.AddSubscriptionID,
+	}
 	get := buf.get
 
 	get(&p.topicName)

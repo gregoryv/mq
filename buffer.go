@@ -10,6 +10,8 @@ type buffer struct {
 	data []byte
 	i    int // current offset
 	err  error
+
+	addSubscriptionID func(uint32) // used in e.g. Publish
 }
 
 // getAny reads all properties from the current offset starting with
@@ -38,6 +40,13 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 			var p property
 			b.get(&p)
 			addProp(p)
+
+		case id == SubscriptionID:
+			var sub vbint
+			b.get(&sub)
+			if b.addSubscriptionID != nil {
+				b.addSubscriptionID(uint32(sub))
+			}
 
 		default:
 			b.err = fmt.Errorf("unknown property id 0x%02x", id)

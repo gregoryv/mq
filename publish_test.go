@@ -35,13 +35,13 @@ func TestPublish(t *testing.T) {
 	}
 	//t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
 
+	var f FixedHeader
+	if _, err := f.ReadFrom(&buf); err != nil {
+		t.Fatal(err)
+	}
 	var after Publish
-	after.fixed = p.fixed // not part of the unmarshaling
-	data := buf.Bytes()
-	var remainingLen vbint
-	remainingLen.UnmarshalBinary(data[1:])
-	rest := data[1+remainingLen.width():]
-	if err := after.UnmarshalBinary(rest); err != nil {
+	after.fixed = f.fixed // not part of the unmarshaling
+	if err := after.UnmarshalBinary(buf.Bytes()); err != nil {
 		t.Error(err)
 	}
 	compare(t, p, &after)
