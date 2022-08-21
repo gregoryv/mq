@@ -3,20 +3,16 @@ package mqtt
 import "testing"
 
 func Test_buffer(t *testing.T) {
-	var b buffer
 
-	if b.err != nil {
-		t.Fatal("empty buffer cannot have error")
+	b := &buffer{data: []byte{2, 0xff, 0}}
+	b.getAny(map[Ident]wireType{}, func(property) {})
+	if b.err == nil {
+		t.Error("expect getAny to fail")
 	}
 
-	b.data = []byte{2, 0xff, 0}
-	b.getAny(map[Ident]wireType{}, func(property) {})
-
-	b.i = 0
-	b.data = []byte{2}
-	b.err = nil
+	b = &buffer{data: []byte{2}}
 	var aboolean wbool
 	if b.get(&aboolean); b.err == nil {
-		t.Error("get wbool with bad data should fail")
+		t.Error("expect get to fail")
 	}
 }
