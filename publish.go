@@ -15,18 +15,94 @@ type Publish struct {
 	fixed     Bits
 	topicName wstring
 
-	packetIdent           wuint16
+	packetID wuint16 // packet identifier
+
 	topicAlias            wuint16
 	messageExpiryInterval wuint32
 	responseTopic         wstring
 	correlationData       bindata
 	userProp              []property
-	subIdentifiers        []vbint
+	subscriptionIDs       []uint32
 	contentType           wstring
 
 	payloadFormat wbool
 	payload       bindata
 }
+
+func (p *Publish) SetRetain(v bool) { p.fixed.toggle(RETAIN, v) }
+func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
+
+// SetQoS, 1 or 2 other values unset the QoS
+func (p *Publish) SetQoS(v uint8) {
+	p.fixed &= Bits(^(QoS1 | QoS2)) // reset
+	switch v {
+	case 1:
+		p.fixed.toggle(QoS1, true)
+	case 2:
+		p.fixed.toggle(QoS2, true)
+	}
+}
+
+func (p *Publish) QoS() uint8 {
+	switch {
+	case p.fixed.Has(QoS1 | QoS2):
+		return 3 // malformed
+	case p.fixed.Has(QoS1):
+		return 1
+	case p.fixed.Has(QoS2):
+		return 2
+	}
+	return 0
+}
+
+func (p *Publish) SetTopicName(v string) { p.topicName = wstring(v) }
+func (p *Publish) TopicName() string     { return string(p.topicName) }
+
+func (p *Publish) SetPacketID(v uint16) { p.packetID = wuint16(v) }
+func (p *Publish) PacketID() uint16     { return uint16(p.packetID) }
+
+func (p *Publish) SetPayloadFormat(v bool) { p.payloadFormat = wbool(v) }
+func (p *Publish) PayloadFormat() bool     { return bool(p.payloadFormat) }
+
+func (p *Publish) SetMessageExpiryInterval(v uint32) {
+	p.messageExpiryInterval = wuint32(v)
+}
+func (p *Publish) MessageExpiryInterval() uint32 {
+	return uint32(p.messageExpiryInterval)
+}
+
+func (p *Publish) SetTopicAlias(v uint16) { p.topicAlias = wuint16(v) }
+func (p *Publish) TopicAlias() uint16     { return uint16(p.topicAlias) }
+
+func (p *Publish) SetResponseTopic(v string) { p.responseTopic = wstring(v) }
+func (p *Publish) ResponseTopic() string     { return string(p.responseTopic) }
+
+func (p *Publish) SetCorrelationData(v []byte) { p.correlationData = bindata(v) }
+func (p *Publish) CorrelationData() []byte     { return []byte(p.correlationData) }
+
+// AddUserProp adds a user property. The User Property is allowed to
+// appear multiple times to represent multiple name, value pairs. The
+// same name is allowed to appear more than once.
+func (p *Publish) AddUserProp(key, val string) {
+	p.AddUserProperty(property{key, val})
+}
+func (p *Publish) AddUserProperty(prop property) {
+	p.appendUserProperty(prop)
+}
+func (p *Publish) appendUserProperty(prop property) {
+	p.userProp = append(p.userProp, prop)
+}
+
+func (p *Publish) AddSubscriptionID(v uint32) {
+	p.subscriptionIDs = append(p.subscriptionIDs, v)
+}
+
+func (p *Publish) SubscriptionIDs() []uint32 {
+	return p.subscriptionIDs
+}
+
+func (p *Publish) SetContentType(v string) { p.contentType = wstring(v) }
+func (p *Publish) ContentType() string     { return string(p.contentType) }
 
 func (p *Publish) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")
@@ -64,5 +140,8 @@ func (p *Publish) width() int {
 }
 
 func (p *Publish) String() string {
-	return fmt.Sprintf("%s", firstByte(p.fixed).String())
+	return fmt.Sprintf("%s %v bytes",
+		firstByte(p.fixed).String(),
+		p.fill(_LEN, 0),
+	)
 }
