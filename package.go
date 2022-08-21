@@ -62,20 +62,20 @@ func (f firstByte) String() string {
 type property [2]string
 
 func (v property) fill(data []byte, i int) int {
-	i += u8str(v[0]).fill(data, i)
-	_ = u8str(v[1]).fill(data, i)
+	i += wstring(v[0]).fill(data, i)
+	_ = wstring(v[1]).fill(data, i)
 	return v.width()
 }
 
 func (v *property) UnmarshalBinary(data []byte) error {
-	var key u8str
+	var key wstring
 	if err := key.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
 	}
 	v[0] = string(key)
 
 	i := len(v[0]) + 2
-	var val u8str
+	var val wstring
 	if err := val.UnmarshalBinary(data[i:]); err != nil {
 		return unmarshalErr(v, "value", err.(*Malformed))
 	}
@@ -86,26 +86,26 @@ func (v property) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
 func (v property) width() int {
-	return u8str(v[0]).width() + u8str(v[1]).width()
+	return wstring(v[0]).width() + wstring(v[1]).width()
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
-type u8str string
+type wstring string
 
-func (v u8str) fill(data []byte, i int) int {
+func (v wstring) fill(data []byte, i int) int {
 	return bindata(v).fill(data, i)
 }
 
-func (v *u8str) UnmarshalBinary(data []byte) error {
+func (v *wstring) UnmarshalBinary(data []byte) error {
 	var b bindata
 	if err := b.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "", err.(*Malformed))
 	}
-	*v = u8str(b)
+	*v = wstring(b)
 	return nil
 }
 
-func (v u8str) width() int {
+func (v wstring) width() int {
 	return bindata(v).width()
 }
 

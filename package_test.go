@@ -83,13 +83,13 @@ func Test_wuint32(t *testing.T) {
 	}
 }
 
-func Test_u8str(t *testing.T) {
-	b := u8str("۞ gopher från sverige")
+func Test_wstring(t *testing.T) {
+	b := wstring("۞ gopher från sverige")
 
 	data := make([]byte, b.width())
 	b.fill(data, 0)
 
-	var a u8str
+	var a wstring
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
@@ -232,7 +232,7 @@ func Test_property(t *testing.T) {
 	}
 }
 
-var large = u8str(strings.Repeat(" ", MaxUint16+1))
+var large = wstring(strings.Repeat(" ", MaxUint16+1))
 
 func ExampleMalformed_Error() {
 	e := Malformed{

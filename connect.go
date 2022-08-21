@@ -33,8 +33,8 @@ type Connect struct {
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8
-	protocolName    u8str
-	clientID        u8str
+	protocolName    wstring
+	clientID        wstring
 	keepAlive       wuint16
 
 	// properties
@@ -47,20 +47,20 @@ type Connect struct {
 	requestProblemInfo    wbool
 	userProp              []property
 	willProp              []property
-	authMethod            u8str
+	authMethod            wstring
 	authData              bindata
 
 	willDelayInterval wuint32
-	willTopic         u8str
+	willTopic         wstring
 	willPayloadFormat wbool
 	willPayload       bindata
 
 	willMessageExpiryInterval wuint32
-	willContentType           u8str
-	responseTopic             u8str
+	willContentType           wstring
+	responseTopic             wstring
 	correlationData           bindata
 
-	username u8str
+	username wstring
 	password bindata
 }
 
@@ -86,10 +86,10 @@ func (c *Connect) SetCleanStart(v bool) {
 func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = wuint8(v) }
 func (c *Connect) ProtocolVersion() uint8     { return uint8(c.protocolVersion) }
 
-func (c *Connect) SetProtocolName(v string) { c.protocolName = u8str(v) }
+func (c *Connect) SetProtocolName(v string) { c.protocolName = wstring(v) }
 func (c *Connect) ProtocolName() string     { return string(c.protocolName) }
 
-func (c *Connect) SetClientID(v string) { c.clientID = u8str(v) }
+func (c *Connect) SetClientID(v string) { c.clientID = wstring(v) }
 func (c *Connect) ClientID() string     { return string(c.clientID) }
 
 func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
@@ -166,7 +166,7 @@ func (c *Connect) appendWillProperty(p property) {
 	c.willProp = append(c.willProp, p)
 }
 
-func (c *Connect) SetAuthMethod(v string) { c.authMethod = u8str(v) }
+func (c *Connect) SetAuthMethod(v string) { c.authMethod = wstring(v) }
 func (c *Connect) AuthMethod() string     { return string(c.authMethod) }
 
 func (c *Connect) SetAuthData(v []byte) { c.authData = v }
@@ -195,7 +195,7 @@ func (c *Connect) WillMessageExpiryInterval() uint32 {
 }
 
 func (c *Connect) SetWillTopic(v string) {
-	c.willTopic = u8str(v)
+	c.willTopic = wstring(v)
 	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillTopic() string { return string(c.willTopic) }
@@ -220,7 +220,7 @@ func (c *Connect) WillPayload() []byte { return c.willPayload }
 // receiving application, e.g. it may be a mime type like
 // application/json.
 func (c *Connect) SetWillContentType(v string) {
-	c.willContentType = u8str(v)
+	c.willContentType = wstring(v)
 	c.flags.toggle(WillFlag, true)
 }
 func (c *Connect) WillContentType() string { return string(c.willContentType) }
@@ -228,7 +228,7 @@ func (c *Connect) WillContentType() string { return string(c.willContentType) }
 // SetResponseTopic a UTF-8 encoded string which is used as the topic
 // name for a response message.
 func (c *Connect) SetResponseTopic(v string) {
-	c.responseTopic = u8str(v)
+	c.responseTopic = wstring(v)
 }
 func (c *Connect) ResponseTopic() string {
 	return string(c.responseTopic)
@@ -245,7 +245,7 @@ func (c *Connect) CorrelationData() []byte {
 }
 
 func (c *Connect) SetUsername(v string) {
-	c.username = u8str(v)
+	c.username = wstring(v)
 	c.flags.toggle(UsernameFlag, len(c.username) > 0)
 }
 func (c *Connect) Username() string { return string(c.username) }
