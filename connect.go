@@ -358,7 +358,7 @@ func (c *Connect) payload(b []byte, i int) int {
 	n := i
 
 	// ClientID
-	i += u8str(c.clientID).fill(b, i)
+	i += c.clientID.fill(b, i)
 
 	// Will
 	if c.flags.Has(WillFlag) {
@@ -398,18 +398,18 @@ func (c *Connect) payload(b []byte, i int) int {
 
 		i += vbint(will(_LENGTH, 0)).fill(b, i)
 		i += will(b, i)
-		i += u8str(c.willTopic).fill(b, i)     // topic
-		i += bindata(c.willPayload).fill(b, i) // payload
+		i += c.willTopic.fill(b, i)   // topic
+		i += c.willPayload.fill(b, i) // payload
 	}
 
 	// User Name
 	if c.flags.Has(UsernameFlag) {
-		i += u8str(c.username).fill(b, i)
+		i += c.username.fill(b, i)
 	}
 
 	// Password
 	if c.flags.Has(PasswordFlag) {
-		i += u8str(c.password).fill(b, i)
+		i += c.password.fill(b, i)
 	}
 
 	return i - n
