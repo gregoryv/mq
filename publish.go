@@ -118,20 +118,28 @@ func (p *Publish) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (p *Publish) fill(b []byte, i int) int {
-	remainingLen := vbint(
-		p.variableHeader(_LEN, 0) + p.payload.fill(_LEN, 0),
-	)
+	remainingLen := vbint(p.variableHeader(_LEN, 0))
 
-	i += p.fixed.fill(b, i)      // firstByte header
+	if len(p.payload) > 0 {
+		remainingLen += vbint(p.payload.fill(_LEN, 0))
+	}
+
+	i += p.fixed.fill(b, i)      // FirstByte header
 	i += remainingLen.fill(b, i) // remaining length
 	i += p.variableHeader(b, i)  // variable header
-	i += p.payload.fill(b, i)    // payload
+	if len(p.payload) > 0 {
+		i += p.payload.fill(b, i) // payload
+	}
 
 	return i
 }
 func (p *Publish) variableHeader(b []byte, i int) int {
 	n := i
 
+	i += p.topicName.fill(b, i)
+	if v := p.QoS(); v == 1 || v == 2 {
+		i += p.packetID.fill(b, i)
+	}
 	i += vbint(p.properties(_LEN, 0)).fill(b, i) // Properties len
 	i += p.properties(b, i)                      // Properties
 
@@ -183,7 +191,7 @@ func (p *Publish) width() int {
 
 func (p *Publish) String() string {
 	return fmt.Sprintf("%s %v bytes",
-		firstByte(p.fixed).String(),
+		FirstByte(p.fixed).String(),
 		p.fill(_LEN, 0),
 	)
 }

@@ -270,7 +270,7 @@ func (c *Connect) WriteTo(w io.Writer) (int64, error) {
 func (c *Connect) fill(b []byte, i int) int {
 	remainingLen := vbint(c.variableHeader(_LEN, 0) + c.payload(_LEN, 0))
 
-	i += c.fixed.fill(b, i)      // firstByte header
+	i += c.fixed.fill(b, i)      // FirstByte header
 	i += remainingLen.fill(b, i) // remaining length
 	i += c.variableHeader(b, i)  // variable header
 	i += c.payload(b, i)         // payload
@@ -477,7 +477,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 
 func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s %s %v bytes", c.clientID,
-		firstByte(c.fixed).String(), connectFlags(c.Flags()),
+		FirstByte(c.fixed).String(), connectFlags(c.Flags()),
 		time.Duration(c.keepAlive)*time.Second,
 		c.fill(_LEN, 0),
 	)

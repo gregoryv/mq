@@ -3,11 +3,50 @@ package mqtt_test
 import (
 	"bytes"
 	"encoding/hex"
+	"io"
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
 	"github.com/gregoryv/mqtt"
 )
+
+func TestComparePublish(t *testing.T) {
+	our := mqtt.NewPublish()
+	// theirs is divided into a wrapping ControlPacket and content
+	their := packets.NewControlPacket(packets.PUBLISH)
+	the := their.Content.(*packets.Publish)
+
+	our.SetTopicName("topic/")
+	the.Topic = "topic/"
+
+	//our.SetRetain(true)
+	// bug in pahos, Publish.WriteTo sets the flags, though it's never
+	// used if new control packet is created with func NewControlPacket
+	//the.Retain = true
+	//the.Duplicate = true
+
+	// no reason to continue the comparison until the above bug is fixed
+	compare(t, our, their)
+}
+
+func compare(t *testing.T, our, their io.WriterTo) {
+	t.Helper()
+	// dump the data
+	var ourData, theirData bytes.Buffer
+	our.WriteTo(&ourData)
+	their.WriteTo(&theirData)
+
+	a := hex.Dump(ourData.Bytes())
+	b := hex.Dump(theirData.Bytes())
+
+	f := theirData.Bytes()[0]
+	if a != b {
+		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
+		t.Errorf("\n\n%s %08b\n\ntheir %v bytes\n%s\n\n",
+			mqtt.FirstByte(f), f,
+			theirData.Len(), b)
+	}
+}
 
 func TestCompareConnect(t *testing.T) {
 	our := mqtt.NewConnect()
@@ -82,16 +121,5 @@ func TestCompareConnect(t *testing.T) {
 	our.SetCleanStart(true)
 	the.CleanStart = our.HasFlag(mqtt.CleanStart)
 
-	// dump the data
-	var ourData, theirData bytes.Buffer
-	our.WriteTo(&ourData)
-	their.WriteTo(&theirData)
-
-	a := hex.Dump(ourData.Bytes())
-	b := hex.Dump(theirData.Bytes())
-
-	if a != b {
-		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
-		t.Errorf("\n\ntheir %v bytes\n%s\n\n", theirData.Len(), b)
-	}
+	compare(t, our, their)
 }
