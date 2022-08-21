@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"strings"
@@ -9,6 +10,18 @@ import (
 
 	"github.com/eclipse/paho.golang/packets"
 )
+
+func ExampleConnect() {
+	c := NewConnect()
+	c.SetClientID("macy")
+	c.SetKeepAlive(299)
+	c.SetUsername("john.doe")
+	c.SetPassword([]byte("123"))
+
+	fmt.Print(c)
+	// output:
+	// CONNECT ---- up----- MQTT5 4m59s 34 bytes
+}
 
 func TestConnect(t *testing.T) {
 	//

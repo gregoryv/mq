@@ -476,8 +476,10 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 }
 
 func (c *Connect) String() string {
-	return fmt.Sprintf("%s %s %s %s %v bytes", c.clientID,
+	return fmt.Sprintf("%s %s %s%v %s %v bytes",
 		FirstByte(c.fixed).String(), connectFlags(c.Flags()),
+		c.protocolName,
+		c.protocolVersion,
 		time.Duration(c.keepAlive)*time.Second,
 		c.fill(_LEN, 0),
 	)
