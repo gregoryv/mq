@@ -3,6 +3,7 @@ package mqtt
 import (
 	"bytes"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -45,6 +46,10 @@ func TestPublish(t *testing.T) {
 		t.Error(err)
 	}
 	compare(t, p, &after)
+
+	if v := after.String(); !strings.Contains(v, "PUBLISH") {
+		t.Error(v)
+	}
 }
 
 func Test_QoS(t *testing.T) {
