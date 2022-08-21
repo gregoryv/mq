@@ -36,6 +36,11 @@ func Test_Bits(t *testing.T) {
 	case v.Has(0b0000_0001):
 		t.Error("Has")
 	}
+
+	var r brokenRW
+	if _, err := v.ReadFrom(&r); err == nil {
+		t.Error("expected error")
+	}
 }
 
 func Test_wuint16(t *testing.T) {
@@ -160,6 +165,16 @@ func Test_vbint(t *testing.T) {
 	if err := v.UnmarshalBinary(nil); err == nil {
 		t.Error("UnmarshalBinary should fail on empty")
 	}
+
+	var r brokenRW
+	if _, err := v.ReadFrom(&r); err == nil {
+		t.Error("expected error")
+	}
+
+	large := []byte{0xff, 0xff, 0xff, 0xff, 0xff}
+	if _, err := v.ReadFrom(bytes.NewReader(large)); err == nil {
+		t.Error("expected error")
+	}
 }
 
 func Test_wbool(t *testing.T) {
@@ -240,6 +255,15 @@ func Test_property(t *testing.T) {
 	}
 }
 
+func TestFixedHeader(t *testing.T) {
+	var r brokenRW
+	var v FixedHeader
+	if _, err := v.ReadFrom(&r); err == nil {
+		t.Error("expected error")
+	}
+
+}
+
 var large = wstring(strings.Repeat(" ", MaxUint16+1))
 
 func ExampleMalformed_Error() {
@@ -256,9 +280,13 @@ func ExampleMalformed_Error() {
 	// malformed mqtt.Connect unmarshal: remaining length missing data
 }
 
-type brokenWriter struct{}
+type brokenRW struct{}
 
-func (w *brokenWriter) Write(data []byte) (int, error) {
+func (w *brokenRW) Write(data []byte) (int, error) {
+	return 0, broken
+}
+
+func (w *brokenRW) Read(data []byte) (int, error) {
 	return 0, broken
 }
 
