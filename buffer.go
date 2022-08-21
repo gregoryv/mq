@@ -4,15 +4,23 @@ import (
 	"fmt"
 )
 
+// buffer is a much simpler bytes.Buffer which guards sequential
+// access to data on error.
 type buffer struct {
 	data []byte
-	i    int
+	i    int // current offset
 	err  error
 }
 
+// getAny reads all properties from the current offset starting with
+// the variable length.  fields map property identity codes to wire
+// type fields and the addProp func is used for each user property.
 func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 	var propLen vbint
 	b.get(&propLen)
+	if b.err != nil {
+		return
+	}
 	end := b.i + int(propLen)
 	var id Ident
 	for b.i < end {
