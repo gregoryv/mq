@@ -248,6 +248,13 @@ func (v Bits) fill(data []byte, i int) int {
 	}
 	return 1
 }
+func (v *Bits) ReadFrom(r io.Reader) (int64, error) {
+	data := make([]byte, 1)
+	if n, err := r.Read(data); err != nil {
+		return int64(n), err
+	}
+	return 1, v.UnmarshalBinary(data)
+}
 func (v *Bits) UnmarshalBinary(data []byte) error {
 	*v = Bits(data[0])
 	return nil
