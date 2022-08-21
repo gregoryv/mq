@@ -16,7 +16,11 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 	end := b.i + int(propLen)
 	var id Ident
 	for b.i < end {
+		before := b.i
 		b.get(&id)
+		if b.i == before {
+			return
+		}
 		field, hasField := fields[id]
 		switch {
 		case hasField:
@@ -44,4 +48,3 @@ func (b *buffer) get(v wireType) {
 }
 
 func (b *buffer) Err() error { return b.err }
-func (b *buffer) Index() int { return b.i }
