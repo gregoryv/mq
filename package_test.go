@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -140,6 +141,13 @@ func Test_vbint(t *testing.T) {
 			t.Errorf("%v != %v", c.x, after)
 		}
 
+		var afterR vbint
+		if _, err := afterR.ReadFrom(bytes.NewReader(data)); err != nil {
+			t.Error(err)
+		}
+		if afterR != c.x {
+			t.Errorf("%v != %v", c.x, afterR)
+		}
 	}
 
 	// error case

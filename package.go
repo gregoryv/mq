@@ -11,6 +11,7 @@ import (
 	"encoding"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -160,6 +161,30 @@ func (v vbint) fill(data []byte, i int) int {
 
 func (v vbint) width() int {
 	return v.fill(_LEN, 0)
+}
+
+func (v *vbint) ReadFrom(r io.Reader) (int64, error) {
+	var multiplier uint = 1
+	var value uint
+	data := make([]byte, 1)
+	var i int64
+	for {
+		if _, err := r.Read(data); err != nil {
+			return i, err
+		}
+		i++
+		encodedByte := data[0]
+		value += uint(encodedByte) & uint(127) * multiplier
+		if multiplier > 128*128*128 {
+			return i, unmarshalErr(v, "", "size exceeded")
+		}
+		if encodedByte&128 == 0 {
+			break
+		}
+		multiplier = multiplier * 128
+	}
+	*v = vbint(value)
+	return i, nil
 }
 
 // UnmarshalBinary data, returns nil or *Malformed error
@@ -424,3 +449,12 @@ var codeNames = map[byte]string{
 // Name an empty slice for increased readability when fill methods are
 // used to only calculate length.
 var _LEN []byte
+
+type FixedHeader struct {
+	fixed        Bits
+	remainingLen vbint
+}
+
+func (f *FixedHeader) ReadFrom(r io.Reader) error {
+	return fmt.Errorf(": todo")
+}
