@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add type Publish
 - Simplify Connect.UnmarshalBinary
 
 ## [0.5.0] 2022-08-20
