@@ -303,7 +303,7 @@ const (
 	ResponseTopic   Ident = 0x08
 	CorrelationData Ident = 0x09
 
-	SubIdent Ident = 0x0b
+	SubscriptionID Ident = 0x0b
 
 	SessionExpiryInterval Ident = 0x11
 	AssignedClientIdent   Ident = 0x12

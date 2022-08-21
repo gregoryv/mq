@@ -131,7 +131,49 @@ func (p *Publish) fill(b []byte, i int) int {
 }
 func (p *Publish) variableHeader(b []byte, i int) int {
 	n := i
-	// todo
+
+	i += vbint(p.properties(_LEN, 0)).fill(b, i) // Properties len
+	i += p.properties(b, i)                      // Properties
+
+	return i - n
+}
+
+func (p *Publish) properties(b []byte, i int) int {
+	n := i
+	fill := func(id Ident, v wireType) {
+		i += id.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	if v := p.payloadFormat; v {
+		fill(PayloadFormatIndicator, &v)
+	}
+	if v := p.messageExpiryInterval; v > 0 {
+		fill(MessageExpiryInterval, &v)
+	}
+	if v := p.topicAlias; v > 0 {
+		fill(TopicAlias, &v)
+	}
+	if v := p.responseTopic; len(v) > 0 {
+		fill(ResponseTopic, &v)
+	}
+	if v := p.correlationData; len(v) > 0 {
+		fill(CorrelationData, &v)
+	}
+
+	for _, v := range p.userProp {
+		fill(UserProperty, &v)
+	}
+
+	for _, v := range p.subscriptionIDs {
+		if v > 0 {
+			id := vbint(v)
+			fill(SubscriptionID, &id)
+		}
+	}
+	if v := p.contentType; len(v) > 0 {
+		fill(ContentType, &v)
+	}
 	return i - n
 }
 
