@@ -37,7 +37,7 @@ func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
 
 // SetQoS, 1 or 2 other values unset the QoS
 func (p *Publish) SetQoS(v uint8) {
-	p.fixed &= Bits(^(QoS1 | QoS2)) // reset
+	p.fixed &= Bits(^(QoS3)) // reset
 	switch v {
 	case 1:
 		p.fixed.toggle(QoS1, true)
@@ -48,7 +48,7 @@ func (p *Publish) SetQoS(v uint8) {
 
 func (p *Publish) QoS() uint8 {
 	switch {
-	case p.fixed.Has(QoS1 | QoS2):
+	case p.fixed.Has(QoS3):
 		return 3 // malformed
 	case p.fixed.Has(QoS1):
 		return 1

@@ -43,7 +43,7 @@ func (f FirstByte) String() string {
 		flags[0] = 'd'
 	}
 	switch {
-	case Bits(f).Has(QoS1 | QoS2):
+	case Bits(f).Has(QoS3):
 		flags[1] = '!' // malformed
 		flags[2] = '!' // malformed
 	case Bits(f).Has(QoS1):
@@ -380,11 +380,11 @@ var typeNames = map[byte]string{
 
 // FirstByte header flags
 const (
-	RETAIN byte = 0b0000_0001
-	QoS0   byte = 0b0000_0000
-	QoS1   byte = 0b0000_0010
-	QoS2   byte = 0b0000_0100
-	//QoS3 FirstByte = 0b0000_0110   malformed!
+	RETAIN    byte = 0b0000_0001
+	QoS0      byte = 0b0000_0000
+	QoS1      byte = 0b0000_0010
+	QoS2      byte = 0b0000_0100
+	QoS3      byte = 0b0000_0110 // malformed!
 	DUPLICATE byte = 0b0000_1000
 )
 

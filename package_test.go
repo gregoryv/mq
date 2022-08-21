@@ -15,7 +15,7 @@ func Test_FirstByte(t *testing.T) {
 		exp string
 	}{
 		{PUBLISH | QoS2 | RETAIN, "PUBLISH -2-r"},
-		{PUBLISH | QoS1 | QoS2, "PUBLISH -!!-"},
+		{PUBLISH | QoS3, "PUBLISH -!!-"},
 		{PUBLISH | DUPLICATE | QoS2, "PUBLISH d2--"},
 		{PUBLISH | QoS1, "PUBLISH --1-"},
 		{CONNECT, "CONNECT ----"},
