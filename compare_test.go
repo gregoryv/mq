@@ -1,4 +1,4 @@
-package mqtt_test
+package mqtt
 
 import (
 	"bytes"
@@ -7,11 +7,10 @@ import (
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
-	"github.com/gregoryv/mqtt"
 )
 
 func TestComparePublish(t *testing.T) {
-	our := mqtt.NewPublish()
+	our := NewPublish()
 	// theirs is divided into a wrapping ControlPacket and content
 	their := packets.NewControlPacket(packets.PUBLISH)
 	the := their.Content.(*packets.Publish)
@@ -29,27 +28,8 @@ func TestComparePublish(t *testing.T) {
 	compare(t, our, their)
 }
 
-func compare(t *testing.T, our, their io.WriterTo) {
-	t.Helper()
-	// dump the data
-	var ourData, theirData bytes.Buffer
-	our.WriteTo(&ourData)
-	their.WriteTo(&theirData)
-
-	a := hex.Dump(ourData.Bytes())
-	b := hex.Dump(theirData.Bytes())
-
-	f := theirData.Bytes()[0]
-	if a != b {
-		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
-		t.Errorf("\n\n%s %08b\n\ntheir %v bytes\n%s\n\n",
-			mqtt.FirstByte(f), f,
-			theirData.Len(), b)
-	}
-}
-
 func TestCompareConnect(t *testing.T) {
-	our := mqtt.NewConnect()
+	our := NewConnect()
 	// theirs is divided into a wrapping ControlPacket and content
 	their := packets.NewControlPacket(packets.CONNECT)
 	the := their.Content.(*packets.Connect)
@@ -66,11 +46,11 @@ func TestCompareConnect(t *testing.T) {
 
 	// Username and password
 	our.SetUsername("john.doe")
-	the.UsernameFlag = our.HasFlag(mqtt.UsernameFlag)
+	the.UsernameFlag = our.HasFlag(UsernameFlag)
 	the.Username = our.Username()
 
 	our.SetPassword([]byte("123"))
-	the.PasswordFlag = our.HasFlag(mqtt.PasswordFlag)
+	the.PasswordFlag = our.HasFlag(PasswordFlag)
 	the.Password = our.Password()
 
 	// Authentication method and data
@@ -92,8 +72,8 @@ func TestCompareConnect(t *testing.T) {
 	the.Properties.ReceiveMaximum = &rm
 
 	our.SetWillRetain(true)
-	the.WillRetain = our.HasFlag(mqtt.WillRetain)
-	the.WillFlag = our.HasFlag(mqtt.WillFlag)
+	the.WillRetain = our.HasFlag(WillRetain)
+	the.WillFlag = our.HasFlag(WillFlag)
 
 	our.SetWillTopic("topic/dead/clients")
 	the.WillTopic = our.WillTopic()
@@ -119,7 +99,26 @@ func TestCompareConnect(t *testing.T) {
 	the.WillQOS = our.WillQoS()
 
 	our.SetCleanStart(true)
-	the.CleanStart = our.HasFlag(mqtt.CleanStart)
+	the.CleanStart = our.HasFlag(CleanStart)
 
 	compare(t, our, their)
+}
+
+func compare(t *testing.T, our, their io.WriterTo) {
+	t.Helper()
+	// dump the data
+	var ourData, theirData bytes.Buffer
+	our.WriteTo(&ourData)
+	their.WriteTo(&theirData)
+
+	a := hex.Dump(ourData.Bytes())
+	b := hex.Dump(theirData.Bytes())
+
+	f := theirData.Bytes()[0]
+	if a != b {
+		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
+		t.Errorf("\n\n%s %08b\n\ntheir %v bytes\n%s\n\n",
+			FirstByte(f), f,
+			theirData.Len(), b)
+	}
 }

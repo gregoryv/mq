@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"bytes"
-	"encoding/hex"
 	"reflect"
 	"testing"
 )
@@ -34,7 +33,18 @@ func TestPublish(t *testing.T) {
 	if _, err := p.WriteTo(&buf); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
+	//t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
+
+	var after Publish
+	after.fixed = p.fixed // not part of the unmarshaling
+	data := buf.Bytes()
+	var remainingLen vbint
+	remainingLen.UnmarshalBinary(data[1:])
+	rest := data[1+remainingLen.width():]
+	if err := after.UnmarshalBinary(rest); err != nil {
+		t.Error(err)
+	}
+	compare(t, p, &after)
 }
 
 func Test_QoS(t *testing.T) {

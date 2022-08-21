@@ -113,10 +113,6 @@ func (p *Publish) Payload() []byte     { return []byte(p.payload) }
 // end settings
 // ----------------------------------------
 
-func (p *Publish) UnmarshalBinary(data []byte) error {
-	return fmt.Errorf(": todo")
-}
-
 func (p *Publish) WriteTo(w io.Writer) (int64, error) {
 	// allocate full size of entire packet
 	b := make([]byte, p.fill(_LEN, 0))
@@ -196,6 +192,28 @@ func (p *Publish) properties(b []byte, i int) int {
 
 func (p *Publish) width() int {
 	return p.fill(_LEN, 0)
+}
+
+func (p *Publish) UnmarshalBinary(data []byte) error {
+	// get guards against errors, it also advances the index
+	buf := &buffer{data: data}
+	get := buf.get
+
+	get(&p.topicName)
+	if v := p.QoS(); v == 1 || v == 2 {
+		get(&p.packetID)
+	}
+
+	fields := map[Ident]wireType{
+		PayloadFormatIndicator: &p.payloadFormat,
+		MessageExpiryInterval:  &p.messageExpiryInterval,
+		TopicAlias:             &p.topicAlias,
+		ResponseTopic:          &p.responseTopic,
+		CorrelationData:        &p.correlationData,
+		ContentType:            &p.contentType,
+	}
+	buf.getAny(fields, p.appendUserProperty)
+	return nil
 }
 
 func (p *Publish) String() string {
