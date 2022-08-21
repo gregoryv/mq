@@ -27,14 +27,14 @@ func TestPublish(t *testing.T) {
 		t.Error("subscriptionIDs", v)
 	}
 
-	eq(t, p.SetContentType, p.ContentType, "text/xml")
+	eq(t, p.SetContentType, p.ContentType, "text/plain")
+	eq(t, p.SetPayload, p.Payload, []byte("gopher"))
 
 	var buf bytes.Buffer
 	if _, err := p.WriteTo(&buf); err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
-
 }
 
 func Test_QoS(t *testing.T) {

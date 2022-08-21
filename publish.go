@@ -29,8 +29,8 @@ type Publish struct {
 	payload       bindata
 }
 
-func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUPLICATE, v) }
-func (p *Publish) Duplicate() bool     { return p.fixed.Has(DUPLICATE) }
+func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUP, v) }
+func (p *Publish) Duplicate() bool     { return p.fixed.Has(DUP) }
 
 func (p *Publish) SetRetain(v bool) { p.fixed.toggle(RETAIN, v) }
 func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
@@ -106,6 +106,12 @@ func (p *Publish) SubscriptionIDs() []uint32 {
 
 func (p *Publish) SetContentType(v string) { p.contentType = wstring(v) }
 func (p *Publish) ContentType() string     { return string(p.contentType) }
+
+func (p *Publish) SetPayload(v []byte) { p.payload = bindata(v) }
+func (p *Publish) Payload() []byte     { return []byte(p.payload) }
+
+// end settings
+// ----------------------------------------
 
 func (p *Publish) UnmarshalBinary(data []byte) error {
 	return fmt.Errorf(": todo")

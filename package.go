@@ -39,7 +39,7 @@ func (f FirstByte) String() string {
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")
 	flags := []byte("----")
-	if Bits(f).Has(DUPLICATE) {
+	if Bits(f).Has(DUP) {
 		flags[0] = 'd'
 	}
 	switch {
@@ -380,12 +380,12 @@ var typeNames = map[byte]string{
 
 // FirstByte header flags
 const (
-	RETAIN    byte = 0b0000_0001
-	QoS0      byte = 0b0000_0000
-	QoS1      byte = 0b0000_0010
-	QoS2      byte = 0b0000_0100
-	QoS3      byte = 0b0000_0110 // malformed!
-	DUPLICATE byte = 0b0000_1000
+	RETAIN byte = 0b0000_0001
+	QoS0   byte = 0b0000_0000
+	QoS1   byte = 0b0000_0010
+	QoS2   byte = 0b0000_0100
+	QoS3   byte = 0b0000_0110 // malformed!
+	DUP    byte = 0b0000_1000
 )
 
 const (
