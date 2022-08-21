@@ -195,7 +195,6 @@ func (p *Publish) width() int {
 }
 
 func (p *Publish) UnmarshalBinary(data []byte) error {
-	// get guards against errors, it also advances the index
 	buf := &buffer{
 		data:              data,
 		addSubscriptionID: p.AddSubscriptionID,
@@ -216,7 +215,11 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 		ContentType:            &p.contentType,
 	}
 	buf.getAny(fields, p.appendUserProperty)
-	return nil
+
+	if len(data) > buf.i {
+		get(&p.payload)
+	}
+	return buf.err
 }
 
 func (p *Publish) String() string {
