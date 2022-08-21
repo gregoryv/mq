@@ -32,7 +32,7 @@ type Connect struct {
 	// sets/unsets the UsernameFlag in the flags field.
 	fixed           Bits
 	flags           Bits
-	protocolVersion wuint8 // todo rename to uint8no
+	protocolVersion wuint8
 	protocolName    u8str
 	clientID        u8str
 	keepAlive       wuint16
@@ -67,11 +67,8 @@ type Connect struct {
 // Connect fields are exposed using methods to simplify the type
 // conversion.
 
-func (c *Connect) Password() []byte    { return c.password }
-func (c *Connect) WillPayload() []byte { return c.willPayload }
-
-func (c *Connect) Flags() Bits         { return Bits(c.flags) }
-func (c *Connect) HasFlag(v byte) bool { return Bits(c.flags).Has(v) }
+func (c *Connect) Flags() Bits         { return c.flags }
+func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
 
 // flags settings
 func (c *Connect) SetWillRetain(v bool) {
@@ -217,6 +214,7 @@ func (c *Connect) SetWillPayload(v []byte) {
 	c.willPayload = v
 	c.flags.toggle(WillFlag, true)
 }
+func (c *Connect) WillPayload() []byte { return c.willPayload }
 
 // The value of the Content Type is defined by the sending and
 // receiving application, e.g. it may be a mime type like
@@ -256,6 +254,7 @@ func (c *Connect) SetPassword(v []byte) {
 	c.password = v
 	c.flags.toggle(PasswordFlag, len(c.password) > 0)
 }
+func (c *Connect) Password() []byte { return c.password }
 
 // WriteTo writes this connect control packet in wire format to the
 // given writer.
