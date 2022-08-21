@@ -64,7 +64,9 @@ type Connect struct {
 	password bindata
 }
 
-// exposed fields, todo group them Set+Get
+// Connect fields are exposed using methods to simplify the type
+// conversion.
+
 func (c *Connect) Password() []byte    { return c.password }
 func (c *Connect) WillPayload() []byte { return c.willPayload }
 
@@ -295,6 +297,12 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
+	// Using this here increases allocations in the benchmark, wonder why?
+	// fill := func(id Ident, v wireType) {
+	// 	i += id.fill(b, i)
+	// 	i += v.fill(b, i)
+	// }
+
 	// Receive maximum
 	if v := c.receiveMax; v > 0 {
 		i += ReceiveMax.fill(b, i)
@@ -362,14 +370,16 @@ func (c *Connect) payload(b []byte, i int) int {
 
 	// Will
 	if c.flags.Has(WillFlag) {
-		will := func(b []byte, i int) int {
+		// Inlined the will properties to bring it closer to the
+		// payload, worked just as well with a Connect.will method.
+		properties := func(b []byte, i int) int {
 			n := i
 
 			fill := func(id Ident, v wireType) {
 				i += id.fill(b, i)
 				i += v.fill(b, i)
 			}
-			// Will Properties
+
 			if v := c.willDelayInterval; v > 0 {
 				fill(WillDelayInterval, &v)
 			}
@@ -396,8 +406,8 @@ func (c *Connect) payload(b []byte, i int) int {
 			return i - n
 		}
 
-		i += vbint(will(_LEN, 0)).fill(b, i)
-		i += will(b, i)
+		i += vbint(properties(_LEN, 0)).fill(b, i)
+		i += properties(b, i)
 		i += c.willTopic.fill(b, i)   // topic
 		i += c.willPayload.fill(b, i) // payload
 	}
