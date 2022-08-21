@@ -2,9 +2,9 @@ package mqtt
 
 import (
 	"bytes"
-	"encoding/hex"
 	"io/ioutil"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
@@ -45,14 +45,22 @@ func TestConnect(t *testing.T) {
 
 	var buf bytes.Buffer
 	c.WriteTo(&buf)
-	t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
-	//t.Logf("data := []byte{ %v }", buf.Bytes())
+	//t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
 
 	c.SetUsername("") // unset toggles flag
 	c.SetPassword(nil)
+
+	if c.Flags().Has(UsernameFlag) {
+		t.Error("still has", UsernameFlag)
+	}
+
+	if got := c.String(); !strings.Contains(got, "CONNECT") {
+		t.Error(got)
+	}
 }
 
 // eq is used to check equality of set and "get" funcs
+// Thank you generics.
 func eq[T any](t *testing.T, set func(T), get func() T, value T) {
 	set(value)
 	if got := get(); !reflect.DeepEqual(got, value) {
