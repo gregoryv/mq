@@ -2,10 +2,23 @@ package mqtt
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func ExamplePublish() {
+	p := NewPublish()
+	p.SetRetain(true)
+	p.SetQoS(2)
+	p.SetTopicName("a/b/1")
+	p.SetPayload([]byte("gopher"))
+
+	fmt.Print(p)
+	// output:
+	// PUBLISH -2-r 20 bytes
+}
 
 func TestPublish(t *testing.T) {
 	p := NewPublish()
