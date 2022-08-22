@@ -102,32 +102,40 @@ const (
 	PropMaxPacketSize         byte = 0x27
 )
 
-// The Reason Codes used for Malformed Packet and Protocol Errors
+// Reason Codes
 //
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Handling_errors
-const (
-	MalformedPacket                     byte = 0x81 // Malformed Packet
-	ProtocolError                       byte = 0x82 // Protocol Error
-	ReceiveMaximumExceeded              byte = 0x93 // Receive Maximum exceeded
-	PacketTooLarge                      byte = 0x95 // Packet too large
-	RetainNotSupported                  byte = 0x9A // Retain not supported
-	QoSNotSupported                     byte = 0x9B // QoS not supported
-	SharedSubscriptionsNotSupported     byte = 0x9E // Shared Subscriptions not supported
-	SubscriptionIdentifiersNotSupported byte = 0xA1 // Subscription Identifiers not supported
-	WildcardSubscriptionsNotSupported   byte = 0xA2 // Wildcard Subscriptions not supported
-)
 
-var codeNames = map[byte]string{
-	MalformedPacket:                     "Malformed packet",
-	ProtocolError:                       "Protocol error",
-	ReceiveMaximumExceeded:              "Receive maximum exceeded",
-	PacketTooLarge:                      "Packet too large",
-	RetainNotSupported:                  "Retain not supported",
-	QoSNotSupported:                     "QoS not supported",
-	SharedSubscriptionsNotSupported:     "Shared subscriptions not supported",
-	SubscriptionIdentifiersNotSupported: "Subscription identifiers not supported",
-	WildcardSubscriptionsNotSupported:   "Wildcard subscriptions not supported",
-}
+type ReasonCode byte
+
+const (
+	Success                             ReasonCode = 0x00 // The Connection is accepted.
+	UnspecifiedError                    ReasonCode = 0x80 // The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply.
+	MalformedPacket                     ReasonCode = 0x81 // Malformed Packet
+	ProtocolError                       ReasonCode = 0x82 // Protocol Error
+	ImplementationSpecificError         ReasonCode = 0x83 // The CONNECT is valid but is not accepted by this Server.
+	UnsupportedProtocolVersion          ReasonCode = 0x84 // The Server does not support the version of the MQTT protocol requested by the Client.
+	ClientIdentifierNotValid            ReasonCode = 0x85 // The Client Identifier is a valid string but is not allowed by the Server.
+	BadUserNameOrPassword               ReasonCode = 0x86 // The Server does not accept the User Name or Password specified by the Client
+	NotAuthorized                       ReasonCode = 0x87 // The Client is not authorized to connect.
+	ServerUnavailable                   ReasonCode = 0x88 // The MQTT Server is not available.
+	ServerBusy                          ReasonCode = 0x89 // The Server is busy. Try again later.
+	Banned                              ReasonCode = 0x8A // This Client has been banned by administrative action. Contact the server administrator.
+	BadAuthenticationMethod             ReasonCode = 0x8C // The authentication method is not supported or does not match the authentication method currently in use.
+	TopicNameInvalid                    ReasonCode = 0x90 // The Will Topic Name is not malformed, but is not accepted by this Server.
+	ReceiveMaximumExceeded              ReasonCode = 0x93 // Receive Maximum exceeded
+	PacketTooLarge                      ReasonCode = 0x95 // The CONNECT packet exceeded the maximum permissible size.
+	QuotaExceeded                       ReasonCode = 0x97 // An implementation or administrative imposed limit has been exceeded.
+	PayloadFormatInvalid                ReasonCode = 0x99 // The Will Payload does not match the specified Payload Format Indicator.
+	RetainNotSupported                  ReasonCode = 0x9A // Retain not supported
+	QoSNotSupported                     ReasonCode = 0x9B // QoS not supported
+	UseAnotherServer                    ReasonCode = 0x9C // The Client should temporarily use another server.
+	ServerMoved                         ReasonCode = 0x9D // The Client should permanently use another server.
+	SharedSubscriptionsNotSupported     ReasonCode = 0x9E // Shared Subscriptions not supported
+	ConnectionRateExceeded              ReasonCode = 0x9F // The connection rate limit has been exceeded.
+	SubscriptionIdentifiersNotSupported ReasonCode = 0xA1 // Subscription Identifiers not supported
+	WildcardSubscriptionsNotSupported   ReasonCode = 0xA2 // Wildcard Subscriptions not supported
+)
 
 // Name an empty slice for increased readability when fill methods are
 // used to only calculate length.
