@@ -498,7 +498,7 @@ type connectFlags byte
 //   CleanStart    s
 //   Reserved      !
 func (c connectFlags) String() string {
-	flags := bytes.Repeat([]byte("-"), 7)
+	flags := bytes.Repeat([]byte("-"), 8)
 
 	mark := func(i int, flag byte, v byte) {
 		if !Bits(c).Has(flag) {
@@ -510,11 +510,12 @@ func (c connectFlags) String() string {
 	mark(1, PasswordFlag, 'p')
 	mark(2, WillRetain, 'r')
 	mark(3, WillQoS1, '1')
-	mark(3, WillQoS2, '2')
+	mark(4, WillQoS2, '2')
 	mark(3, WillQoS1|WillQoS2, '!')
-	mark(4, WillFlag, 'w')
-	mark(5, CleanStart, 's')
-	mark(6, Reserved, '!')
+	mark(4, WillQoS1|WillQoS2, '!')
+	mark(5, WillFlag, 'w')
+	mark(6, CleanStart, 's')
+	mark(7, Reserved, '!')
 
 	return string(flags) // + fmt.Sprintf(" %08b", c)
 }
