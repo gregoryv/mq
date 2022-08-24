@@ -113,7 +113,7 @@ func (c *ConnAck) String() string {
 		FirstByte(c.fixed).String(),
 		connAckFlags(c.flags),
 		c.assignedClientID,
-		c.fill(_LEN, 0),
+		c.width(),
 	)
 }
 
@@ -258,7 +258,12 @@ func (c *ConnAck) properties(b []byte, i int) int {
 }
 
 func (c *ConnAck) UnmarshalBinary(data []byte) error {
-	return fmt.Errorf(": todo")
+	// get guards against errors, it also advances the index
+	buf := &buffer{data: data}
+	get := buf.get
+
+	_ = get // todo
+	return buf.err
 }
 
 func (c *ConnAck) width() int {

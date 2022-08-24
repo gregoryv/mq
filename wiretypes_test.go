@@ -234,12 +234,52 @@ func Test_property(t *testing.T) {
 }
 
 func TestFixedHeader(t *testing.T) {
+
+	packets := []ControlPacket{}
+	{
+		p := NewPublish()
+		p.SetRetain(true)
+		p.SetQoS(2)
+		p.SetTopicName("a/b/1")
+		p.SetPayload([]byte("gopher"))
+		packets = append(packets, p)
+	}
+	{
+		p := NewConnect() // we already have comparisons of output
+		packets = append(packets, p)
+	}
+	{
+		p := NewConnAck()
+		packets = append(packets, p)
+	}
+
+	for _, packet := range packets {
+		var buf bytes.Buffer
+		if _, err := packet.WriteTo(&buf); err != nil {
+			t.Fatalf("%T %s", packet, err)
+		}
+
+		var f FixedHeader
+		if _, err := f.ReadFrom(&buf); err != nil {
+			t.Fatal(err)
+		}
+		after, err := f.ReadPacket(&buf)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+		compare(t, packet, after)
+	}
+
 	var r brokenRW
-	var v FixedHeader
-	if _, err := v.ReadFrom(&r); err == nil {
+	var f FixedHeader
+	if _, err := f.ReadFrom(&r); err == nil {
 		t.Error("expected error")
 	}
 
+	if _, err := f.ReadPacket(&brokenRW{}); err == nil {
+		t.Error("expected error")
+	}
 }
 
 var large = wstring(strings.Repeat(" ", MaxUint16+1))
