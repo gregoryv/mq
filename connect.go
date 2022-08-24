@@ -19,7 +19,7 @@ import (
 func NewConnect() *Connect {
 	return &Connect{
 		fixed:           Bits(CONNECT),
-		protocolName:    "MQTT",
+		protocolName:    wstring("MQTT"),
 		protocolVersion: 5,
 	}
 }

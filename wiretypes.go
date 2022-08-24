@@ -91,24 +91,7 @@ func (v property) width() int {
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
-type wstring string
-
-func (v wstring) fill(data []byte, i int) int {
-	return bindata(v).fill(data, i)
-}
-
-func (v *wstring) UnmarshalBinary(data []byte) error {
-	var b bindata
-	if err := b.UnmarshalBinary(data); err != nil {
-		return unmarshalErr(v, "", err.(*Malformed))
-	}
-	*v = wstring(b)
-	return nil
-}
-
-func (v wstring) width() int {
-	return bindata(v).width()
-}
+type wstring = bindata
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
 type bindata []byte

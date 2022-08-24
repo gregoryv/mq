@@ -89,28 +89,6 @@ func Test_wuint32(t *testing.T) {
 	}
 }
 
-func Test_wstring(t *testing.T) {
-	b := wstring("۞ gopher från sverige")
-
-	data := make([]byte, b.width())
-	b.fill(data, 0)
-
-	var a wstring
-	if err := a.UnmarshalBinary(data); err != nil {
-		t.Error("UnmarshalBinary", err)
-	}
-
-	// before and after are equal
-	if b != a {
-		t.Errorf("b(%v) != a(%v)", b, a)
-	}
-
-	// error case
-	if err := a.UnmarshalBinary(data[:len(data)-4]); err == nil {
-		t.Error("UnmarshalBinary should fail when data is missing")
-	}
-}
-
 func Test_vbint(t *testing.T) {
 	cases := []struct {
 		x   vbint
