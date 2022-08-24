@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"bytes"
 	"io/ioutil"
 	"testing"
 
@@ -124,6 +125,53 @@ func BenchmarkConnect_WriteTo(b *testing.B) {
 	b.Run("their", func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 			their.WriteTo(ioutil.Discard)
+		}
+	})
+}
+
+func BenchmarkConnect_UnmarshalBinary(b *testing.B) {
+	var (
+		our   *Connect
+		their = packets.NewControlPacket(packets.CONNECT)
+		the   = their.Content.(*packets.Connect)
+
+		alive   = uint16(30)
+		cid     = "macy"
+		user    = "john.doe"
+		pwd     = []byte("secret")
+		sExpiry = uint32(30)
+	)
+
+	// our packet
+	our = NewConnect()
+	our.SetKeepAlive(alive)
+	our.SetClientID(cid)
+	our.SetUsername(user)
+	our.SetPassword(pwd)
+	our.SetSessionExpiryInterval(sExpiry)
+
+	var buf bytes.Buffer
+	if _, err := our.WriteTo(&buf); err != nil {
+		b.Fatal(err)
+	}
+	var fh FixedHeader
+	fh.ReadFrom(&buf)
+
+	data := make([]byte, buf.Len())
+	copy(data, buf.Bytes())
+
+	b.Run("our", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			our.UnmarshalBinary(data)
+		}
+	})
+
+	b.Run("their", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			if err := the.Unpack(&buf); err != nil {
+				b.Fatal(err)
+			}
+			buf.Write(data)
 		}
 	})
 }
