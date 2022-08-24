@@ -43,12 +43,8 @@ func (c *ConnAck) HasFlag(v byte) bool { return c.flags.Has(v) }
 func (c *ConnAck) SetSessionPresent(v bool) { c.flags.toggle(1, true) }
 func (c *ConnAck) SessionPresent() bool     { return c.flags.Has(1) }
 
-func (c *ConnAck) SetSessionExpiryInterval(v uint32) {
-	c.sessionExpiryInterval = wuint32(v)
-}
-func (c *ConnAck) SessionExpiryInterval() uint32 {
-	return uint32(c.sessionExpiryInterval)
-}
+func (c *ConnAck) SetSessionExpiryInterval(v uint32) { c.sessionExpiryInterval = wuint32(v) }
+func (c *ConnAck) SessionExpiryInterval() uint32     { return uint32(c.sessionExpiryInterval) }
 
 func (c *ConnAck) SetReceiveMax(v uint16) { c.receiveMax = wuint16(v) }
 func (c *ConnAck) ReceiveMax() uint16     { return uint16(c.receiveMax) }
@@ -70,6 +66,30 @@ func (c *ConnAck) TopicAliasMax() uint16     { return uint16(c.topicAliasMax) }
 
 func (c *ConnAck) SetReasonString(v string) { c.reasonString = wstring(v) }
 func (c *ConnAck) ReasonString() string     { return string(c.reasonString) }
+
+func (c *ConnAck) SetWildcardSubAvailable(v bool) { c.wildcardSubAvailable = wbool(v) }
+func (c *ConnAck) WildcardSubAvailable() bool     { return bool(c.wildcardSubAvailable) }
+
+func (c *ConnAck) SetSubIdentifiersAvailable(v bool) { c.subIdentifiersAvailable = wbool(v) }
+func (c *ConnAck) SubIdentifiersAvailable() bool     { return bool(c.subIdentifiersAvailable) }
+
+func (c *ConnAck) SetSharedSubAvailable(v bool) { c.sharedSubAvailable = wbool(v) }
+func (c *ConnAck) SharedSubAvailable() bool     { return bool(c.sharedSubAvailable) }
+
+func (c *ConnAck) SetServerKeepAlive(v uint16) { c.serverKeepAlive = wuint16(v) }
+func (c *ConnAck) ServerKeepAlive() uint16     { return uint16(c.serverKeepAlive) }
+
+func (c *ConnAck) SetResponseInformation(v string) { c.responseInformation = wstring(v) }
+func (c *ConnAck) ResponseInformation() string     { return string(c.responseInformation) }
+
+func (c *ConnAck) SetServerReference(v string) { c.serverReference = wstring(v) }
+func (c *ConnAck) ServerReference() string     { return string(c.serverReference) }
+
+func (c *ConnAck) SetAuthMethod(v string) { c.authMethod = wstring(v) }
+func (c *ConnAck) AuthMethod() string     { return string(c.authMethod) }
+
+func (c *ConnAck) SetAuthData(v []byte) { c.authData = bindata(v) }
+func (c *ConnAck) AuthData() []byte     { return []byte(c.authData) }
 
 // AddUserProp adds a user property. The User Property is allowed to
 // appear multiple times to represent multiple name, value pairs. The
@@ -137,3 +157,9 @@ func (c connAckFlags) String() string {
 
 	return string(flags) // + fmt.Sprintf(" %08b", c)
 }
+
+// ----------------------------------------
+
+const (
+	SessionPresent uint8 = 1
+)

@@ -1,9 +1,13 @@
 package mqtt
 
-import "testing"
+import (
+	"testing"
+	"unsafe"
+)
 
 func TestConnAck(t *testing.T) {
 	a := NewConnAck()
+	size := unsafe.Sizeof(*a)
 
 	eq(t, a.SetSessionPresent, a.SessionPresent, true)
 
@@ -18,7 +22,22 @@ func TestConnAck(t *testing.T) {
 
 	a.AddUserProp("color", "red")
 
-	t.Logf("\n\n%s\n\n", a)
+	eq(t, a.SetWildcardSubAvailable, a.WildcardSubAvailable, true)
+	eq(t, a.SetSubIdentifiersAvailable, a.SubIdentifiersAvailable, true)
+	eq(t, a.SetSharedSubAvailable, a.SharedSubAvailable, true)
+	eq(t, a.SetServerKeepAlive, a.ServerKeepAlive, 214)
+	eq(t, a.SetResponseInformation, a.ResponseInformation, "gopher")
+	eq(t, a.SetServerReference, a.ServerReference, "gopher")
+	eq(t, a.SetAuthMethod, a.AuthMethod, "digest")
+	eq(t, a.SetAuthData, a.AuthData, []byte("secret"))
+
+	if v := a.Flags(); v != 1 {
+		t.Errorf("flags: %08b", v)
+	}
+	if !a.HasFlag(SessionPresent) {
+		t.Error("HasFlag should be true for 1 if sessionPresent is set")
+	}
+	t.Logf("\n\n%s\n\n%v bytes", a, size)
 }
 
 var _ wireType = &ConnAck{}
