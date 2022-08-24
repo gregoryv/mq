@@ -15,7 +15,7 @@ const (
 	SubscriptionID Ident = 0x0b
 
 	SessionExpiryInterval Ident = 0x11
-	AssignedClientIdent   Ident = 0x12
+	AssignedClientID      Ident = 0x12
 	ServerKeepAlive       Ident = 0x13
 
 	AuthMethod          Ident = 0x15
@@ -31,12 +31,12 @@ const (
 	ReceiveMax           Ident = 0x21
 	TopicAliasMax        Ident = 0x22
 	TopicAlias           Ident = 0x23
-	MaximumQoS           Ident = 0x24
+	MaxQoS               Ident = 0x24
 	RetainAvailable      Ident = 0x25
 	UserProperty         Ident = 0x26
 	MaxPacketSize        Ident = 0x27
 	WildcardSubAvailable Ident = 0x28
-	SubIdentAvailable    Ident = 0x29
+	SubIDsAvailable      Ident = 0x29
 	SharedSubAvailable   Ident = 0x30
 )
 

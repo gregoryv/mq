@@ -3,6 +3,7 @@ package mqtt
 import (
 	"bytes"
 	"fmt"
+	"io"
 )
 
 func NewConnAck() *ConnAck {
@@ -116,12 +117,148 @@ func (c *ConnAck) String() string {
 	)
 }
 
-func (c *ConnAck) UnmarshalBinary(data []byte) error {
-	return fmt.Errorf(": todo")
+// ---------------------------------------- protocol
+
+// WriteTo writes this connect control packet in wire format to the
+// given writer.
+func (c *ConnAck) WriteTo(w io.Writer) (int64, error) {
+	// allocate full size of entire packet
+	b := make([]byte, c.fill(_LEN, 0))
+	c.fill(b, 0)
+
+	n, err := w.Write(b)
+	return int64(n), err
 }
 
 func (c *ConnAck) fill(b []byte, i int) int {
-	return -1
+	remainingLen := vbint(c.variableHeader(_LEN, 0))
+
+	i += c.fixed.fill(b, i)      // FirstByte header
+	i += remainingLen.fill(b, i) // remaining length
+	i += c.variableHeader(b, i)  // variable header
+
+	return i
+}
+func (c *ConnAck) variableHeader(b []byte, i int) int {
+	n := i
+
+	i += c.flags.fill(b, i) // acknowledge flags
+	i += c.reasonCode.fill(b, i)
+	i += vbint(c.properties(_LEN, 0)).fill(b, i) // Properties len
+	i += c.properties(b, i)
+
+	return i - n
+}
+
+func (c *ConnAck) properties(b []byte, i int) int {
+	n := i
+
+	// Session expiry interval, in the spec this comes before receive
+	// maximum, order like this to match paho
+	if v := c.sessionExpiryInterval; v > 0 {
+		i += SessionExpiryInterval.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Receive maximum
+	if v := c.receiveMax; v > 0 {
+		i += ReceiveMax.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Max QoS
+	if v := c.maxQoS; v > 0 {
+		i += MaxQoS.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Retain available
+	if v := c.retainAvailable; v {
+		i += RetainAvailable.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Maximum packet size
+	if v := c.maxPacketSize; v > 0 {
+		i += MaxPacketSize.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Assigned client identifier
+	if v := c.assignedClientID; len(v) > 0 {
+		i += AssignedClientID.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Topic alias maximum
+	if v := c.topicAliasMax; v > 0 {
+		i += TopicAliasMax.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Reason string
+	if v := c.reasonString; len(v) > 0 {
+		i += ReasonString.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	for _, prop := range c.userProp {
+		i += UserProperty.fill(b, i)
+		i += prop.fill(b, i)
+	}
+
+	// Wildcard subscription available
+	if v := c.wildcardSubAvailable; v {
+		i += WildcardSubAvailable.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Subscription identifiers available
+	if v := c.subIdentifiersAvailable; v {
+		i += SubIDsAvailable.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Shared subscription available
+	if v := c.sharedSubAvailable; v {
+		i += SharedSubAvailable.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Server keep alive
+	if v := c.serverKeepAlive; v > 0 {
+		i += ServerKeepAlive.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Response information
+	if v := c.responseInformation; len(v) > 0 {
+		i += ResponseInformation.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Server reference
+	if v := c.serverReference; len(v) > 0 {
+		i += ServerReference.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Authentication method
+	if v := c.authMethod; len(v) > 0 {
+		i += AuthMethod.fill(b, i)
+		i += v.fill(b, i)
+	}
+
+	// Authentication data
+	if v := c.authData; len(v) > 0 {
+		i += AuthData.fill(b, i)
+		i += v.fill(b, i)
+	}
+	return i - n
+}
+
+func (c *ConnAck) UnmarshalBinary(data []byte) error {
+	return fmt.Errorf(": todo")
 }
 
 func (c *ConnAck) width() int {
