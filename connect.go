@@ -521,6 +521,7 @@ func (c connectFlags) String() string {
 }
 
 // CONNECT flags
+// todo hide these and use methods on Connect, e.g. Connect.IsCleanStart()
 const (
 	Reserved byte = 1 << iota
 	CleanStart
