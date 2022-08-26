@@ -39,11 +39,12 @@ func TestConnAck(t *testing.T) {
 	if !a.HasFlag(SessionPresent) {
 		t.Error("HasFlag should be true for 1 if sessionPresent is set")
 	}
-	var buf bytes.Buffer
-	a.WriteTo(&buf)
 
-	t.Logf("\n\n%s\n\n%s\n\n%v bytes", a, hex.Dump(buf.Bytes()), size)
-
+	if false {
+		var buf bytes.Buffer
+		a.WriteTo(&buf)
+		t.Logf("\n\n%s\n\n%s\n\n%v bytes", a, hex.Dump(buf.Bytes()), size)
+	}
 }
 
 var _ wireType = &ConnAck{}

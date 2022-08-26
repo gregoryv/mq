@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"io"
 	"testing"
-	"unsafe"
 
 	"github.com/eclipse/paho.golang/packets"
 )
@@ -103,18 +102,6 @@ func TestCompareConnect(t *testing.T) {
 	the.CleanStart = our.HasFlag(CleanStart)
 
 	compare(t, our, their)
-
-	os, ts := unsafe.Sizeof(*our), unsafe.Sizeof(*the)
-	if os > ts {
-
-		t.Logf(`Our size(%v) is larger than theirs(%v) because we
-		allocate all fields and properties. On it's own this is less
-		good, but let's figure out how this affects overall
-		performance when passing millions of messages through the
-		system. The garbage collection should come into play here I
-		believe. `, os, ts)
-		//
-	}
 }
 
 func compare(t *testing.T, our, their io.WriterTo) {
