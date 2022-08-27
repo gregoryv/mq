@@ -8,56 +8,35 @@ import (
 )
 
 func BenchmarkConnect(b *testing.B) {
-	var (
-		alive   = uint16(30)
-		cid     = "macy"
-		user    = "john.doe"
-		pwd     = []byte("secret")
-		sExpiry = uint32(30)
-
-		our   Connect
-		their *packets.ControlPacket
-	)
-
-	b.Run("create", func(b *testing.B) {
+	b.Run("make", func(b *testing.B) {
 		b.Run("our", func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				// our packet
-				our = NewConnect()
-				our.SetKeepAlive(alive)
-				our.SetClientID(cid)
-				our.SetUsername(user)
-				our.SetPassword(pwd)
-				our.SetSessionExpiryInterval(sExpiry)
+				_ = makeConnect()
 			}
 		})
 		b.Run("their", func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				their = packets.NewControlPacket(packets.CONNECT)
-				c := their.Content.(*packets.Connect)
-				c.KeepAlive = alive
-				c.ClientID = cid
-				c.UsernameFlag = true
-				c.Username = user
-				c.PasswordFlag = true
-				c.Password = pwd
-				c.Properties.SessionExpiryInterval = &sExpiry
+				_ = makeTheirConnect()
 			}
 		})
 	})
 
 	// this buf is used in the next Unmarshal, our output is used in
 	// both as input
-	var buf bytes.Buffer
+
 	b.Run("write", func(b *testing.B) {
 		b.Run("our", func(b *testing.B) {
+			var buf bytes.Buffer
+			our := makeConnect()
 			for n := 0; n < b.N; n++ {
 				buf.Reset()
 				our.WriteTo(&buf)
 			}
 		})
+
 		b.Run("their", func(b *testing.B) {
 			var buf bytes.Buffer
+			their := makeTheirConnect()
 			for n := 0; n < b.N; n++ {
 				buf.Reset()
 				their.WriteTo(&buf) // to be similar to our
@@ -66,6 +45,10 @@ func BenchmarkConnect(b *testing.B) {
 	})
 
 	b.Run("read", func(b *testing.B) {
+		var buf bytes.Buffer
+		our := makeConnect()
+		our.WriteTo(&buf)
+
 		var fh FixedHeader
 		fh.ReadFrom(&buf)
 
@@ -96,8 +79,34 @@ func BenchmarkConnect(b *testing.B) {
 	})
 }
 
+func makeConnect() Connect {
+	p := NewConnect()
+	p.SetKeepAlive(30)
+	p.SetClientID("macy")
+	p.SetUsername("john.doe")
+	p.SetPassword([]byte("secret"))
+	p.SetSessionExpiryInterval(30)
+	return p
+}
+
+func makeTheirConnect() *packets.ControlPacket {
+	p := packets.NewControlPacket(packets.CONNECT)
+	c := p.Content.(*packets.Connect)
+	c.KeepAlive = 30
+	c.ClientID = "macy"
+	c.UsernameFlag = true
+	c.Username = "john.doe"
+	c.PasswordFlag = true
+	c.Password = []byte("secret")
+	sExpiry := uint32(30)
+	c.Properties.SessionExpiryInterval = &sExpiry
+	return p
+}
+
+// ----------------------------------------
+
 func BenchmarkPublish(b *testing.B) {
-	b.Run("create", func(b *testing.B) {
+	b.Run("make", func(b *testing.B) {
 		b.Run("our", func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
 				_ = makePublish()
