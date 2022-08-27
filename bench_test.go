@@ -8,6 +8,14 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
+const largeNumber = 20_000_000
+
+func TestNewConnect(t *testing.T) {
+	for i := 0; i < largeNumber; i++ {
+		_ = NewConnect()
+	}
+}
+
 func BenchmarkCreateAndWriteTo(b *testing.B) {
 	var (
 		alive   = uint16(30)
@@ -87,7 +95,7 @@ func BenchmarkNewConnect(b *testing.B) {
 
 func BenchmarkConnect_WriteTo(b *testing.B) {
 	var (
-		our   *Connect
+		our   Connect
 		their *packets.ControlPacket
 
 		alive   = uint16(30)
@@ -131,7 +139,7 @@ func BenchmarkConnect_WriteTo(b *testing.B) {
 
 func BenchmarkConnect_UnmarshalBinary(b *testing.B) {
 	var (
-		our   *Connect
+		our   Connect
 		their = packets.NewControlPacket(packets.CONNECT)
 		the   = their.Content.(*packets.Connect)
 

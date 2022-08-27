@@ -101,7 +101,7 @@ func TestCompareConnect(t *testing.T) {
 	our.SetCleanStart(true)
 	the.CleanStart = our.HasFlag(CleanStart)
 
-	compare(t, our, their)
+	compare(t, &our, their)
 }
 
 func compare(t *testing.T, our, their io.WriterTo) {

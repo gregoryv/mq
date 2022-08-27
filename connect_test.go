@@ -15,7 +15,7 @@ func ExampleConnect() {
 	c.SetUsername("john.doe")
 	c.SetPassword([]byte("123"))
 
-	fmt.Print(c)
+	fmt.Print(c.String())
 	// output:
 	// CONNECT ---- up------ MQTT5 4m59s 34 bytes
 }

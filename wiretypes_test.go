@@ -246,7 +246,7 @@ func TestFixedHeader(t *testing.T) {
 	}
 	{
 		p := NewConnect() // we already have comparisons of output
-		packets = append(packets, p)
+		packets = append(packets, &p)
 	}
 	{
 		p := NewConnAck()

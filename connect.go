@@ -15,11 +15,13 @@ import (
 // packets without loading everything into memory each packet must
 // implement io.WriterTo.
 
+var mqtt5 = []byte("MQTT")
+
 // NewConnect returns an empty MQTT v5 connect packet.
-func NewConnect() *Connect {
-	return &Connect{
+func NewConnect() Connect {
+	return Connect{
 		fixed:           Bits(CONNECT),
-		protocolName:    wstring("MQTT"),
+		protocolName:    mqtt5,
 		protocolVersion: 5,
 	}
 }
@@ -379,23 +381,23 @@ func (c *Connect) payload(b []byte, i int) int {
 				i += v.fill(b, i)
 			}
 
-			if v := c.willDelayInterval; v > 0 {
-				fill(WillDelayInterval, &v)
+			if c.willDelayInterval > 0 {
+				fill(WillDelayInterval, &c.willDelayInterval)
 			}
-			if v := c.willPayloadFormat; v {
-				fill(PayloadFormatIndicator, &v)
+			if c.willPayloadFormat {
+				fill(PayloadFormatIndicator, &c.willPayloadFormat)
 			}
-			if v := c.willMessageExpiryInterval; v > 0 {
-				fill(MessageExpiryInterval, &v)
+			if c.willMessageExpiryInterval > 0 {
+				fill(MessageExpiryInterval, &c.willMessageExpiryInterval)
 			}
-			if v := c.willContentType; len(v) > 0 {
-				fill(ContentType, &v)
+			if len(c.willContentType) > 0 {
+				fill(ContentType, &c.willContentType)
 			}
-			if v := c.responseTopic; len(v) > 0 {
-				fill(ResponseTopic, &v)
+			if len(c.responseTopic) > 0 {
+				fill(ResponseTopic, &c.responseTopic)
 			}
-			if v := c.correlationData; len(v) > 0 {
-				fill(CorrelationData, &v)
+			if len(c.correlationData) > 0 {
+				fill(CorrelationData, &c.correlationData)
 			}
 
 			for _, v := range c.willProp {
