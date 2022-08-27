@@ -110,6 +110,9 @@ func (v *bindata) UnmarshalBinary(data []byte) error {
 	if len(data) < int(length)+2 {
 		return unmarshalErr(v, "", "missing data")
 	}
+	if length == 0 {
+		return nil
+	}
 	*v = make([]byte, length)
 	copy(*v, data[2:length+2])
 	return nil

@@ -57,19 +57,20 @@ func TestConnect(t *testing.T) {
 	c.WriteTo(&buf)
 	//t.Logf("\n\n%s\n\n%s\n\n", c, hex.Dump(buf.Bytes()))
 
-	c.SetUsername("") // unset toggles flag
-	c.SetPassword(nil)
-
-	if c.Flags().Has(UsernameFlag) {
-		t.Error("still has", UsernameFlag)
-	}
-
 	if got := c.String(); !strings.Contains(got, "CONNECT") {
 		t.Error(got)
 	}
 
 	if err := testControlPacket(&c); err != nil {
 		t.Fatal(err)
+	}
+
+	// clears it
+	if c.SetUsername(""); c.HasFlag(UsernameFlag) {
+		t.Error("username flag still set")
+	}
+	if c.SetPassword(nil); c.HasFlag(PasswordFlag) {
+		t.Error("password flag still set")
 	}
 }
 

@@ -297,13 +297,11 @@ func testControlPacket(in ControlPacket) error {
 		return err
 	}
 
-	// compare by writing out the incoming packet again,
-	// reflect.DeepEqual doesn't work here
-	got.WriteTo(&buf)
-	if !reflect.DeepEqual(data, buf.Bytes()) {
+	if !reflect.DeepEqual(in, got) {
+		got.WriteTo(&buf)
 		return &diffErr{
-			in:  fmt.Sprintf("%s\n%s", in.String(), hex.Dump(data)),
-			out: fmt.Sprintf("%s\n%s", got.String(), hex.Dump(buf.Bytes())),
+			in:  fmt.Sprintf("%#v\n%s\n%s", in, in.String(), hex.Dump(data)),
+			out: fmt.Sprintf("%#v\n%s\n%s", got, got.String(), hex.Dump(buf.Bytes())),
 		}
 	}
 	return nil

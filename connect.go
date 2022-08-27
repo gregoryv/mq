@@ -248,6 +248,7 @@ func (c *Connect) CorrelationData() []byte {
 func (c *Connect) SetUsername(v string) {
 	c.username = wstring(v)
 	c.flags.toggle(UsernameFlag, len(c.username) > 0)
+
 }
 func (c *Connect) Username() string { return string(c.username) }
 
