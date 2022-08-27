@@ -7,6 +7,30 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
+func BenchmarkPublish(b *testing.B) {
+	var (
+		our   Publish
+		their *packets.ControlPacket
+	)
+
+	b.Run("create", func(b *testing.B) {
+		b.Run("our", func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				our = NewPublish()
+				_ = our // todo fill out with reasonable values
+			}
+
+		})
+		b.Run("their", func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				their = packets.NewControlPacket(packets.PUBLISH)
+				c := their.Content.(*packets.Publish)
+				_ = c // todo fill out with reasonable values
+			}
+		})
+	})
+}
+
 func BenchmarkConnect(b *testing.B) {
 	var (
 		alive   = uint16(30)

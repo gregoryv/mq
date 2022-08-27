@@ -242,7 +242,7 @@ func TestFixedHeader(t *testing.T) {
 		p.SetQoS(2)
 		p.SetTopicName("a/b/1")
 		p.SetPayload([]byte("gopher"))
-		packets = append(packets, p)
+		packets = append(packets, &p)
 	}
 	{
 		p := NewConnect() // we already have comparisons of output

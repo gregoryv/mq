@@ -25,7 +25,7 @@ func TestComparePublish(t *testing.T) {
 	//the.Duplicate = true
 
 	// no reason to continue the comparison until the above bug is fixed
-	compare(t, our, their)
+	compare(t, &our, their)
 }
 
 func TestCompareConnect(t *testing.T) {

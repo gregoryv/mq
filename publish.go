@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-func NewPublish() *Publish {
-	return &Publish{
+func NewPublish() Publish {
+	return Publish{
 		fixed: Bits(PUBLISH),
 	}
 }

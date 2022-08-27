@@ -15,7 +15,7 @@ func ExamplePublish() {
 	p.SetTopicName("a/b/1")
 	p.SetPayload([]byte("gopher"))
 
-	fmt.Print(p)
+	fmt.Print(p.String())
 	// output:
 	// PUBLISH -2-r 20 bytes
 }
@@ -58,7 +58,7 @@ func TestPublish(t *testing.T) {
 	if err := after.UnmarshalBinary(buf.Bytes()); err != nil {
 		t.Error(err)
 	}
-	compare(t, p, &after)
+	compare(t, &p, &after)
 
 	if v := after.String(); !strings.Contains(v, "PUBLISH") {
 		t.Error(v)
