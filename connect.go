@@ -72,7 +72,6 @@ type Connect struct {
 func (c *Connect) Flags() Bits         { return c.flags }
 func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
 
-// flags settings
 func (c *Connect) SetWillRetain(v bool) {
 	c.flags.toggle(WillRetain, v)
 	c.flags.toggle(WillFlag, true)
