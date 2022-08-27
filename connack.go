@@ -262,7 +262,28 @@ func (c *ConnAck) UnmarshalBinary(data []byte) error {
 	buf := &buffer{data: data}
 	get := buf.get
 
-	_ = get // todo
+	get(&c.flags)
+	get(&c.reasonCode)
+
+	fields := map[Ident]wireType{
+		ReceiveMax:            &c.receiveMax,
+		SessionExpiryInterval: &c.sessionExpiryInterval,
+		MaxQoS:                &c.maxQoS,
+		RetainAvailable:       &c.retainAvailable,
+		MaxPacketSize:         &c.maxPacketSize,
+		AssignedClientID:      &c.assignedClientID,
+		TopicAliasMax:         &c.topicAliasMax,
+		ReasonString:          &c.reasonString,
+		WildcardSubAvailable:  &c.wildcardSubAvailable,
+		SubIDsAvailable:       &c.subIdentifiersAvailable,
+		SharedSubAvailable:    &c.sharedSubAvailable,
+		ServerKeepAlive:       &c.serverKeepAlive,
+		ResponseInformation:   &c.responseInformation,
+		ServerReference:       &c.serverReference,
+		AuthMethod:            &c.authMethod,
+		AuthData:              &c.authData,
+	}
+	buf.getAny(fields, c.appendUserProperty)
 	return buf.err
 }
 
