@@ -7,30 +7,6 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
-func BenchmarkPublish(b *testing.B) {
-	var (
-		our   Publish
-		their *packets.ControlPacket
-	)
-
-	b.Run("create", func(b *testing.B) {
-		b.Run("our", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				our = NewPublish()
-				_ = our // todo fill out with reasonable values
-			}
-
-		})
-		b.Run("their", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				their = packets.NewControlPacket(packets.PUBLISH)
-				c := their.Content.(*packets.Publish)
-				_ = c // todo fill out with reasonable values
-			}
-		})
-	})
-}
-
 func BenchmarkConnect(b *testing.B) {
 	var (
 		alive   = uint16(30)
@@ -118,4 +94,73 @@ func BenchmarkConnect(b *testing.B) {
 			}
 		})
 	})
+}
+
+func BenchmarkPublish(b *testing.B) {
+	b.Run("create", func(b *testing.B) {
+		b.Run("our", func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				_ = makePublish()
+			}
+		})
+
+		b.Run("their", func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				_ = makeTheirPublish()
+			}
+		})
+	})
+}
+
+func makePublish() Publish {
+	p := NewPublish()
+	p.SetRetain(true)
+	p.SetQoS(1)
+	p.SetDuplicate(true)
+	p.SetTopicName("topic/name")
+	p.SetPacketID(1)
+	p.SetTopicAlias(4)
+	p.SetMessageExpiryInterval(199)
+	p.SetPayloadFormat(true)
+	p.SetResponseTopic("a/b/c")
+	p.SetCorrelationData([]byte("corr"))
+	p.AddUserProp("color", "red")
+	p.AddSubscriptionID(11)
+	p.SetContentType("text/plain")
+	p.SetPayload([]byte("gopher"))
+	return p
+}
+
+func makeTheirPublish() *packets.ControlPacket {
+	their := packets.NewControlPacket(packets.PUBLISH)
+	c := their.Content.(*packets.Publish)
+	c.Retain = true
+	c.QoS = 1
+	c.Duplicate = true
+	c.Topic = "topic/name"
+	c.PacketID = 1
+	var (
+		p               packets.Properties
+		topicAlias      = uint16(4)
+		expInt          = uint32(199)
+		pformat         = byte(1)
+		correlationData = []byte("corr")
+		subid           = 11
+	)
+	c.Properties = &p
+	p.TopicAlias = &topicAlias
+	p.MessageExpiry = &expInt
+	p.PayloadFormat = &pformat
+	p.ResponseTopic = "a/b/c"
+	p.CorrelationData = correlationData
+	p.User = append(p.User, packets.User{"color", "red"})
+
+	// not fully supported as there can be multiple
+	// subscription identifiers
+	// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901117
+	p.SubscriptionIdentifier = &subid
+	p.ContentType = "text/plain"
+
+	c.Payload = []byte("gopher")
+	return their
 }
