@@ -6,7 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-- WIP Add type ConnAck
+- Add type ConnAck
 - Make wstring alias of bindata, less memory allocation in
   UnmarshalBinary
 
