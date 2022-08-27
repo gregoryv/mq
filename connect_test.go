@@ -67,6 +67,10 @@ func TestConnect(t *testing.T) {
 	if got := c.String(); !strings.Contains(got, "CONNECT") {
 		t.Error(got)
 	}
+
+	if err := testControlPacket(&c); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // eq is used to check equality of set and "get" funcs

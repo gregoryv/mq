@@ -250,7 +250,7 @@ func TestFixedHeader(t *testing.T) {
 	}
 	{
 		p := NewConnAck()
-		packets = append(packets, p)
+		packets = append(packets, &p)
 	}
 
 	for _, packet := range packets {
@@ -280,6 +280,42 @@ func TestFixedHeader(t *testing.T) {
 	if _, err := f.ReadPacket(&brokenRW{}); err == nil {
 		t.Error("expected error")
 	}
+}
+
+func testControlPacket(in ControlPacket) error {
+	// write it out
+	var buf bytes.Buffer
+	if _, err := in.WriteTo(&buf); err != nil {
+		return err
+	}
+	data := make([]byte, buf.Len())
+	copy(data, buf.Bytes())
+
+	// read it back in
+	got, err := ReadPacket(&buf)
+	if err != nil {
+		return err
+	}
+
+	// compare by writing out the incoming packet again,
+	// reflect.DeepEqual doesn't work here
+	got.WriteTo(&buf)
+	if !reflect.DeepEqual(data, buf.Bytes()) {
+		return &diffErr{
+			in:  fmt.Sprintf("%s\n%s", in.String(), hex.Dump(data)),
+			out: fmt.Sprintf("%s\n%s", got.String(), hex.Dump(buf.Bytes())),
+		}
+	}
+	return nil
+}
+
+type diffErr struct {
+	in  string
+	out string
+}
+
+func (e *diffErr) Error() string {
+	return fmt.Sprintf("\n\nin\n%s\n\nout\n%s", e.in, e.out)
 }
 
 var large = wstring(strings.Repeat(" ", MaxUint16+1))

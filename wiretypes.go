@@ -302,6 +302,21 @@ func (v *Ident) UnmarshalBinary(data []byte) error {
 
 func (v Ident) width() int { return 1 }
 
+// ----------------------------------------
+
+func ReadPacket(r io.Reader) (ControlPacket, error) {
+	var fh FixedHeader
+	if _, err := fh.ReadFrom(r); err != nil {
+		return nil, err
+	}
+
+	got, err := fh.ReadPacket(r)
+	if err != nil {
+		return nil, err
+	}
+	return got, nil
+}
+
 type FixedHeader struct {
 	fixed        Bits
 	remainingLen vbint
@@ -348,4 +363,5 @@ func (f *FixedHeader) ReadPacket(r io.Reader) (ControlPacket, error) {
 type ControlPacket interface {
 	io.WriterTo
 	encoding.BinaryUnmarshaler
+	fmt.Stringer
 }

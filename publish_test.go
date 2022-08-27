@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -49,19 +48,8 @@ func TestPublish(t *testing.T) {
 	}
 	//t.Logf("\n\n%s\n\n%s\n\n", p, hex.Dump(buf.Bytes()))
 
-	var f FixedHeader
-	if _, err := f.ReadFrom(&buf); err != nil {
+	if err := testControlPacket(&p); err != nil {
 		t.Fatal(err)
-	}
-	var after Publish
-	after.fixed = f.fixed // not part of the unmarshaling
-	if err := after.UnmarshalBinary(buf.Bytes()); err != nil {
-		t.Error(err)
-	}
-	compare(t, &p, &after)
-
-	if v := after.String(); !strings.Contains(v, "PUBLISH") {
-		t.Error(v)
 	}
 }
 
