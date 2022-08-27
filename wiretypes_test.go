@@ -233,7 +233,7 @@ func Test_property(t *testing.T) {
 	}
 }
 
-func TestFixedHeader(t *testing.T) {
+func TestReadPacket(t *testing.T) {
 
 	packets := []ControlPacket{}
 	{
@@ -259,11 +259,7 @@ func TestFixedHeader(t *testing.T) {
 			t.Fatalf("%T %s", packet, err)
 		}
 
-		var f FixedHeader
-		if _, err := f.ReadFrom(&buf); err != nil {
-			t.Fatal(err)
-		}
-		after, err := f.ReadPacket(&buf)
+		after, err := ReadPacket(&buf)
 
 		if err != nil {
 			t.Fatal(err)
@@ -272,12 +268,15 @@ func TestFixedHeader(t *testing.T) {
 	}
 
 	var r brokenRW
-	var f FixedHeader
-	if _, err := f.ReadFrom(&r); err == nil {
+	if _, err := ReadPacket(&r); err == nil {
 		t.Error("expected error")
 	}
 
-	if _, err := f.ReadPacket(&brokenRW{}); err == nil {
+	var buf bytes.Buffer
+	p := NewConnAck()
+	p.WriteTo(&buf)
+	partial := buf.Bytes()[:2]
+	if _, err := ReadPacket(bytes.NewReader(partial)); err == nil {
 		t.Error("expected error")
 	}
 }
