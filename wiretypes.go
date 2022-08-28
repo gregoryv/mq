@@ -228,12 +228,21 @@ func (v wbool) width() int { return 1 }
 type Bits byte
 
 func (v Bits) Has(b byte) bool { return byte(v)&b == b }
+
 func (v Bits) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
 		data[i] = byte(v)
 	}
 	return 1
 }
+
+func (v Bits) fillOpt(data []byte, i int, do bool) int {
+	if !do {
+		return 0
+	}
+	return v.fill(data, i)
+}
+
 func (v *Bits) ReadFrom(r io.Reader) (int64, error) {
 	data := make([]byte, 1)
 	if n, err := r.Read(data); err != nil {

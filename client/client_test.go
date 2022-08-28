@@ -12,5 +12,5 @@ func TestClient(t *testing.T) {
 	// above needs knowledge of the flags and the protocol
 	//
 	// nicer, not having to know how it's stored and where
-	// c.IsCleanStart()
+	// c.CleanStart()
 }
