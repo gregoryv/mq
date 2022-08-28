@@ -6,6 +6,11 @@ import (
 
 // buffer is a much simpler bytes.Buffer which guards sequential
 // access to data on error.
+//
+// Note! The buffer is only used for reading as filling the buffer
+// increased memory allocation, due to the fact we need partial widths
+// of e.g. properties or payloads. If used in the fill methods, that
+// would mean we'd have to allocate multiple of them.
 type buffer struct {
 	data []byte
 	i    int // current offset
@@ -26,9 +31,9 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 	end := b.i + int(propLen)
 	var id Ident
 	for b.i < end {
-		before := b.i
 		b.get(&id)
-		if b.i == before {
+		// first failure stops the parsing
+		if b.err != nil {
 			return
 		}
 		field, hasField := fields[id]
