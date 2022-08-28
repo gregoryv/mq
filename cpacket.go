@@ -6,13 +6,19 @@ import (
 	"io"
 )
 
+type ControlPacket interface {
+	io.WriterTo
+	encoding.BinaryUnmarshaler
+	fmt.Stringer
+}
+
 func ReadPacket(r io.Reader) (ControlPacket, error) {
 	var fh FixedHeader
 	if _, err := fh.ReadFrom(r); err != nil {
 		return nil, err
 	}
 
-	got, err := fh.ReadPacket(r)
+	got, err := fh.ReadRemaining(r)
 	if err != nil {
 		return nil, err
 	}
@@ -24,6 +30,12 @@ type FixedHeader struct {
 	remainingLen vbint
 }
 
+// ReadFrom reads the fixed byte and the remaining length, use
+// ReadRemaining for the rest.
+//
+// Note: Reason for splitting this up is that pahos Unpack works on
+// the remaining only. Also it gives us possibile ways of optimizing
+// memory usage when reading packets, i.e. using shared FixedHeaders.
 func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
 	if err != nil {
@@ -33,8 +45,8 @@ func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	return n + m, err
 }
 
-// ReadPacket is more related to client and server
-func (f *FixedHeader) ReadPacket(r io.Reader) (ControlPacket, error) {
+// ReadRemaining is more related to client and server
+func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	data := make([]byte, int(f.remainingLen))
 	if _, err := r.Read(data); err != nil {
 		return nil, err
@@ -60,10 +72,4 @@ func (f *FixedHeader) ReadPacket(r io.Reader) (ControlPacket, error) {
 		return nil, err
 	}
 	return p, nil
-}
-
-type ControlPacket interface {
-	io.WriterTo
-	encoding.BinaryUnmarshaler
-	fmt.Stringer
 }

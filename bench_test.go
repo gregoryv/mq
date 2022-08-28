@@ -57,7 +57,7 @@ func BenchmarkConnect(b *testing.B) {
 
 		b.Run("our", func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				if _, err := fh.ReadPacket(&buf); err != nil {
+				if _, err := fh.ReadRemaining(&buf); err != nil {
 					b.Fatal(err)
 				}
 				buf.Write(data)
