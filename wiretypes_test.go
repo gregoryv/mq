@@ -315,7 +315,7 @@ func (e *diffErr) Error() string {
 	return fmt.Sprintf("\n\nin\n%s\n\nout\n%s", e.in, e.out)
 }
 
-var large = wstring(strings.Repeat(" ", MaxUint16+1))
+var large = wstring(strings.Repeat(" ", maxUint16+1))
 
 func ExampleMalformed_Error() {
 	e := Malformed{

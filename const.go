@@ -41,9 +41,7 @@ const (
 )
 
 const (
-	MQTT      = "MQTT" // 3.1.2.1 Protocol Name
-	Version5  = 5
-	MaxUint16 = 1<<16 - 1
+	maxUint16 = 1<<16 - 1
 )
 
 // 2.1.2 MQTT Control Packet type

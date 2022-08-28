@@ -375,7 +375,7 @@ func (c *Connect) payload(b []byte, i int) int {
 			if len(c.correlationData) > 0 {
 				fill(CorrelationData, &c.correlationData)
 			}
-			
+
 			for i, _ := range c.willProp {
 				fill(UserProperty, &c.willProp[i])
 			}

@@ -12,21 +12,20 @@ func NewPublish() Publish {
 }
 
 type Publish struct {
-	fixed     Bits
-	topicName wstring
+	// first fields are aligned for memory
+	fixed         Bits
+	packetID      wuint16
+	topicAlias    wuint16
+	payloadFormat wbool
 
-	packetID wuint16 // packet identifier
-
-	topicAlias            wuint16
 	messageExpiryInterval wuint32
+	topicName             wstring
 	responseTopic         wstring
 	correlationData       bindata
+	contentType           wstring
+	payload               bindata
 	userProp              []property
 	subscriptionIDs       []uint32
-	contentType           wstring
-
-	payloadFormat wbool
-	payload       bindata
 }
 
 func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUP, v) }
