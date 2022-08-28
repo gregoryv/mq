@@ -30,35 +30,38 @@ type Connect struct {
 	// Fields are kept hidden so
 	// - we can optimize memory storage without affecting the API
 	// - users don't have to handle dependencies between fields and flags
+
+	// order is optimized for memory padding
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8
-	protocolName    wstring
-	clientID        wstring
+	willQoS         wuint8
 	keepAlive       wuint16
+	receiveMax      wuint16 // 8
 
-	// properties
-	willQoS               wuint8
 	sessionExpiryInterval wuint32
-	receiveMax            wuint16
-	maxPacketSize         wuint32
-	topicAliasMax         wuint16
-	requestResponseInfo   wbool
-	requestProblemInfo    wbool
-	userProp              []property
-	willProp              []property
-	authMethod            wstring
-	authData              bindata
+	maxPacketSize         wuint32 // 8
 
-	willDelayInterval wuint32
-	willTopic         wstring
-	willPayloadFormat wbool
-	willPayload       bindata
+	willDelayInterval         wuint32
+	willMessageExpiryInterval wuint32 // 8
 
-	willMessageExpiryInterval wuint32
-	willContentType           wstring
-	responseTopic             wstring
-	correlationData           bindata
+	topicAliasMax       wuint16
+	requestResponseInfo wbool
+	requestProblemInfo  wbool
+	willPayloadFormat   wbool
+
+	protocolName wstring
+	clientID     wstring
+	userProp     []property
+	willProp     []property
+	authMethod   wstring
+	authData     bindata
+
+	willTopic       wstring
+	willPayload     bindata
+	willContentType wstring
+	responseTopic   wstring
+	correlationData bindata
 
 	username wstring
 	password bindata
