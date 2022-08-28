@@ -140,6 +140,15 @@ func (v bindata) width() int {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 type vbint uint
 
+func (v vbint) fillProp(data []byte, i int, id Ident) int {
+	if v == 0 {
+		return 0
+	}
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
 func (v vbint) fill(data []byte, i int) int {
 	x := v
 	n := i

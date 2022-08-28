@@ -152,40 +152,22 @@ func (p *Publish) variableHeader(b []byte, i int) int {
 
 func (p *Publish) properties(b []byte, i int) int {
 	n := i
-	fill := func(id Ident, v wireType) {
-		i += id.fill(b, i)
-		i += v.fill(b, i)
+
+	i += p.payloadFormat.fillProp(b, i, PayloadFormatIndicator)
+	i += p.messageExpiryInterval.fillProp(b, i, MessageExpiryInterval)
+
+	i += p.topicAlias.fillProp(b, i, TopicAlias)
+	i += p.responseTopic.fillProp(b, i, ResponseTopic)
+	i += p.correlationData.fillProp(b, i, CorrelationData)
+
+	for j, _ := range p.userProp {
+		i += p.userProp[j].fillProp(b, i, UserProperty)
 	}
 
-	if v := p.payloadFormat; v {
-		fill(PayloadFormatIndicator, &v)
+	for j, _ := range p.subscriptionIDs {
+		i += vbint(p.subscriptionIDs[j]).fillProp(b, i, SubscriptionID)
 	}
-	if v := p.messageExpiryInterval; v > 0 {
-		fill(MessageExpiryInterval, &v)
-	}
-	if v := p.topicAlias; v > 0 {
-		fill(TopicAlias, &v)
-	}
-	if v := p.responseTopic; len(v) > 0 {
-		fill(ResponseTopic, &v)
-	}
-	if v := p.correlationData; len(v) > 0 {
-		fill(CorrelationData, &v)
-	}
-
-	for _, v := range p.userProp {
-		fill(UserProperty, &v)
-	}
-
-	for _, v := range p.subscriptionIDs {
-		if v > 0 {
-			id := vbint(v)
-			fill(SubscriptionID, &id)
-		}
-	}
-	if v := p.contentType; len(v) > 0 {
-		fill(ContentType, &v)
-	}
+	i += p.contentType.fillProp(b, i, ContentType)
 	return i - n
 }
 
