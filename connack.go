@@ -147,29 +147,12 @@ func (c *ConnAck) variableHeader(b []byte, i int) int {
 
 func (c *ConnAck) properties(b []byte, i int) int {
 	n := i
-	// Session expiry interval, in the spec this comes before receive
-	// maximum, order like this to match paho
-	i += c.sessionExpiryInterval.fillProp(b, i, SessionExpiryInterval)
-	i += c.receiveMax.fillProp(b, i, ReceiveMax)
-	i += c.maxQoS.fillProp(b, i, MaxQoS)
-	i += c.retainAvailable.fillProp(b, i, RetainAvailable)
-	i += c.maxPacketSize.fillProp(b, i, MaxPacketSize)
-	i += c.assignedClientID.fillProp(b, i, AssignedClientID)
-	i += c.topicAliasMax.fillProp(b, i, TopicAliasMax)
-	i += c.reasonString.fillProp(b, i, ReasonString)
-
+	for id, v := range c.propertyMap() {
+		i += v.fillProp(b, i, id)
+	}
 	for _, prop := range c.userProp {
 		i += prop.fillProp(b, i, UserProperty)
 	}
-
-	i += c.wildcardSubAvailable.fillProp(b, i, WildcardSubAvailable)
-	i += c.subIdentifiersAvailable.fillProp(b, i, SubIDsAvailable)
-	i += c.sharedSubAvailable.fillProp(b, i, SharedSubAvailable)
-	i += c.serverKeepAlive.fillProp(b, i, ServerKeepAlive)
-	i += c.responseInformation.fillProp(b, i, ResponseInformation)
-	i += c.serverReference.fillProp(b, i, ServerReference)
-	i += c.authMethod.fillProp(b, i, AuthMethod)
-	i += c.authData.fillProp(b, i, AuthData)
 	return i - n
 }
 
@@ -177,8 +160,12 @@ func (c *ConnAck) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&c.flags)
 	b.get(&c.reasonCode)
+	b.getAny(c.propertyMap(), c.appendUserProperty)
+	return b.err
+}
 
-	properties := map[Ident]wireType{
+func (c *ConnAck) propertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
 		ReceiveMax:            &c.receiveMax,
 		SessionExpiryInterval: &c.sessionExpiryInterval,
 		MaxQoS:                &c.maxQoS,
@@ -196,8 +183,6 @@ func (c *ConnAck) UnmarshalBinary(data []byte) error {
 		AuthMethod:            &c.authMethod,
 		AuthData:              &c.authData,
 	}
-	b.getAny(properties, c.appendUserProperty)
-	return b.err
 }
 
 func (c *ConnAck) width() int {

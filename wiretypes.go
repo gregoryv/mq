@@ -27,6 +27,10 @@ type wireType interface {
 	// actually allocating a buf.
 	fill(buf []byte, i int) int
 
+	// fillProp fills the identified property if not empty as this is
+	// the case for most property values.
+	fillProp(buf []byte, i int, id Ident) int
+
 	// returns the width of the wire data in bytes
 	width() int
 }
@@ -363,6 +367,9 @@ func (v wuint32) width() int { return 4 }
 
 // Ident is the same as wuint16 but is used to name the identifier codes
 type Ident uint8
+
+// only here to fulfill interface
+func (v Ident) fillProp(data []byte, i int, id Ident) int { return 0 }
 
 func (v Ident) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
