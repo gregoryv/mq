@@ -312,16 +312,9 @@ func (c *Connect) properties(b []byte, i int) int {
 	i += c.maxPacketSize.fillProp(b, i, MaxPacketSize)
 	i += c.topicAliasMax.fillProp(b, i, TopicAliasMax)
 	i += c.requestResponseInfo.fillProp(b, i, RequestResponseInfo)
-
-	if v := c.requestProblemInfo; v {
-		fill(RequestProblemInfo, &c.requestProblemInfo)
-	}
-	if v := c.authMethod; len(v) > 0 {
-		fill(AuthMethod, &c.authMethod)
-	}
-	if v := c.authData; len(v) > 0 {
-		fill(AuthData, &c.authData)
-	}
+	i += c.requestProblemInfo.fillProp(b, i, RequestProblemInfo)
+	i += c.authMethod.fillProp(b, i, AuthMethod)
+	i += c.authData.fillProp(b, i, AuthData)
 
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic

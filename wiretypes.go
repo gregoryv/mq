@@ -96,6 +96,15 @@ type wstring = bindata
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
 type bindata []byte
 
+func (v bindata) fillProp(data []byte, i int, id Ident) int {
+	if len(v) == 0 {
+		return 0
+	}
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
 func (v bindata) fill(data []byte, i int) int {
 	if len(data) >= i+v.width() {
 		i += wuint16(len(v)).fill(data, i)
