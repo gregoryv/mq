@@ -191,6 +191,9 @@ func Test_bindata(t *testing.T) {
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err)
 	}
+	if err := a.UnmarshalBinary([]byte{0x00, 0x00}); err != nil {
+		t.Error("UnmarshalBinary", err)
+	}
 
 	// before and after are equal
 	if !reflect.DeepEqual(b, a) {
@@ -233,40 +236,8 @@ func Test_property(t *testing.T) {
 	}
 }
 
-func TestReadPacket(t *testing.T) {
-
-	packets := []ControlPacket{}
-	{
-		p := NewPublish()
-		p.SetRetain(true)
-		p.SetQoS(2)
-		p.SetTopicName("a/b/1")
-		p.SetPayload([]byte("gopher"))
-		packets = append(packets, &p)
-	}
-	{
-		p := NewConnect() // we already have comparisons of output
-		packets = append(packets, &p)
-	}
-	{
-		p := NewConnAck()
-		packets = append(packets, &p)
-	}
-
-	for _, packet := range packets {
-		var buf bytes.Buffer
-		if _, err := packet.WriteTo(&buf); err != nil {
-			t.Fatalf("%T %s", packet, err)
-		}
-
-		after, err := ReadPacket(&buf)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-		compare(t, packet, after)
-	}
-
+// todo replace with testControlPacket
+func TestReadPacket_broken(t *testing.T) {
 	var r brokenRW
 	if _, err := ReadPacket(&r); err == nil {
 		t.Error("expected error")
