@@ -27,11 +27,9 @@ func NewConnect() Connect {
 }
 
 type Connect struct {
-	// fields are kept hidden so we can optimize memory storage
-	// without affecting callers of the api. There are also
-	// dependencies between flags and fields which we can help callers
-	// to fill out correctly when setting values. E.g. SetUsername
-	// sets/unsets the UsernameFlag in the flags field.
+	// Fields are kept hidden so
+	// - we can optimize memory storage without affecting the API
+	// - users don't have to handle dependencies between fields and flags
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8
@@ -298,67 +296,45 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
-	// Using this here increases allocations in the benchmark, wonder why?
-	// fill := func(id Ident, v wireType) {
-	// 	i += id.fill(b, i)
-	// 	i += v.fill(b, i)
-	// }
-
-	// Receive maximum
-	if v := c.receiveMax; v > 0 {
-		i += ReceiveMax.fill(b, i)
+	fill := func(id Ident, v wireType) {
+		i += id.fill(b, i)
 		i += v.fill(b, i)
+	}
+
+	if v := c.receiveMax; v > 0 {
+		fill(ReceiveMax, &c.receiveMax)
 	}
 
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho
 	if v := c.sessionExpiryInterval; v > 0 {
-		i += SessionExpiryInterval.fill(b, i)
-		i += v.fill(b, i)
+		fill(SessionExpiryInterval, &c.sessionExpiryInterval)
 	}
 
-	// Maximum packet size
 	if v := c.maxPacketSize; v > 0 {
-		i += MaxPacketSize.fill(b, i)
-		i += v.fill(b, i)
+		fill(MaxPacketSize, &c.maxPacketSize)
 	}
-
-	// Topic alias maximum
 	if v := c.topicAliasMax; v > 0 {
-		i += TopicAliasMax.fill(b, i)
-		i += v.fill(b, i)
+		fill(TopicAliasMax, &c.topicAliasMax)
 	}
-
-	// Request response information
 	if v := c.requestResponseInfo; v {
-		i += RequestResponseInfo.fill(b, i)
-		i += v.fill(b, i)
+		fill(RequestResponseInfo, &c.requestResponseInfo)
 	}
-
-	// Request problem information
 	if v := c.requestProblemInfo; v {
-		i += RequestProblemInfo.fill(b, i)
-		i += v.fill(b, i)
+		fill(RequestProblemInfo, &c.requestProblemInfo)
 	}
-
-	// Authentication method
 	if v := c.authMethod; len(v) > 0 {
-		i += AuthMethod.fill(b, i)
-		i += v.fill(b, i)
+		fill(AuthMethod, &c.authMethod)
 	}
-
-	// Authentication data
 	if v := c.authData; len(v) > 0 {
-		i += AuthData.fill(b, i)
-		i += v.fill(b, i)
+		fill(AuthData, &c.authData)
 	}
 
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
 	// pahos order.
-	for _, prop := range c.userProp {
-		i += UserProperty.fill(b, i)
-		i += prop.fill(b, i)
+	for i, _ := range c.userProp {
+		fill(UserProperty, &c.userProp[i])
 	}
 	return i - n
 }
@@ -399,9 +375,9 @@ func (c *Connect) payload(b []byte, i int) int {
 			if len(c.correlationData) > 0 {
 				fill(CorrelationData, &c.correlationData)
 			}
-
-			for _, v := range c.willProp {
-				fill(UserProperty, &v)
+			
+			for i, _ := range c.willProp {
+				fill(UserProperty, &c.willProp[i])
 			}
 
 			return i - n
@@ -413,12 +389,9 @@ func (c *Connect) payload(b []byte, i int) int {
 		i += c.willPayload.fill(b, i) // payload
 	}
 
-	// User Name
 	if c.flags.Has(UsernameFlag) {
 		i += c.username.fill(b, i)
 	}
-
-	// Password
 	if c.flags.Has(PasswordFlag) {
 		i += c.password.fill(b, i)
 	}
