@@ -62,6 +62,12 @@ func (f FirstByte) String() string {
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
 type property [2]string
 
+func (v property) fillProp(data []byte, i int, id Ident) int {
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
 func (v property) fill(data []byte, i int) int {
 	i += wstring(v[0]).fill(data, i)
 	_ = wstring(v[1]).fill(data, i)

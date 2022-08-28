@@ -299,11 +299,6 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
-	fill := func(id Ident, v wireType) {
-		i += id.fill(b, i)
-		i += v.fill(b, i)
-	}
-
 	i += c.receiveMax.fillProp(b, i, ReceiveMax)
 
 	// Session expiry interval, in the spec this comes before receive
@@ -319,8 +314,8 @@ func (c *Connect) properties(b []byte, i int) int {
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
 	// pahos order.
-	for i, _ := range c.userProp {
-		fill(UserProperty, &c.userProp[i])
+	for j, _ := range c.userProp {
+		i += c.userProp[j].fillProp(b, i, UserProperty)
 	}
 	return i - n
 }
