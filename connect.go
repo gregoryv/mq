@@ -309,15 +309,10 @@ func (c *Connect) properties(b []byte, i int) int {
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho
 	i += c.sessionExpiryInterval.fillProp(b, i, SessionExpiryInterval)
-
 	i += c.maxPacketSize.fillProp(b, i, MaxPacketSize)
+	i += c.topicAliasMax.fillProp(b, i, TopicAliasMax)
+	i += c.requestResponseInfo.fillProp(b, i, RequestResponseInfo)
 
-	if v := c.topicAliasMax; v > 0 {
-		fill(TopicAliasMax, &c.topicAliasMax)
-	}
-	if v := c.requestResponseInfo; v {
-		fill(RequestResponseInfo, &c.requestResponseInfo)
-	}
 	if v := c.requestProblemInfo; v {
 		fill(RequestProblemInfo, &c.requestProblemInfo)
 	}

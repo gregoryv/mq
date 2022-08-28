@@ -201,6 +201,15 @@ type (
 
 type wbool bool
 
+func (v wbool) fillProp(data []byte, i int, id Ident) int {
+	if !v {
+		return 0
+	}
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
 func (v wbool) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
 		if v {
