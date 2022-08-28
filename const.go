@@ -37,7 +37,7 @@ const (
 	MaxPacketSize        Ident = 0x27
 	WildcardSubAvailable Ident = 0x28
 	SubIDsAvailable      Ident = 0x29
-	SharedSubAvailable   Ident = 0x30
+	SharedSubAvailable   Ident = 0x2a
 )
 
 const (
