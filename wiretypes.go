@@ -236,8 +236,8 @@ func (v Bits) fill(data []byte, i int) int {
 	return 1
 }
 
-func (v Bits) fillOpt(data []byte, i int, do bool) int {
-	if !do {
+func (v Bits) fillOpt(data []byte, i int) int {
+	if v == 0 {
 		return 0
 	}
 	return v.fill(data, i)
@@ -265,6 +265,16 @@ func (v *Bits) toggle(flag byte, on bool) {
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
 type wuint16 uint16
+
+func (v wuint16) fillProp(data []byte, i int, id Ident) int {
+	if v == 0 {
+		return 0
+	}
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
 
 func (v wuint16) fill(data []byte, i int) int {
 	if len(data) >= i+2 {

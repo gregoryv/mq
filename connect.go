@@ -304,9 +304,7 @@ func (c *Connect) properties(b []byte, i int) int {
 		i += v.fill(b, i)
 	}
 
-	if v := c.receiveMax; v > 0 {
-		fill(ReceiveMax, &c.receiveMax)
-	}
+	i += c.receiveMax.fillProp(b, i, ReceiveMax)
 
 	// Session expiry interval, in the spec this comes before receive
 	// maximum, order like this to match paho

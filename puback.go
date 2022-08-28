@@ -70,7 +70,7 @@ func (p *PubAck) variableHeader(b []byte, i int) int {
 	n := i
 
 	i += p.packetID.fill(b, i)
-	i += p.reasonCode.fillOpt(b, i, p.reasonCode > 0)
+	i += p.reasonCode.fillOpt(b, i)
 
 	propl := vbint(p.properties(_LEN, 0))
 	if propl > 0 {
