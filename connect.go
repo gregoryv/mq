@@ -323,42 +323,22 @@ func (c *Connect) properties(b []byte, i int) int {
 func (c *Connect) payload(b []byte, i int) int {
 	n := i
 
-	// ClientID
 	i += c.clientID.fill(b, i)
 
-	// Will
 	if c.flags.Has(WillFlag) {
 		// Inlined the will properties to bring it closer to the
 		// payload, worked just as well with a Connect.will method.
 		properties := func(b []byte, i int) int {
 			n := i
 
-			fill := func(id Ident, v wireType) {
-				i += id.fill(b, i)
-				i += v.fill(b, i)
-			}
-
-			if c.willDelayInterval > 0 {
-				fill(WillDelayInterval, &c.willDelayInterval)
-			}
-			if c.willPayloadFormat {
-				fill(PayloadFormatIndicator, &c.willPayloadFormat)
-			}
-			if c.willMessageExpiryInterval > 0 {
-				fill(MessageExpiryInterval, &c.willMessageExpiryInterval)
-			}
-			if len(c.willContentType) > 0 {
-				fill(ContentType, &c.willContentType)
-			}
-			if len(c.responseTopic) > 0 {
-				fill(ResponseTopic, &c.responseTopic)
-			}
-			if len(c.correlationData) > 0 {
-				fill(CorrelationData, &c.correlationData)
-			}
-
-			for i, _ := range c.willProp {
-				fill(UserProperty, &c.willProp[i])
+			i += c.willDelayInterval.fillProp(b, i, WillDelayInterval)
+			i += c.willPayloadFormat.fillProp(b, i, PayloadFormatIndicator)
+			i += c.willMessageExpiryInterval.fillProp(b, i, MessageExpiryInterval)
+			i += c.willContentType.fillProp(b, i, ContentType)
+			i += c.responseTopic.fillProp(b, i, ResponseTopic)
+			i += c.correlationData.fillProp(b, i, CorrelationData)
+			for j, _ := range c.willProp {
+				i += c.willProp[j].fillProp(b, i, UserProperty)
 			}
 
 			return i - n
