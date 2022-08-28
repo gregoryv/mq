@@ -262,6 +262,16 @@ type Bits byte
 
 func (v Bits) Has(b byte) bool { return byte(v)&b == b }
 
+func (v Bits) fillProp(data []byte, i int, id Ident) int {
+	if v == 0 {
+		return 0
+	}
+	n := i
+	i += id.fill(data, i)
+	i += v.fill(data, i)
+	return i - n
+}
+
 func (v Bits) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
 		data[i] = byte(v)
