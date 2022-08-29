@@ -29,4 +29,15 @@ func TestPubAck(t *testing.T) {
 	if v := p.String(); !strings.Contains(v, "name too long") {
 		t.Error(v)
 	}
+
+	// variations
+	if p := NewPubRel(); !strings.Contains(p.String(), "PUBREL") {
+		t.Error(p.String())
+	}
+	if p := NewPubRec(); !strings.Contains(p.String(), "PUBREC") {
+		t.Error(p.String())
+	}
+	if p := NewPubComp(); !strings.Contains(p.String(), "PUBCOMP") {
+		t.Error(p.String())
+	}
 }
