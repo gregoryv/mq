@@ -244,6 +244,13 @@ func Test_property(t *testing.T) {
 	}
 }
 
+func Test_Ident(t *testing.T) {
+	empty := Ident(9)
+	if v := empty.fillProp(nil, 0, 0); v > 0 {
+		t.Error("empty fillProp", v)
+	}
+}
+
 var large = wstring(strings.Repeat(" ", maxUint16+1))
 
 func ExampleMalformed_Error() {
