@@ -9,7 +9,8 @@ func NewPubAck() PubAck {
 	return PubAck{fixed: Bits(PUBACK)}
 }
 
-// A PubAck packet is the response to a Publish packet with QoS 1.
+// A PubAck packet is the response to a Publish packets, depending on
+// the fixed header it can be one of PUBACK, PUBREC, PUBREL or PUBCOMP
 type PubAck struct {
 	fixed Bits
 

@@ -58,7 +58,7 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	case f.fixed.Has(PUBLISH):
 		p = &Publish{fixed: f.fixed}
 
-	case f.fixed.Has(PUBACK):
+	case f.fixed.Has(PUBACK), f.fixed.Has(PUBREC), f.fixed.Has(PUBREL), f.fixed.Has(PUBCOMP):
 		p = &PubAck{fixed: f.fixed}
 
 	case f.fixed.Has(CONNECT):
