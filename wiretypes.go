@@ -35,11 +35,11 @@ type wireType interface {
 	width() int
 }
 
-// FirstByte represents the first byte in a control packet.
-type FirstByte Bits
+// firstByte represents the first byte in a control packet.
+type firstByte byte
 
 // String returns a readable string TYPEFLAGS, e.g. PUBLISH d1-r
-func (f FirstByte) String() string {
+func (f firstByte) String() string {
 	var sb strings.Builder
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")

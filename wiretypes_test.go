@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func Test_FirstByte(t *testing.T) {
+func Test_firstByte(t *testing.T) {
 	cases := []struct {
 		h   byte
 		exp string
@@ -22,7 +22,7 @@ func Test_FirstByte(t *testing.T) {
 		{CONNECT, "CONNECT ----"},
 	}
 	for _, c := range cases {
-		if got := FirstByte(c.h).String(); got != c.exp {
+		if got := firstByte(c.h).String(); got != c.exp {
 			t.Errorf("String: %q != %q", got, c.exp)
 		}
 	}

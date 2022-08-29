@@ -107,7 +107,7 @@ func (c *ConnAck) AddUserProperty(p property) {
 
 func (c *ConnAck) String() string {
 	return fmt.Sprintf("%s %s %s %v bytes",
-		FirstByte(c.fixed).String(),
+		firstByte(c.fixed).String(),
 		connAckFlags(c.flags),
 		c.assignedClientID,
 		c.width(),
@@ -127,7 +127,7 @@ func (c *ConnAck) WriteTo(w io.Writer) (int64, error) {
 }
 
 func (c *ConnAck) fill(b []byte, i int) int {
-	i += c.fixed.fill(b, i)                          // FirstByte header
+	i += c.fixed.fill(b, i)                          // firstByte header
 	i += vbint(c.variableHeader(_LEN, 0)).fill(b, i) // remaining length
 	i += c.variableHeader(b, i)                      // variable header
 	return i

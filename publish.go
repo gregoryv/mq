@@ -28,6 +28,13 @@ type Publish struct {
 	subscriptionIDs       []uint32
 }
 
+func (p *Publish) String() string {
+	return fmt.Sprintf("%s %v bytes",
+		firstByte(p.fixed).String(),
+		p.width(),
+	)
+}
+
 func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUP, v) }
 func (p *Publish) Duplicate() bool     { return p.fixed.Has(DUP) }
 
@@ -127,7 +134,7 @@ func (p *Publish) fill(b []byte, i int) int {
 		remainingLen += vbint(p.payload.fill(_LEN, 0))
 	}
 
-	i += p.fixed.fill(b, i)      // FirstByte header
+	i += p.fixed.fill(b, i)      // firstByte header
 	i += remainingLen.fill(b, i) // remaining length
 	i += p.variableHeader(b, i)  // variable header
 	if len(p.payload) > 0 {
@@ -181,13 +188,6 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 		get(&p.payload)
 	}
 	return buf.err
-}
-
-func (p *Publish) String() string {
-	return fmt.Sprintf("%s %v bytes",
-		FirstByte(p.fixed).String(),
-		p.width(),
-	)
 }
 
 func (p *Publish) propertyMap() map[Ident]wireType {

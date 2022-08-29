@@ -36,7 +36,7 @@ func (p *PubAck) AddUserProperty(prop property) {
 
 func (p *PubAck) String() string {
 	return fmt.Sprintf("%s ",
-		FirstByte(p.fixed).String(),
+		firstByte(p.fixed).String(),
 	)
 }
 
@@ -52,7 +52,7 @@ func (p *PubAck) WriteTo(w io.Writer) (int64, error) {
 func (p *PubAck) fill(b []byte, i int) int {
 	remainingLen := vbint(p.variableHeader(_LEN, 0))
 
-	i += p.fixed.fill(b, i)      // FirstByte header
+	i += p.fixed.fill(b, i)      // firstByte header
 	i += remainingLen.fill(b, i) // remaining length
 	i += p.variableHeader(b, i)
 

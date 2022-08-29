@@ -138,7 +138,7 @@ func compare(t *testing.T, our, their io.WriterTo) {
 	if a != b {
 		t.Logf("\n\n%s\n\nour %v bytes\n%s\n\n", our, ourData.Len(), a)
 		t.Errorf("\n\n%s %08b\n\ntheir %v bytes\n%s\n\n",
-			FirstByte(f), f,
+			firstByte(f), f,
 			theirData.Len(), b)
 	}
 }

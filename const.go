@@ -85,7 +85,7 @@ var typeNames = map[byte]string{
 	AUTH:        "AUTH",
 }
 
-// FirstByte header flags
+// firstByte header flags
 const (
 	RETAIN byte = 0b0000_0001
 	QoS1   byte = 0b0000_0010
