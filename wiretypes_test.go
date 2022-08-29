@@ -133,6 +133,10 @@ func Test_vbint(t *testing.T) {
 		}
 	}
 
+	var empty vbint
+	if v := empty.fillProp(nil, 0, 0); v > 0 {
+		t.Error("empty fill", v)
+	}
 	// error case
 	var v vbint
 	badData := []byte{0xff, 0xff, 0xff, 0xff, 0x7f}
@@ -227,6 +231,10 @@ func Test_property(t *testing.T) {
 		t.Errorf("%q != %q", got, exp)
 	}
 
+	empty := property{"", "value"} // missing key
+	if v := empty.fillProp(nil, 0, 0); v > 0 {
+		t.Error("empty fillProp", v)
+	}
 	// error cases
 	if err := a.UnmarshalBinary(data[:3]); err == nil {
 		t.Error("UnmarshalBinary should fail on malformed key")

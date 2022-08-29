@@ -67,6 +67,9 @@ func (f firstByte) String() string {
 type property [2]string
 
 func (v property) fillProp(data []byte, i int, id Ident) int {
+	if len(v[0]) == 0 {
+		return 0
+	}
 	n := i
 	i += id.fill(data, i)
 	i += v.fill(data, i)
