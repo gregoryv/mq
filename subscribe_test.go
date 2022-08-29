@@ -8,5 +8,8 @@ func TestSubscribe(t *testing.T) {
 	eq(t, s.SetPacketID, s.PacketID, 34)
 	eq(t, s.SetSubscriptionID, s.SubscriptionID, 99)
 
+	s.AddUserProp("color", "purple")
+
+	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP) // todo define FilterOptions
 	t.Error(&s)
 }

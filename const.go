@@ -138,3 +138,17 @@ const (
 // Name an empty slice for increased readability when fill methods are
 // used to only calculate length.
 var _LEN []byte
+
+// Filter option, used in Subscribe
+type Fop byte
+
+const (
+	FopQoS1    Fop = 1
+	FopQoS2    Fop = 2
+	FopQoS3    Fop = 3 // malformed
+	FopNL      Fop = 1 << 2
+	FopRAP     Fop = 1 << 3
+	FopRetain1 Fop = 1 << 4
+	FopRetain2 Fop = 2 << 4
+	FopRetain3 Fop = 3 << 4 // malformed
+)
