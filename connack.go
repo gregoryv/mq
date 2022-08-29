@@ -99,9 +99,6 @@ func (c *ConnAck) AddUserProp(key, val string) {
 	c.AddUserProperty(property{key, val})
 }
 func (c *ConnAck) AddUserProperty(p property) {
-	c.appendUserProperty(p)
-}
-func (c *ConnAck) appendUserProperty(p property) {
 	c.userProp = append(c.userProp, p)
 }
 
@@ -160,7 +157,7 @@ func (c *ConnAck) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&c.flags)
 	b.get(&c.reasonCode)
-	b.getAny(c.propertyMap(), c.appendUserProperty)
+	b.getAny(c.propertyMap(), c.AddUserProperty)
 	return b.err
 }
 

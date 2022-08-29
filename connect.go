@@ -150,9 +150,6 @@ func (c *Connect) AddUserProp(key, val string) {
 	c.AddUserProperty(property{key, val})
 }
 func (c *Connect) AddUserProperty(p property) {
-	c.appendUserProperty(p)
-}
-func (c *Connect) appendUserProperty(p property) {
 	c.userProp = append(c.userProp, p)
 }
 
@@ -358,7 +355,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.protocolVersion)
 	get(&c.flags)
 	get(&c.keepAlive)
-	buf.getAny(c.propertyMap(), c.appendUserProperty)
+	buf.getAny(c.propertyMap(), c.AddUserProperty)
 
 	// payload
 	get(&c.clientID)

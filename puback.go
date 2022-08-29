@@ -31,14 +31,8 @@ func (p *PubAck) AddUserProp(key, val string) {
 	p.AddUserProperty(property{key, val})
 }
 func (p *PubAck) AddUserProperty(prop property) {
-	p.appendUserProperty(prop)
-}
-func (p *PubAck) appendUserProperty(prop property) {
 	p.userProp = append(p.userProp, prop)
 }
-
-// end settings
-// ----------------------------------------
 
 func (p *PubAck) String() string {
 	return fmt.Sprintf("%s ",
@@ -100,7 +94,7 @@ func (p *PubAck) UnmarshalBinary(data []byte) error {
 	}
 
 	get(&p.reasonCode)
-	buf.getAny(p.propertyMap(), p.appendUserProperty)
+	buf.getAny(p.propertyMap(), p.AddUserProperty)
 
 	return buf.err
 }

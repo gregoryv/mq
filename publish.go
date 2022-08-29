@@ -89,9 +89,6 @@ func (p *Publish) AddUserProp(key, val string) {
 	p.AddUserProperty(property{key, val})
 }
 func (p *Publish) AddUserProperty(prop property) {
-	p.appendUserProperty(prop)
-}
-func (p *Publish) appendUserProperty(prop property) {
 	p.userProp = append(p.userProp, prop)
 }
 
@@ -195,7 +192,7 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 		CorrelationData:        &p.correlationData,
 		ContentType:            &p.contentType,
 	}
-	buf.getAny(fields, p.appendUserProperty)
+	buf.getAny(fields, p.AddUserProperty)
 
 	if len(data) > buf.i {
 		get(&p.payload)
