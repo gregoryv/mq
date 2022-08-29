@@ -34,7 +34,7 @@ type FixedHeader struct {
 // ReadRemaining for the rest.
 //
 // Note: Reason for splitting this up is that pahos Unpack works on
-// the remaining only. Also it gives us possibile ways of optimizing
+// the remaining only. Also it gives us possible ways of optimizing
 // memory usage when reading packets, i.e. using shared FixedHeaders.
 func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
