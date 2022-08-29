@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add type Subscribe
 - Add type PubAck, same for PUBREL, PUBREC and PUBCOMP
 
 ## [0.8.0] 2022-08-28
