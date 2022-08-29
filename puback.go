@@ -6,9 +6,7 @@ import (
 )
 
 func NewPubAck() PubAck {
-	return PubAck{
-		fixed: Bits(PUBACK),
-	}
+	return PubAck{fixed: Bits(PUBACK)}
 }
 
 type PubAck struct {
@@ -68,7 +66,6 @@ func (p *PubAck) fill(b []byte, i int) int {
 }
 func (p *PubAck) variableHeader(b []byte, i int) int {
 	n := i
-
 	i += p.packetID.fill(b, i)
 	i += p.reasonCode.fillOpt(b, i)
 
@@ -82,15 +79,11 @@ func (p *PubAck) variableHeader(b []byte, i int) int {
 
 func (p *PubAck) properties(b []byte, i int) int {
 	n := i
-	fill := func(id Ident, v wireType) {
-		i += id.fill(b, i)
-		i += v.fill(b, i)
-	}
-	if v := p.reason; len(v) > 0 {
-		fill(ReasonString, &v)
+	for id, v := range p.propertyMap() {
+		i += v.fillProp(b, i, id)
 	}
 	for _, v := range p.userProp {
-		fill(UserProperty, &v)
+		i += v.fillProp(b, i, UserProperty)
 	}
 	return i - n
 }
@@ -107,10 +100,13 @@ func (p *PubAck) UnmarshalBinary(data []byte) error {
 	}
 
 	get(&p.reasonCode)
-	fields := map[Ident]wireType{
-		ReasonString: &p.reason,
-	}
-	buf.getAny(fields, p.appendUserProperty)
+	buf.getAny(p.propertyMap(), p.appendUserProperty)
 
 	return buf.err
+}
+
+func (p *PubAck) propertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
+		ReasonString: &p.reason,
+	}
 }
