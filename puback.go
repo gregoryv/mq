@@ -18,6 +18,22 @@ type PubAck struct {
 	userProp   []property
 }
 
+func (p *PubAck) String() string {
+	s := fmt.Sprintf("%s %v %v bytes",
+		firstByte(p.fixed).String(),
+		p.packetID,
+		p.width(),
+	)
+	if p.reasonCode > 0 {
+		return fmt.Sprintf("%s %s %s",
+			s,
+			ReasonCode(p.reasonCode).String(),
+			p.reason,
+		)
+	}
+	return s
+}
+
 func (p *PubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *PubAck) PacketID() uint16     { return uint16(p.packetID) }
 
@@ -34,12 +50,6 @@ func (p *PubAck) AddUserProperty(prop property) {
 	p.userProp = append(p.userProp, prop)
 }
 
-func (p *PubAck) String() string {
-	return fmt.Sprintf("%s ",
-		firstByte(p.fixed).String(),
-	)
-}
-
 func (p *PubAck) WriteTo(w io.Writer) (int64, error) {
 	// allocate full size of entire packet
 	b := make([]byte, p.fill(_LEN, 0))
@@ -47,6 +57,10 @@ func (p *PubAck) WriteTo(w io.Writer) (int64, error) {
 
 	n, err := w.Write(b)
 	return int64(n), err
+}
+
+func (p *PubAck) width() int {
+	return p.fill(_LEN, 0)
 }
 
 func (p *PubAck) fill(b []byte, i int) int {

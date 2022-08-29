@@ -7,6 +7,9 @@ import (
 
 func TestPubAck(t *testing.T) {
 	p := NewPubAck()
+	if v := p.String(); !strings.Contains(v, "PUBACK") {
+		t.Error(v)
+	}
 
 	eq(t, p.SetPacketID, p.PacketID, 99)
 	// should cover the check for remaining len
@@ -23,7 +26,7 @@ func TestPubAck(t *testing.T) {
 		t.Error(err)
 	}
 
-	if v := p.String(); !strings.Contains(v, "PUBACK") {
+	if v := p.String(); !strings.Contains(v, "name too long") {
 		t.Error(v)
 	}
 }
