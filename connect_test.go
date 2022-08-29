@@ -21,6 +21,7 @@ func ExampleConnect() {
 
 func TestConnect(t *testing.T) {
 	c := NewConnect()
+
 	eq(t, c.SetProtocolVersion, c.ProtocolVersion, 5)
 	eq(t, c.SetProtocolName, c.ProtocolName, "MQTT")
 	eq(t, c.SetKeepAlive, c.KeepAlive, 299)
@@ -40,6 +41,7 @@ func TestConnect(t *testing.T) {
 	c.AddUserProp("color", "red")
 
 	eq(t, c.SetWillRetain, c.WillRetain, true)
+	eq(t, c.SetWillQoS, c.WillQoS, 1)
 	eq(t, c.SetWillTopic, c.WillTopic, "topic/dead/clients")
 	eq(t, c.SetWillPayload, c.WillPayload, []byte(`{"clientID": "macy"}`))
 	eq(t, c.SetWillContentType, c.WillContentType, "application/json")

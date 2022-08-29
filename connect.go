@@ -35,28 +35,26 @@ type Connect struct {
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8
-	willQoS         wuint8 // todo remove this one, part of flags
 	keepAlive       wuint16
-	receiveMax      wuint16 // 8
+	receiveMax      wuint16
 
 	sessionExpiryInterval wuint32
-	maxPacketSize         wuint32 // 8
+	maxPacketSize         wuint32
 
 	willDelayInterval         wuint32
-	willMessageExpiryInterval wuint32 // 8
+	willMessageExpiryInterval wuint32
 
 	topicAliasMax       wuint16
 	requestResponseInfo wbool
 	requestProblemInfo  wbool
 	willPayloadFormat   wbool
 
-	protocolName wstring
-	clientID     wstring
-	userProp     []property
-	willProp     []property
-	authMethod   wstring
-	authData     bindata
-
+	protocolName    wstring
+	clientID        wstring
+	userProp        []property
+	willProp        []property
+	authMethod      wstring
+	authData        bindata
 	willTopic       wstring
 	willPayload     bindata
 	willContentType wstring
@@ -98,12 +96,11 @@ func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
 func (c *Connect) SetWillQoS(v uint8) {
-	c.willQoS = wuint8(v)
 	c.flags &= Bits(^(WillQoS2 | WillQoS1)) // reset
-	c.flags.toggle(byte(c.willQoS<<3), v < 3)
+	c.flags.toggle(v<<3, v < 3)
 }
 func (c *Connect) WillQoS() uint8 {
-	return uint8(c.willQoS)
+	return (uint8(c.flags) & (WillQoS2 | WillQoS1)) >> 3
 }
 
 func (c *Connect) SetSessionExpiryInterval(v uint32) {
@@ -360,7 +357,6 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.protocolName)
 	get(&c.protocolVersion)
 	get(&c.flags)
-	c.willQoS = Bits(c.flags&Bits(WillQoS2|WillQoS1)) >> 3
 	get(&c.keepAlive)
 	buf.getAny(c.propertyMap(), c.appendUserProperty)
 

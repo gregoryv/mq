@@ -114,6 +114,9 @@ func TestCompareConnect(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(got, &our) {
+		t.Log("our", our.String())
+		t.Log("got", got.String())
+
 		a := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
 		b := strings.ReplaceAll(fmt.Sprintf("%#v", &our), ", ", ",\n")
 		assert := asserter.New(t)
