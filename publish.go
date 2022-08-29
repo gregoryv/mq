@@ -110,12 +110,14 @@ func (p *Publish) Payload() []byte     { return []byte(p.payload) }
 // ----------------------------------------
 
 func (p *Publish) WriteTo(w io.Writer) (int64, error) {
-	// allocate full size of entire packet
 	b := make([]byte, p.fill(_LEN, 0))
 	p.fill(b, 0)
-
 	n, err := w.Write(b)
 	return int64(n), err
+}
+
+func (p *Publish) width() int {
+	return p.fill(_LEN, 0)
 }
 
 func (p *Publish) fill(b []byte, i int) int {
@@ -149,27 +151,16 @@ func (p *Publish) variableHeader(b []byte, i int) int {
 
 func (p *Publish) properties(b []byte, i int) int {
 	n := i
-
-	i += p.payloadFormat.fillProp(b, i, PayloadFormatIndicator)
-	i += p.messageExpiryInterval.fillProp(b, i, MessageExpiryInterval)
-
-	i += p.topicAlias.fillProp(b, i, TopicAlias)
-	i += p.responseTopic.fillProp(b, i, ResponseTopic)
-	i += p.correlationData.fillProp(b, i, CorrelationData)
-
+	for id, v := range p.propertyMap() {
+		i += v.fillProp(b, i, id)
+	}
 	for j, _ := range p.userProp {
 		i += p.userProp[j].fillProp(b, i, UserProperty)
 	}
-
 	for j, _ := range p.subscriptionIDs {
 		i += vbint(p.subscriptionIDs[j]).fillProp(b, i, SubscriptionID)
 	}
-	i += p.contentType.fillProp(b, i, ContentType)
 	return i - n
-}
-
-func (p *Publish) width() int {
-	return p.fill(_LEN, 0)
 }
 
 func (p *Publish) UnmarshalBinary(data []byte) error {
@@ -184,15 +175,7 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 		get(&p.packetID)
 	}
 
-	fields := map[Ident]wireType{
-		PayloadFormatIndicator: &p.payloadFormat,
-		MessageExpiryInterval:  &p.messageExpiryInterval,
-		TopicAlias:             &p.topicAlias,
-		ResponseTopic:          &p.responseTopic,
-		CorrelationData:        &p.correlationData,
-		ContentType:            &p.contentType,
-	}
-	buf.getAny(fields, p.AddUserProperty)
+	buf.getAny(p.propertyMap(), p.AddUserProperty)
 
 	if len(data) > buf.i {
 		get(&p.payload)
@@ -205,4 +188,15 @@ func (p *Publish) String() string {
 		FirstByte(p.fixed).String(),
 		p.width(),
 	)
+}
+
+func (p *Publish) propertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
+		PayloadFormatIndicator: &p.payloadFormat,
+		MessageExpiryInterval:  &p.messageExpiryInterval,
+		TopicAlias:             &p.topicAlias,
+		ResponseTopic:          &p.responseTopic,
+		CorrelationData:        &p.correlationData,
+		ContentType:            &p.contentType,
+	}
 }
