@@ -35,7 +35,7 @@ type Connect struct {
 	fixed           Bits
 	flags           Bits
 	protocolVersion wuint8
-	willQoS         wuint8
+	willQoS         wuint8 // todo remove this one, part of flags
 	keepAlive       wuint16
 	receiveMax      wuint16 // 8
 
@@ -99,10 +99,12 @@ func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
 func (c *Connect) SetWillQoS(v uint8) {
 	c.willQoS = wuint8(v)
-	c.flags &= Bits(^(WillQoS1 | WillQoS2)) // reset
-	c.flags.toggle(byte(c.willQoS<<3), c.willQoS < 3)
+	c.flags &= Bits(^(WillQoS2 | WillQoS1)) // reset
+	c.flags.toggle(byte(c.willQoS<<3), v < 3)
 }
-func (c *Connect) WillQoS() uint8 { return uint8(c.willQoS) }
+func (c *Connect) WillQoS() uint8 {
+	return uint8(c.willQoS)
+}
 
 func (c *Connect) SetSessionExpiryInterval(v uint32) {
 	c.sessionExpiryInterval = wuint32(v)
@@ -299,17 +301,9 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
-	i += c.receiveMax.fillProp(b, i, ReceiveMax)
-
-	// Session expiry interval, in the spec this comes before receive
-	// maximum, order like this to match paho
-	i += c.sessionExpiryInterval.fillProp(b, i, SessionExpiryInterval)
-	i += c.maxPacketSize.fillProp(b, i, MaxPacketSize)
-	i += c.topicAliasMax.fillProp(b, i, TopicAliasMax)
-	i += c.requestResponseInfo.fillProp(b, i, RequestResponseInfo)
-	i += c.requestProblemInfo.fillProp(b, i, RequestProblemInfo)
-	i += c.authMethod.fillProp(b, i, AuthMethod)
-	i += c.authData.fillProp(b, i, AuthData)
+	for id, v := range c.propertyMap() {
+		i += v.fillProp(b, i, id)
+	}
 
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
@@ -331,12 +325,9 @@ func (c *Connect) payload(b []byte, i int) int {
 		properties := func(b []byte, i int) int {
 			n := i
 
-			i += c.willDelayInterval.fillProp(b, i, WillDelayInterval)
-			i += c.willPayloadFormat.fillProp(b, i, PayloadFormatIndicator)
-			i += c.willMessageExpiryInterval.fillProp(b, i, MessageExpiryInterval)
-			i += c.willContentType.fillProp(b, i, ContentType)
-			i += c.responseTopic.fillProp(b, i, ResponseTopic)
-			i += c.correlationData.fillProp(b, i, CorrelationData)
+			for id, v := range c.willPropertyMap() {
+				i += v.fillProp(b, i, id)
+			}
 			for j, _ := range c.willProp {
 				i += c.willProp[j].fillProp(b, i, UserProperty)
 			}
@@ -369,34 +360,14 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.protocolName)
 	get(&c.protocolVersion)
 	get(&c.flags)
+	c.willQoS = Bits(c.flags&Bits(WillQoS2|WillQoS1)) >> 3
 	get(&c.keepAlive)
-
-	// properties
-	// map property ids to the correct Connect field
-	fields := map[Ident]wireType{
-		ReceiveMax:            &c.receiveMax,
-		SessionExpiryInterval: &c.sessionExpiryInterval,
-		MaxPacketSize:         &c.maxPacketSize,
-		TopicAliasMax:         &c.topicAliasMax,
-		RequestResponseInfo:   &c.requestResponseInfo,
-		RequestProblemInfo:    &c.requestProblemInfo,
-		AuthMethod:            &c.authMethod,
-		AuthData:              &c.authData,
-	}
-	buf.getAny(fields, c.appendUserProperty)
+	buf.getAny(c.propertyMap(), c.appendUserProperty)
 
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
-		fields := map[Ident]wireType{
-			WillDelayInterval:      &c.willDelayInterval,
-			PayloadFormatIndicator: &c.willPayloadFormat,
-			MessageExpiryInterval:  &c.willMessageExpiryInterval,
-			ContentType:            &c.willContentType,
-			ResponseTopic:          &c.responseTopic,
-			CorrelationData:        &c.correlationData,
-		}
-		buf.getAny(fields, c.appendWillProperty)
+		buf.getAny(c.willPropertyMap(), c.appendWillProperty)
 		get(&c.willTopic)
 		get(&c.willPayload)
 	}
@@ -409,6 +380,29 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 		get(&c.password)
 	}
 	return buf.Err()
+}
+func (c *Connect) willPropertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
+		WillDelayInterval:      &c.willDelayInterval,
+		PayloadFormatIndicator: &c.willPayloadFormat,
+		MessageExpiryInterval:  &c.willMessageExpiryInterval,
+		ContentType:            &c.willContentType,
+		ResponseTopic:          &c.responseTopic,
+		CorrelationData:        &c.correlationData,
+	}
+}
+
+func (c *Connect) propertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
+		ReceiveMax:            &c.receiveMax,
+		SessionExpiryInterval: &c.sessionExpiryInterval,
+		MaxPacketSize:         &c.maxPacketSize,
+		TopicAliasMax:         &c.topicAliasMax,
+		RequestResponseInfo:   &c.requestResponseInfo,
+		RequestProblemInfo:    &c.requestProblemInfo,
+		AuthMethod:            &c.authMethod,
+		AuthData:              &c.authData,
+	}
 }
 
 func (c *Connect) String() string {

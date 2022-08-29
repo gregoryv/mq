@@ -3,10 +3,14 @@ package mqtt
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
 	"io"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
+	"github.com/gregoryv/asserter"
 )
 
 func TestComparePublish(t *testing.T) {
@@ -101,7 +105,20 @@ func TestCompareConnect(t *testing.T) {
 	our.SetCleanStart(true)
 	the.CleanStart = our.HasFlag(CleanStart)
 
-	compare(t, &our, their)
+	// write our theirs
+	var buf bytes.Buffer
+	their.WriteTo(&buf)
+
+	got, err := ReadPacket(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(got, &our) {
+		a := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
+		b := strings.ReplaceAll(fmt.Sprintf("%#v", &our), ", ", ",\n")
+		assert := asserter.New(t)
+		assert().Equals(a, b)
+	}
 }
 
 func compare(t *testing.T, our, their io.WriterTo) {
