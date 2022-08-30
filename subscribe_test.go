@@ -1,6 +1,9 @@
 package mqtt
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestSubscribe(t *testing.T) {
 	s := NewSubscribe()
@@ -9,6 +12,10 @@ func TestSubscribe(t *testing.T) {
 	eq(t, s.SetSubscriptionID, s.SubscriptionID, 99)
 
 	s.AddUserProp("color", "purple")
+
+	if v := s.String(); !strings.Contains(v, "no filters!") {
+		t.Error("expect note on missing filters")
+	}
 
 	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP) // todo define FilterOptions
 	t.Log(&s)
