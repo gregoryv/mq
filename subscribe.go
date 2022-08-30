@@ -19,16 +19,17 @@ type Subscribe struct {
 }
 
 func (p *Subscribe) String() string {
-	return fmt.Sprintf("%s %v, %s",
+	return fmt.Sprintf("%s %v, %s, %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		p.filterString(),
+		p.width(),
 	)
 }
 
 func (p *Subscribe) filterString() string {
 	if len(p.filters) == 0 {
-		return "no filters" // malformed
+		return "no filters!" // malformed
 	}
 	return p.filters[0].String()
 }
@@ -65,11 +66,14 @@ func (p *Subscribe) width() int {
 }
 
 func (p *Subscribe) fill(b []byte, i int) int {
-	// todo payload
-	remainingLen := vbint(p.variableHeader(_LEN, 0))
+	remainingLen := vbint(
+		p.variableHeader(_LEN, 0) + p.payload(_LEN, 0),
+	)
 	i += p.fixed.fill(b, i)      // firstByte header
 	i += remainingLen.fill(b, i) // remaining length
 	i += p.variableHeader(b, i)
+	i += p.payload(b, i)
+
 	return i
 }
 
@@ -92,10 +96,29 @@ func (p *Subscribe) properties(b []byte, i int) int {
 	return i - n
 }
 
+func (p *Subscribe) payload(b []byte, i int) int {
+	n := i
+	for j, _ := range p.filters {
+		i += p.filters[j].fill(b, i)
+	}
+	return i - n
+}
+
 func (p *Subscribe) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
 	b.getAny(p.propertyMap(), p.AddUserProperty)
+
+	for {
+		var f TopicFilter
+		b.get(&f.filter)
+		b.get(&f.options)
+		p.filters = append(p.filters, f)
+		if b.i == len(data) {
+			break
+		}
+	}
+	// todo payload
 	return b.err
 }
 
@@ -110,6 +133,13 @@ func (p *Subscribe) propertyMap() map[Ident]wireType {
 type TopicFilter struct {
 	filter  wstring
 	options Bits
+}
+
+func (c TopicFilter) fill(b []byte, i int) int {
+	n := i
+	i += c.filter.fill(b, i)
+	i += c.options.fill(b, i)
+	return i - n
 }
 
 func (c TopicFilter) String() string {

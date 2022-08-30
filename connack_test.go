@@ -56,9 +56,7 @@ func TestConnAck(t *testing.T) {
 		t.Logf("\n\n%s\n\n%s\n\n%v bytes", a.String(), hex.Dump(buf.Bytes()), size)
 	}
 
-	if err := testControlPacket(&a); err != nil {
-		t.Fatal(err)
-	}
+	testControlPacket(t, &a)
 }
 
 func makeConnAck() ConnAck {

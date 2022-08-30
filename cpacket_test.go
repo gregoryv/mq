@@ -5,7 +5,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/gregoryv/asserter"
 )
 
 func TestReadPacket_broken(t *testing.T) {
@@ -37,36 +40,29 @@ func TestReadPacket_broken(t *testing.T) {
 
 // test helper for each control packet, should be called from each
 // specific test e.g. TestPublish
-func testControlPacket(in ControlPacket) error {
+func testControlPacket(t *testing.T, in ControlPacket) {
 	// write it out
 	var buf bytes.Buffer
 	if _, err := in.WriteTo(&buf); err != nil {
-		return err
+		t.Error("WriteTo", err)
 	}
 	data := make([]byte, buf.Len())
 	copy(data, buf.Bytes())
 
+	a := strings.ReplaceAll(fmt.Sprintf("%#v", in), ", ", ",\n")
+	t.Log(buf.Len(), "\n\n", a, "\n\n", hex.Dump(data))
 	// read it back in
 	got, err := ReadPacket(&buf)
 	if err != nil {
-		return err
+		t.Error("ReadPacket", err)
 	}
 
 	if !reflect.DeepEqual(in, got) {
 		got.WriteTo(&buf)
-		return &diffErr{
-			in:  fmt.Sprintf("%#v\n%s\n%s", in, in.String(), hex.Dump(data)),
-			out: fmt.Sprintf("%#v\n%s\n%s", got, got.String(), hex.Dump(buf.Bytes())),
-		}
+
+		b := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
+
+		assert := asserter.New(t)
+		assert().Equals(b, a)
 	}
-	return nil
-}
-
-type diffErr struct {
-	in  string
-	out string
-}
-
-func (e *diffErr) Error() string {
-	return fmt.Sprintf("\n\nin\n%s\n\nout\n%s", e.in, e.out)
 }

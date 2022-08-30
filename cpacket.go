@@ -69,6 +69,7 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 
 	case f.fixed.Has(SUBSCRIBE):
 		p = &Subscribe{fixed: f.fixed}
+
 	default:
 		panic(fmt.Sprintf("ReadRemaining unhandled packet type %v", f.fixed))
 	}

@@ -54,9 +54,7 @@ func TestConnect(t *testing.T) {
 		t.Error(got)
 	}
 
-	if err := testControlPacket(&c); err != nil {
-		t.Fatal(err)
-	}
+	testControlPacket(t, &c)
 
 	// clears it
 	if c.SetUsername(""); c.HasFlag(UsernameFlag) {

@@ -40,9 +40,7 @@ func TestPublish(t *testing.T) {
 		t.Error("subscriptionIDs", v)
 	}
 
-	if err := testControlPacket(&p); err != nil {
-		t.Fatal(err)
-	}
+	testControlPacket(t, &p)
 }
 
 func Test_QoS(t *testing.T) {
