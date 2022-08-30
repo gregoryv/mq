@@ -19,7 +19,10 @@ func TestSubscribe(t *testing.T) {
 
 	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP)
 	s.AddFilter("d/e", FopQoS1)
-	t.Log(&s)
+
+	if v := s.String(); !strings.Contains(v, "SUBSCRIBE --1-") {
+		t.Errorf("%q expect to contain %q", v, "SUBSCRIBE --1-")
+	}
 
 	testControlPacket(t, &s)
 }

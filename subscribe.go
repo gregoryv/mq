@@ -7,7 +7,8 @@ import (
 )
 
 func NewSubscribe() Subscribe {
-	return Subscribe{fixed: Bits(SUBSCRIBE)}
+	// wonder why bit 1 needs to be set? specification doesn't say
+	return Subscribe{fixed: Bits(SUBSCRIBE | 1<<1)}
 }
 
 type Subscribe struct {
