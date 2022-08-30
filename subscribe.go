@@ -130,6 +130,13 @@ func (p *Subscribe) propertyMap() map[Ident]wireType {
 
 // ----------------------------------------
 
+func NewTopicFilter(filter string, options Fop) TopicFilter {
+	return TopicFilter{
+		filter:  wstring(filter),
+		options: Bits(options),
+	}
+}
+
 type TopicFilter struct {
 	filter  wstring
 	options Bits
