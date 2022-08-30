@@ -17,7 +17,8 @@ func TestSubscribe(t *testing.T) {
 		t.Error("expect note on missing filters")
 	}
 
-	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP) // todo define FilterOptions
+	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP)
+	s.AddFilter("d/e", FopQoS1)
 	t.Log(&s)
 
 	testControlPacket(t, &s)

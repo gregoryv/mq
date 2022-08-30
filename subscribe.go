@@ -118,7 +118,6 @@ func (p *Subscribe) UnmarshalBinary(data []byte) error {
 			break
 		}
 	}
-	// todo payload
 	return b.err
 }
 
