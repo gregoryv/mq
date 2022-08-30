@@ -3,6 +3,7 @@ package mqtt
 import (
 	"bytes"
 	"fmt"
+	"io"
 )
 
 func NewSubscribe() Subscribe {
@@ -21,8 +22,15 @@ func (p *Subscribe) String() string {
 	return fmt.Sprintf("%s %v, %s",
 		firstByte(p.fixed).String(),
 		p.packetID,
-		p.filters[0],
+		p.filterString(),
 	)
+}
+
+func (p *Subscribe) filterString() string {
+	if len(p.filters) == 0 {
+		return "no filters" // malformed
+	}
+	return p.filters[0].String()
 }
 
 func (p *Subscribe) SetPacketID(v uint16) { p.packetID = wuint16(v) }
@@ -43,6 +51,58 @@ func (p *Subscribe) AddFilter(filter string, options Fop) {
 		filter:  wstring(filter),
 		options: Bits(options),
 	})
+}
+
+func (p *Subscribe) WriteTo(w io.Writer) (int64, error) {
+	b := make([]byte, p.width())
+	p.fill(b, 0)
+	n, err := w.Write(b)
+	return int64(n), err
+}
+
+func (p *Subscribe) width() int {
+	return p.fill(_LEN, 0)
+}
+
+func (p *Subscribe) fill(b []byte, i int) int {
+	// todo payload
+	remainingLen := vbint(p.variableHeader(_LEN, 0))
+	i += p.fixed.fill(b, i)      // firstByte header
+	i += remainingLen.fill(b, i) // remaining length
+	i += p.variableHeader(b, i)
+	return i
+}
+
+func (p *Subscribe) variableHeader(b []byte, i int) int {
+	n := i
+	i += p.packetID.fill(b, i)
+	i += vbint(p.properties(_LEN, 0)).fill(b, i)
+	i += p.properties(b, i)
+	return i - n
+}
+
+func (p *Subscribe) properties(b []byte, i int) int {
+	n := i
+	for id, v := range p.propertyMap() {
+		i += v.fillProp(b, i, id)
+	}
+	for _, v := range p.userProp {
+		i += v.fillProp(b, i, UserProperty)
+	}
+	return i - n
+}
+
+func (p *Subscribe) UnmarshalBinary(data []byte) error {
+	b := &buffer{data: data}
+	b.get(&p.packetID)
+	b.getAny(p.propertyMap(), p.AddUserProperty)
+	return b.err
+}
+
+func (p *Subscribe) propertyMap() map[Ident]wireType {
+	return map[Ident]wireType{
+		SubscriptionID: &p.subscriptionID,
+	}
 }
 
 // ----------------------------------------

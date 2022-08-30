@@ -86,6 +86,7 @@ func (p *PubAck) fill(b []byte, i int) int {
 	i += p.variableHeader(b, i)
 	return i
 }
+
 func (p *PubAck) variableHeader(b []byte, i int) int {
 	n := i
 	i += p.packetID.fill(b, i)

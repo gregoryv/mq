@@ -11,5 +11,9 @@ func TestSubscribe(t *testing.T) {
 	s.AddUserProp("color", "purple")
 
 	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP) // todo define FilterOptions
-	t.Error(&s)
+	t.Log(&s)
+
+	if err := testControlPacket(&s); err != nil {
+		t.Error(err)
+	}
 }
