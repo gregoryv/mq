@@ -107,6 +107,12 @@ const (
 type ReasonCode byte
 
 const (
+	// todo reason codes are not the same everywhere
+	// ie. for suback 0x00 is Granted QoS
+	GrantedQoS0 ReasonCode = 0x00
+	GrantedQoS1 ReasonCode = 0x01
+	GrantedQoS2 ReasonCode = 0x02
+
 	Success                             ReasonCode = 0x00 // The Connection is accepted.
 	UnspecifiedError                    ReasonCode = 0x80 // The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply.
 	MalformedPacket                     ReasonCode = 0x81 // Malformed Packet

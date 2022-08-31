@@ -53,22 +53,25 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	}
 
 	var p ControlPacket
-	switch {
+	switch byte(f.fixed) & 0b1111_0000 {
 
-	case f.fixed.Has(PUBLISH):
+	case PUBLISH:
 		p = &Publish{fixed: f.fixed}
 
-	case f.fixed.Has(PUBACK), f.fixed.Has(PUBREC), f.fixed.Has(PUBREL), f.fixed.Has(PUBCOMP):
+	case PUBACK, PUBREC, PUBREL, PUBCOMP:
 		p = &PubAck{fixed: f.fixed}
 
-	case f.fixed.Has(CONNECT):
+	case CONNECT:
 		p = &Connect{fixed: f.fixed}
 
-	case f.fixed.Has(CONNACK):
+	case CONNACK:
 		p = &ConnAck{fixed: f.fixed}
 
-	case f.fixed.Has(SUBSCRIBE):
+	case SUBSCRIBE:
 		p = &Subscribe{fixed: f.fixed}
+
+	case SUBACK:
+		p = &SubAck{fixed: f.fixed}
 
 	default:
 		panic(fmt.Sprintf("ReadRemaining unhandled packet type %v", f.fixed))

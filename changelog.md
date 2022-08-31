@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
+## [unreleased]
+
+- Add type SubAck
+- Fix ReadPacket to match properly for ControlPacket type
+
 ## [0.9.0] 2022-08-30
 
 - Add type Subscribe

@@ -54,7 +54,7 @@ func testControlPacket(t *testing.T, in ControlPacket) {
 	// read it back in
 	got, err := ReadPacket(&buf)
 	if err != nil {
-		t.Error("ReadPacket", err)
+		t.Fatal("ReadPacket", err)
 	}
 
 	if !reflect.DeepEqual(in, got) {
