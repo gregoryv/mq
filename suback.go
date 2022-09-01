@@ -19,7 +19,7 @@ type SubAck struct {
 }
 
 func (p *SubAck) String() string {
-	return fmt.Sprintf("%s %v %v bytes",
+	return fmt.Sprintf("%s p%v %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		p.width(),

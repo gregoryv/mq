@@ -37,7 +37,7 @@ type PubAck struct {
 }
 
 func (p *PubAck) String() string {
-	s := fmt.Sprintf("%s %v %v bytes",
+	s := fmt.Sprintf("%s p%v %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		p.width(),

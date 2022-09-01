@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Prefix all packetIDs in string output with character p
 - Add type SubAck
 - Fix ReadPacket to match properly for ControlPacket type
 
