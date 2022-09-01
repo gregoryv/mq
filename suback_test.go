@@ -18,7 +18,6 @@ func TestSubAck(t *testing.T) {
 	if v := p.ReasonCodes(); !reflect.DeepEqual(v, []byte{0x00, 0x01}) {
 		t.Error(v)
 	}
-	t.Log(&p)
 
 	testControlPacket(t, &p)
 }

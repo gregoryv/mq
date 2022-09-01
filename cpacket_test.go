@@ -55,6 +55,7 @@ func TestReadPacket_broken(t *testing.T) {
 // test helper for each control packet, should be called from each
 // specific test e.g. TestPublish
 func testControlPacket(t *testing.T, in ControlPacket) {
+	t.Log(in)
 	// write it out
 	var buf bytes.Buffer
 	if _, err := in.WriteTo(&buf); err != nil {
@@ -64,10 +65,11 @@ func testControlPacket(t *testing.T, in ControlPacket) {
 	copy(data, buf.Bytes())
 
 	a := strings.ReplaceAll(fmt.Sprintf("%#v", in), ", ", ",\n")
-	t.Log(buf.Len(), "\n\n", a, "\n\n", hex.Dump(data))
+
 	// read it back in
 	got, err := ReadPacket(&buf)
 	if err != nil {
+		t.Log(buf.Len(), "\n\n", a, "\n\n", hex.Dump(data))
 		t.Fatal("ReadPacket", err)
 	}
 
