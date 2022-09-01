@@ -6,7 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-- Add type UNSUBSCRIBE
+- Add type Unsubscribe
 
 ## [0.10.0] 2022-09-01
 

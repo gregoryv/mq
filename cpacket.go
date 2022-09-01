@@ -70,6 +70,9 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	case SUBSCRIBE:
 		p = &Subscribe{fixed: f.fixed}
 
+	case UNSUBSCRIBE:
+		p = &Unsubscribe{fixed: f.fixed}
+
 	case SUBACK:
 		p = &SubAck{fixed: f.fixed}
 
