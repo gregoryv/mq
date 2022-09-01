@@ -15,7 +15,7 @@ func ExamplePublish() {
 
 	fmt.Print(p.String())
 	// output:
-	// PUBLISH -2-r 20 bytes
+	// PUBLISH -2-r p0 20 bytes
 }
 
 func TestPublish(t *testing.T) {
