@@ -70,3 +70,39 @@ the loop with direct access yielded quite an improvement
 BenchmarkConnect/write/our-16      <b>7871455       150.6 ns/op</b>      48 B/op       1 allocs/op
 BenchmarkConnect/write/their-16    2347669       629.5 ns/op     368 B/op      10 allocs/op
 </pre>
+
+
+BenchmarkAuth is faster when successful in pahos favour, though when
+including e.g. a reauthenticate with some user properties our
+implementation is faster. In the successful case we could optimize it
+even further I guess, though that could affect reading of other
+control packages. FixedHeader.ReadRemaining was optimised for this
+case, though the one allocation in difference was actually incorrectly
+calculated as ReadRemaining creates the packet during testing whereas
+in their case it was already instantiated outside.
+
+To compare our and their side I'll have to use a more complete test
+where a control packet is created, written on the wire and the read
+back as another packet.
+
+Weird result when writing the same packet, this could be signifficant
+later as pahos implementation may require a new packet each time,
+though unlikely.
+
+<pre>
+BenchmarkCompare/Auth/our-16             1789131               798.0 ns/op           232 B/op         16 allocs/op
+BenchmarkCompare/Auth/their-16            120936            197728 ns/op         1063672 B/op         22 allocs/op
+</pre>
+
+
+A more reasonable comparison
+
+<pre>
+Benchmark/Auth/our-16            1595908               850.0 ns/op           296 B/op         18 allocs/op
+Benchmark/Auth/their-16           396902              5372 ns/op            4208 B/op         43 allocs/op
+Benchmark/Connect/our-16          675033              1586 ns/op             880 B/op         16 allocs/op
+Benchmark/Connect/their-16        207224              5237 ns/op            5552 B/op         50 allocs/op
+Benchmark/Publish/our-16          504354              1990 ns/op             880 B/op         32 allocs/op
+Benchmark/Publish/their-16        609014              4074 ns/op            4064 B/op         41 allocs/op
+
+</pre>

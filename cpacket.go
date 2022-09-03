@@ -47,11 +47,6 @@ func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
 
 // ReadRemaining is more related to client and server
 func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
-	data := make([]byte, int(f.remainingLen))
-	if _, err := r.Read(data); err != nil {
-		return nil, err
-	}
-
 	var p ControlPacket
 	switch byte(f.fixed) & 0b1111_0000 {
 
@@ -93,6 +88,13 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 
 	default:
 		p = &Undefined{}
+	}
+	if f.remainingLen == 0 {
+		return p, nil
+	}
+	data := make([]byte, int(f.remainingLen))
+	if _, err := r.Read(data); err != nil {
+		return nil, err
 	}
 
 	if err := p.UnmarshalBinary(data); err != nil {
