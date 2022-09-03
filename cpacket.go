@@ -82,6 +82,9 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	case PINGREQ:
 		p = &PingReq{fixed: f.fixed}
 
+	case PINGRESP:
+		p = &PingResp{fixed: f.fixed}
+
 	default:
 		panic(fmt.Sprintf("ReadRemaining unhandled packet type %v", f.fixed))
 	}
