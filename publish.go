@@ -159,9 +159,13 @@ func (p *Publish) variableHeader(b []byte, i int) int {
 
 func (p *Publish) properties(b []byte, i int) int {
 	n := i
-	for id, v := range p.propertyMap() {
-		i += v.fillProp(b, i, id)
-	}
+	i += p.payloadFormat.fillProp(b, i, PayloadFormatIndicator)
+	i += p.messageExpiryInterval.fillProp(b, i, MessageExpiryInterval)
+	i += p.topicAlias.fillProp(b, i, TopicAlias)
+	i += p.responseTopic.fillProp(b, i, ResponseTopic)
+	i += p.correlationData.fillProp(b, i, CorrelationData)
+	i += p.contentType.fillProp(b, i, ContentType)
+
 	for j, _ := range p.userProp {
 		i += p.userProp[j].fillProp(b, i, UserProperty)
 	}

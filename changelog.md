@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Improve Publish.WriteTo performance
 - Improve Connect.WriteTo performance
 
 ## [0.12.0] 2022-09-03
