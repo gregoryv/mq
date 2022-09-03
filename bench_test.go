@@ -8,6 +8,40 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
+func BenchmarkAuth(b *testing.B) {
+	b.Run("make", func(b *testing.B) {
+		b.Run("our", benchMake(b, func() { _ = makeAuth() }))
+		b.Run("their", benchMake(b, func() { _ = makeTheirAuth() }))
+	})
+	b.Run("write", func(b *testing.B) {
+		our := makeAuth()
+		b.Run("our", benchWriteTo(b, &our))
+		b.Run("their", benchWriteTo(b, makeTheirAuth()))
+	})
+}
+
+func makeAuth() Auth {
+	p := NewAuth()
+	p.AddUserProp("color", "red")
+	p.SetReasonCode(ReAuthenticate)
+	return p
+}
+
+func makeTheirAuth() *packets.ControlPacket {
+	their := packets.NewControlPacket(packets.AUTH)
+	c := their.Content.(*packets.Auth)
+	c.ReasonCode = packets.AuthReauthenticate
+	var (
+		p packets.Properties
+	)
+	c.Properties = &p
+	p.User = append(p.User, packets.User{"color", "red"})
+
+	return their
+}
+
+// ----------------------------------------
+
 func BenchmarkConnect(b *testing.B) {
 	b.Run("make", func(b *testing.B) {
 		b.Run("our", benchMake(b, func() { _ = makeConnect() }))

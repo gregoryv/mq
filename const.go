@@ -113,7 +113,9 @@ const (
 	GrantedQoS1 ReasonCode = 0x01
 	GrantedQoS2 ReasonCode = 0x02
 
-	Success                             ReasonCode = 0x00 // The Connection is accepted.
+	Success        ReasonCode = 0x00 // The Connection is accepted.
+	ReAuthenticate ReasonCode = 0x19
+
 	UnspecifiedError                    ReasonCode = 0x80 // The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply.
 	MalformedPacket                     ReasonCode = 0x81 // Malformed Packet
 	ProtocolError                       ReasonCode = 0x82 // Protocol Error
