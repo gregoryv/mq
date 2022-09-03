@@ -18,6 +18,14 @@ func BenchmarkAuth(b *testing.B) {
 		b.Run("our", benchWriteTo(b, &our))
 		b.Run("their", benchWriteTo(b, makeTheirAuth()))
 	})
+	b.Run("read", func(b *testing.B) {
+		// prepare data whith everything after the fixed header
+		p := makeAuth()
+		fh, data := prepareRead(&p)
+		b.Run("our", benchReadRemaining(data, fh))
+		their := packets.NewControlPacket(packets.AUTH)
+		b.Run("their", benchUnpack(data, their.Content.(*packets.Auth)))
+	})
 }
 
 func makeAuth() Auth {
@@ -56,37 +64,11 @@ func BenchmarkConnect(b *testing.B) {
 
 	b.Run("read", func(b *testing.B) {
 		// prepare data whith everything after the fixed header
-		var buf bytes.Buffer
-		our := makeConnect()
-		our.WriteTo(&buf)
-
-		var fh FixedHeader
-		fh.ReadFrom(&buf)
-
-		data := make([]byte, buf.Len())
-		copy(data, buf.Bytes())
-
-		b.Run("our", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				if _, err := fh.ReadRemaining(&buf); err != nil {
-					b.Fatal(err)
-				}
-				buf.Write(data)
-			}
-		})
-
-		var (
-			their = packets.NewControlPacket(packets.CONNECT)
-			the   = their.Content.(*packets.Connect)
-		)
-		b.Run("their", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				if err := the.Unpack(&buf); err != nil {
-					b.Fatal(err)
-				}
-				buf.Write(data)
-			}
-		})
+		p := makeConnect()
+		fh, data := prepareRead(&p)
+		b.Run("our", benchReadRemaining(data, fh))
+		their := packets.NewControlPacket(packets.CONNECT)
+		b.Run("their", benchUnpack(data, their.Content.(*packets.Connect)))
 	})
 }
 
@@ -182,6 +164,8 @@ func makeTheirPublish() *packets.ControlPacket {
 	return their
 }
 
+// ----------------------------------------
+
 func benchWriteTo(b *testing.B, p io.WriterTo) func(b *testing.B) {
 	return func(b *testing.B) {
 		var buf bytes.Buffer
@@ -196,6 +180,44 @@ func benchMake(b *testing.B, make func()) func(b *testing.B) {
 	return func(b *testing.B) {
 		for n := 0; n < b.N; n++ {
 			make()
+		}
+	}
+}
+
+func prepareRead(p ControlPacket) (*FixedHeader, []byte) {
+	var buf bytes.Buffer
+	p.WriteTo(&buf)
+
+	var fh FixedHeader
+	fh.ReadFrom(&buf)
+
+	data := make([]byte, buf.Len())
+	copy(data, buf.Bytes())
+	return &fh, data
+}
+
+func benchReadRemaining(data []byte, fh *FixedHeader) func(b *testing.B) {
+	var buf bytes.Buffer
+	buf.Write(data)
+	return func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			if _, err := fh.ReadRemaining(&buf); err != nil {
+				b.Fatal(err)
+			}
+			buf.Write(data)
+		}
+	}
+}
+
+func benchUnpack(data []byte, p interface{ Unpack(*bytes.Buffer) error }) func(b *testing.B) {
+	var buf bytes.Buffer
+	buf.Write(data)
+	return func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			if err := p.Unpack(&buf); err != nil {
+				b.Fatal(err)
+			}
+			buf.Write(data)
 		}
 	}
 }
