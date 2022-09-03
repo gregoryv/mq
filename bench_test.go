@@ -21,9 +21,6 @@ func BenchmarkConnect(b *testing.B) {
 		})
 	})
 
-	// this buf is used in the next Unmarshal, our output is used in
-	// both as input
-
 	b.Run("write", func(b *testing.B) {
 		b.Run("our", func(b *testing.B) {
 			var buf bytes.Buffer

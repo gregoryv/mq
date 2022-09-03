@@ -37,3 +37,26 @@ memory alignment and allocation optimizations I've read about but
 never tried. Hopefully with benchmarks in place I can provide some
 useful insights to the community about either my own improvements or
 possible ones in the paho module.
+
+
+
+The inverse initial optimization
+
+<pre>
+    goos: linux
+    goarch: amd64
+    pkg: github.com/gregoryv/mqtt
+    cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
+    BenchmarkConnect/make/our-16     15082816        77.58 ns/op      24 B/op       3 allocs/op
+    BenchmarkConnect/make/their-16    3935006       279.30 ns/op     512 B/op       5 allocs/op
+    <b>BenchmarkConnect/write/our-16      483277      2096.00 ns/op      48 B/op       1 allocs/op</b>
+    BenchmarkConnect/write/their-16   2359382       862.40 ns/op     368 B/op      10 allocs/op
+    <b>BenchmarkConnect/read/our-16      1553311       859.40 ns/op     440 B/op       8 allocs/op</b>
+    BenchmarkConnect/read/their-16     549508      2507.00 ns/op    3288 B/op      24 allocs/op
+</pre>
+
+Writing a control packet uses one allocation but is still a lot slower
+than their version when it comes to writing. Though in the reading the
+roles are inversed, our version has fewer allocations and is quicker.
+We'll have to do an overall test, i.e. reading And writing messages,
+and maybe focus on the Publish message.
