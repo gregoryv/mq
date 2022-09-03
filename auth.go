@@ -72,10 +72,10 @@ func (p *Auth) properties(b []byte, i int) int {
 	return i - n
 }
 func (p *Auth) UnmarshalBinary(data []byte) error {
-	b := &buffer{data: data}
 	if len(data) == 0 {
-		return b.err
+		return nil
 	}
+	b := &buffer{data: data}
 	b.get(&p.reasonCode)
 	b.getAny(p.propertyMap(), p.AddUserProperty)
 	return b.err
