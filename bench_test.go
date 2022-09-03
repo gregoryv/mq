@@ -21,6 +21,7 @@ func BenchmarkConnect(b *testing.B) {
 	})
 
 	b.Run("read", func(b *testing.B) {
+		// prepare data whith everything after the fixed header
 		var buf bytes.Buffer
 		our := makeConnect()
 		our.WriteTo(&buf)
