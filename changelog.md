@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add type PingReq
 - Add initial blog.md
 
 ## [0.11.0] 2022-09-03
