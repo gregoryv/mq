@@ -116,6 +116,26 @@ func BenchmarkPublish(b *testing.B) {
 			}
 		})
 	})
+
+	b.Run("write", func(b *testing.B) {
+		b.Run("our", func(b *testing.B) {
+			var buf bytes.Buffer
+			our := makePublish()
+			for n := 0; n < b.N; n++ {
+				buf.Reset()
+				our.WriteTo(&buf)
+			}
+		})
+
+		b.Run("their", func(b *testing.B) {
+			var buf bytes.Buffer
+			their := makeTheirPublish()
+			for n := 0; n < b.N; n++ {
+				buf.Reset()
+				their.WriteTo(&buf) // to be similar to our
+			}
+		})
+	})
 }
 
 func makePublish() Publish {
