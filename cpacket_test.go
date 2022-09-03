@@ -37,19 +37,10 @@ func TestReadPacket_broken(t *testing.T) {
 		t.Error("expected error")
 	}
 
-	// Check the panic for now
-	t.Run("done", func(t *testing.T) {
-		defer func() {
-			if err := recover(); err == nil {
-				t.Error("time to remove me? are you done")
-			}
-		}()
-		for i := 0; i < 16; i++ {
-			data := []byte{byte(i) << 4, 3, 0, 0, 0}
-			ReadPacket(bytes.NewReader(data))
-		}
-	})
-
+	data := []byte{0, 3, 0, 0, 0}
+	if v, err := ReadPacket(bytes.NewReader(data)); err != nil {
+		t.Error("undefined should not fail", err, v)
+	}
 }
 
 // test helper for each control packet, should be called from each

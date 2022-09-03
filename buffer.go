@@ -63,6 +63,10 @@ func (b *buffer) get(v wireType) {
 	if b.err != nil {
 		return
 	}
+	if b.i >= len(b.data) {
+		b.err = ErrMissingData
+		return
+	}
 	if b.err = v.UnmarshalBinary(b.data[b.i:]); b.err != nil {
 		return
 	}
@@ -70,3 +74,5 @@ func (b *buffer) get(v wireType) {
 }
 
 func (b *buffer) Err() error { return b.err }
+
+var ErrMissingData = fmt.Errorf("missing data")

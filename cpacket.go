@@ -92,7 +92,7 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 		p = &Auth{fixed: f.fixed}
 
 	default:
-		panic(fmt.Sprintf("ReadRemaining unhandled packet type %v", f.fixed))
+		p = &Undefined{}
 	}
 
 	if err := p.UnmarshalBinary(data); err != nil {
