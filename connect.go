@@ -295,9 +295,15 @@ func (c *Connect) variableHeader(b []byte, i int) int {
 func (c *Connect) properties(b []byte, i int) int {
 	n := i
 
-	for id, v := range c.propertyMap() {
-		i += v.fillProp(b, i, id)
-	}
+	// using c.propertyMap is slow compared to direct field access
+	i += c.receiveMax.fillProp(b, i, ReceiveMax)
+	i += c.sessionExpiryInterval.fillProp(b, i, SessionExpiryInterval)
+	i += c.maxPacketSize.fillProp(b, i, MaxPacketSize)
+	i += c.topicAliasMax.fillProp(b, i, TopicAliasMax)
+	i += c.requestResponseInfo.fillProp(b, i, RequestResponseInfo)
+	i += c.requestProblemInfo.fillProp(b, i, RequestProblemInfo)
+	i += c.authMethod.fillProp(b, i, AuthMethod)
+	i += c.authData.fillProp(b, i, AuthData)
 
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
