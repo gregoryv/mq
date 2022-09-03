@@ -88,6 +88,9 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	case DISCONNECT:
 		p = &Disconnect{fixed: f.fixed}
 
+	case AUTH:
+		p = &Auth{fixed: f.fixed}
+
 	default:
 		panic(fmt.Sprintf("ReadRemaining unhandled packet type %v", f.fixed))
 	}

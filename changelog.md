@@ -6,7 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-- Add type Disconnect
+- Add type Disconnect and Auth
 - Add type PingReq and PingResp
 - Add initial blog.md
 
