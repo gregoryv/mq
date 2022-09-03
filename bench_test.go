@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
@@ -9,36 +10,14 @@ import (
 
 func BenchmarkConnect(b *testing.B) {
 	b.Run("make", func(b *testing.B) {
-		b.Run("our", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				_ = makeConnect()
-			}
-		})
-		b.Run("their", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				_ = makeTheirConnect()
-			}
-		})
+		b.Run("our", benchMake(b, func() { _ = makeConnect() }))
+		b.Run("their", benchMake(b, func() { _ = makeTheirConnect() }))
 	})
 
 	b.Run("write", func(b *testing.B) {
-		b.Run("our", func(b *testing.B) {
-			var buf bytes.Buffer
-			our := makeConnect()
-			for n := 0; n < b.N; n++ {
-				buf.Reset()
-				our.WriteTo(&buf)
-			}
-		})
-
-		b.Run("their", func(b *testing.B) {
-			var buf bytes.Buffer
-			their := makeTheirConnect()
-			for n := 0; n < b.N; n++ {
-				buf.Reset()
-				their.WriteTo(&buf) // to be similar to our
-			}
-		})
+		our := makeConnect()
+		b.Run("our", benchWriteTo(b, &our))
+		b.Run("their", benchWriteTo(b, makeTheirConnect()))
 	})
 
 	b.Run("read", func(b *testing.B) {
@@ -104,37 +83,14 @@ func makeTheirConnect() *packets.ControlPacket {
 
 func BenchmarkPublish(b *testing.B) {
 	b.Run("make", func(b *testing.B) {
-		b.Run("our", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				_ = makePublish()
-			}
-		})
-
-		b.Run("their", func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				_ = makeTheirPublish()
-			}
-		})
+		b.Run("our", benchMake(b, func() { _ = makePublish() }))
+		b.Run("their", benchMake(b, func() { _ = makeTheirPublish() }))
 	})
 
 	b.Run("write", func(b *testing.B) {
-		b.Run("our", func(b *testing.B) {
-			var buf bytes.Buffer
-			our := makePublish()
-			for n := 0; n < b.N; n++ {
-				buf.Reset()
-				our.WriteTo(&buf)
-			}
-		})
-
-		b.Run("their", func(b *testing.B) {
-			var buf bytes.Buffer
-			their := makeTheirPublish()
-			for n := 0; n < b.N; n++ {
-				buf.Reset()
-				their.WriteTo(&buf) // to be similar to our
-			}
-		})
+		our := makePublish()
+		b.Run("our", benchWriteTo(b, &our))
+		b.Run("their", benchWriteTo(b, makeTheirPublish()))
 	})
 }
 
@@ -189,4 +145,22 @@ func makeTheirPublish() *packets.ControlPacket {
 
 	c.Payload = []byte("gopher")
 	return their
+}
+
+func benchWriteTo(b *testing.B, p io.WriterTo) func(b *testing.B) {
+	return func(b *testing.B) {
+		var buf bytes.Buffer
+		for n := 0; n < b.N; n++ {
+			buf.Reset()
+			p.WriteTo(&buf)
+		}
+	}
+}
+
+func benchMake(b *testing.B, make func()) func(b *testing.B) {
+	return func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			make()
+		}
+	}
 }
