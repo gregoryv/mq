@@ -15,38 +15,29 @@ func TestClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	c := NewClient(conn)
 	// disconnect nicely
 	defer func() {
 		p := mqtt.NewDisconnect()
-		t.Log(&p)
-		p.WriteTo(conn)
+		c.Send(&p)
 	}()
 
 	// connect mqtt client
 	{
 		p := mqtt.NewConnect()
 		p.SetClientID("macy")
-		p.WriteTo(conn)
-		t.Log(&p)
-
-		// check that it's acknowledged
-		a, err := mqtt.ReadPacket(conn)
-		if err != nil {
+		if err := c.Connect(&p); err != nil {
 			t.Fatal(err)
-		}
-		t.Log(a)
-		if _, ok := a.(*mqtt.ConnAck); !ok {
-			t.Fatal("no ConnAck")
 		}
 	}
 
+	// publish application message
 	{
 		p := mqtt.NewPublish()
 		p.SetPacketID(99)
 		p.SetRetain(true)
 		p.SetTopicName("a/b/1")
 		p.SetPayload([]byte("gopher"))
-		p.WriteTo(conn)
-		t.Log(&p)
+		c.Send(&p)
 	}
 }

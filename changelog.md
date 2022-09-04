@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Try connecting to mosquitto broker
 - Optimise PubAck, ConnAck, Publish, Connect
 
 ## [0.12.0] 2022-09-03
