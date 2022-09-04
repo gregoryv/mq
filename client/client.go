@@ -28,11 +28,11 @@ func (c *Client) Connect(p *mqtt.Connect) error {
 	c.setLogPrefix(p.ClientID())
 	c.Send(p)
 	// check ack
-	a, err := mqtt.ReadPacket(c)
+	a, err := c.NextPacket()
 	if err != nil {
 		return err
 	}
-	c.Print(a)
+
 	if a, ok := a.(*mqtt.ConnAck); !ok {
 		return fmt.Errorf("unexpected ack %T", a)
 	} else {
@@ -44,6 +44,15 @@ func (c *Client) Connect(p *mqtt.Connect) error {
 func (c *Client) Publish(p *mqtt.Publish) error {
 	// todo handle QoS variations
 	return c.Send(p)
+}
+
+func (c *Client) NextPacket() (mqtt.ControlPacket, error) {
+	a, err := mqtt.ReadPacket(c)
+	if err != nil {
+		return nil, err
+	}
+	c.Print(a)
+	return a, nil
 }
 
 // Send packet to the underlying connection.
