@@ -73,9 +73,6 @@ func (p *Disconnect) properties(b []byte, i int) int {
 }
 func (p *Disconnect) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
-	if len(data) == 0 {
-		return b.err
-	}
 	b.get(&p.reasonCode)
 	b.getAny(p.propertyMap(), p.AddUserProperty)
 	return b.err
