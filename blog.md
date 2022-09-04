@@ -90,19 +90,33 @@ later as pahos implementation may require a new packet each time,
 though unlikely.
 
 <pre>
-BenchmarkCompare/Auth/our-16             1789131               798.0 ns/op           232 B/op         16 allocs/op
-BenchmarkCompare/Auth/their-16            120936            197728 ns/op         1063672 B/op         22 allocs/op
+BenchmarkCompare/Auth/our-16     1789131           798 ns/op       232 B/op   16 allocs/op
+BenchmarkCompare/Auth/their-16    120936        197728 ns/op   1063672 B/op   22 allocs/op
 </pre>
 
 
 A more reasonable comparison
 
 <pre>
-Benchmark/Auth/our-16            1595908               850.0 ns/op           296 B/op         18 allocs/op
-Benchmark/Auth/their-16           396902              5372 ns/op            4208 B/op         43 allocs/op
-Benchmark/Connect/our-16          675033              1586 ns/op             880 B/op         16 allocs/op
-Benchmark/Connect/their-16        207224              5237 ns/op            5552 B/op         50 allocs/op
-Benchmark/Publish/our-16          504354              1990 ns/op             880 B/op         32 allocs/op
-Benchmark/Publish/their-16        609014              4074 ns/op            4064 B/op         41 allocs/op
-
+Benchmark/Auth/our-16            1595908         850 ns/op       296 B/op     18 allocs/op
+Benchmark/Auth/their-16           396902        5372 ns/op      4208 B/op     43 allocs/op
+Benchmark/Connect/our-16          675033        1586 ns/op       880 B/op     16 allocs/op
+Benchmark/Connect/their-16        207224        5237 ns/op      5552 B/op     50 allocs/op
+<b>Benchmark/Publish/our-16          504354        1990 ns/op       880 B/op     32 allocs/op</b>
+Benchmark/Publish/their-16        609014        4074 ns/op      4064 B/op     41 allocs/op
 </pre>
+
+The most important package Publish is still slower than
+pahos. Inlining the creation of packets as would be done in a real
+client we should get different results.
+
+<pre>
+BenchmarkAuth/our-16              1808374        682 ns/op      264 B/op      17 allocs/op
+BenchmarkAuth/their-16             513357       4823 ns/op     4208 B/op      43 allocs/op
+BenchmarkConnect/our-16            785091       1311 ns/op      880 B/op      16 allocs/op
+BenchmarkConnect/their-16          205426       6685 ns/op     5552 B/op      50 allocs/op
+<b>BenchmarkPublish/our-16            586962       1974 ns/op      688 B/op      31 allocs/op</b>
+BenchmarkPublish/their-16          479336       2846 ns/op     4064 B/op      41 allocs/op
+</pre>
+
+Not a huge difference, but still in the correct direction.
