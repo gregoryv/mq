@@ -39,10 +39,9 @@ func TestClient(t *testing.T) {
 	// publish application message
 	{
 		p := mqtt.NewPublish()
-		p.SetPacketID(99)
 		p.SetRetain(true)
 		p.SetTopicName("a/b/1")
 		p.SetPayload([]byte("gopher"))
-		c.Send(&p)
+		c.Publish(&p)
 	}
 }

@@ -39,7 +39,15 @@ func (c *Client) Connect(p *mqtt.Connect) error {
 	return nil
 }
 
+func (c *Client) Publish(p *mqtt.Publish) error {
+	// todo handle QoS variations
+	return c.Send(p)
+}
+
+// Send packet to the underlying connection.
 func (c *Client) Send(p mqtt.ControlPacket) error {
+	// todo handle packet ids I guess
+
 	_, err := p.WriteTo(c)
 	if err != nil {
 		c.Print(p, err)
