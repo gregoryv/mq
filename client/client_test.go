@@ -30,7 +30,6 @@ func TestClient(t *testing.T) {
 	// connect mqtt client
 	{
 		p := mqtt.NewConnect()
-		p.SetClientID("macy")
 		if err := c.Connect(&p); err != nil {
 			t.Fatal(err)
 		}

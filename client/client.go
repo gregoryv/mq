@@ -25,16 +25,18 @@ type Client struct {
 // future this would be a good place to implement support for
 // different auth methods.
 func (c *Client) Connect(p *mqtt.Connect) error {
-	c.Logger.SetPrefix(p.ClientID() + " ")
+	c.setLogPrefix(p.ClientID())
 	c.Send(p)
-	// check that it's acknowledged
+	// check ack
 	a, err := mqtt.ReadPacket(c)
 	if err != nil {
 		return err
 	}
 	c.Print(a)
-	if _, ok := a.(*mqtt.ConnAck); !ok {
+	if a, ok := a.(*mqtt.ConnAck); !ok {
 		return fmt.Errorf("unexpected ack %T", a)
+	} else {
+		c.setLogPrefix(a.AssignedClientID())
 	}
 	return nil
 }
@@ -55,4 +57,17 @@ func (c *Client) Send(p mqtt.ControlPacket) error {
 	}
 	c.Print(p)
 	return nil
+}
+
+func (c *Client) setLogPrefix(cid string) {
+	switch {
+	case cid == "":
+		return
+
+	case len(cid) > 16:
+		c.Logger.SetPrefix(cid[len(cid)-6:] + " ")
+
+	default:
+		c.Logger.SetPrefix(cid + " ")
+	}
 }
