@@ -66,6 +66,30 @@ func BenchmarkConnect(b *testing.B) {
 		}
 	})
 }
+func BenchmarkConnAck(b *testing.B) {
+	b.Run("our", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := NewConnAck()
+			p.SetAuthMethod("digest")
+			p.SetAuthData([]byte("secret"))
+			p.WriteTo(&buf)
+			ReadPacket(&buf)
+		}
+	})
+	b.Run("their", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := packets.NewControlPacket(packets.CONNACK)
+			c := p.Content.(*packets.Connack)
+			c.Properties = &packets.Properties{}
+			c.Properties.AuthMethod = "digest"
+			c.Properties.AuthData = []byte("secret")
+			p.WriteTo(&buf)
+			packets.ReadPacket(&buf)
+		}
+	})
+}
 
 func BenchmarkPublish(b *testing.B) {
 	b.Run("our", func(b *testing.B) {
