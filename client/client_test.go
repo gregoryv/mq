@@ -1,11 +1,16 @@
 package client
 
 import (
+	"log"
 	"net"
 	"testing"
 
 	"github.com/gregoryv/mqtt"
 )
+
+func init() {
+	log.SetFlags(0)
+}
 
 func TestClient(t *testing.T) {
 	// dial broker
