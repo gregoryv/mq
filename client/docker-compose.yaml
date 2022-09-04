@@ -1,0 +1,15 @@
+version: "3.5"
+services:
+    broker: 
+        container_name: broker
+        image: eclipse-mosquitto:1.6
+        ports:
+        - target: 1883
+          published: 1883
+          protocol: tcp
+          mode: host
+        volumes:
+        - type: bind
+          source: ./mosquitto.conf
+          target: /mosquitto/config/mosquitto.conf
+          read_only: true
