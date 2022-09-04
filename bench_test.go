@@ -66,6 +66,7 @@ func BenchmarkConnect(b *testing.B) {
 		}
 	})
 }
+
 func BenchmarkConnAck(b *testing.B) {
 	b.Run("our", func(b *testing.B) {
 		var buf bytes.Buffer
@@ -154,6 +155,33 @@ func BenchmarkPublish(b *testing.B) {
 			c.Properties.SubscriptionIdentifier = &subid
 			c.Properties.ContentType = "text/plain"
 			c.Payload = []byte("gopher")
+			p.WriteTo(&buf)
+			packets.ReadPacket(&buf)
+		}
+	})
+}
+
+func BenchmarkPubAck(b *testing.B) {
+	b.Run("our", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := NewPubAck()
+			p.SetPacketID(99)
+			p.AddUserProp("color", "red")
+			p.WriteTo(&buf)
+			ReadPacket(&buf)
+		}
+	})
+	b.Run("their", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := packets.NewControlPacket(packets.PUBACK)
+			c := p.Content.(*packets.Puback)
+			c.PacketID = 99
+			c.Properties = &packets.Properties{}
+			c.Properties.User = append(
+				c.Properties.User, packets.User{"color", "red"},
+			)
 			p.WriteTo(&buf)
 			packets.ReadPacket(&buf)
 		}

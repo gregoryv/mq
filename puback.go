@@ -102,9 +102,7 @@ func (p *PubAck) variableHeader(b []byte, i int) int {
 
 func (p *PubAck) properties(b []byte, i int) int {
 	n := i
-	for id, v := range p.propertyMap() {
-		i += v.fillProp(b, i, id)
-	}
+	i += p.reason.fillProp(b, i, ReasonString)
 	for _, v := range p.userProp {
 		i += v.fillProp(b, i, UserProperty)
 	}
