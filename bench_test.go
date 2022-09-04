@@ -73,6 +73,8 @@ func BenchmarkConnAck(b *testing.B) {
 			p := NewConnAck()
 			p.SetAuthMethod("digest")
 			p.SetAuthData([]byte("secret"))
+			p.SetSessionExpiryInterval(30)
+			p.AddUserProp("color", "red")
 			p.WriteTo(&buf)
 			ReadPacket(&buf)
 		}
@@ -85,6 +87,11 @@ func BenchmarkConnAck(b *testing.B) {
 			c.Properties = &packets.Properties{}
 			c.Properties.AuthMethod = "digest"
 			c.Properties.AuthData = []byte("secret")
+			sExpiry := uint32(30)
+			c.Properties.SessionExpiryInterval = &sExpiry
+			c.Properties.User = append(
+				c.Properties.User, packets.User{"color", "red"},
+			)
 			p.WriteTo(&buf)
 			packets.ReadPacket(&buf)
 		}
