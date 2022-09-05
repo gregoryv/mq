@@ -42,7 +42,9 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	switch in := in.(type) {
 	case *mqtt.ConnAck:
 		c.setLogPrefix(in.AssignedClientID())
-		c.debug.Print("reason", in.ReasonString())
+		if in.ReasonCode() != mqtt.Success {
+			c.debug.Print("reason", in.ReasonString())
+		}
 	default:
 		c.debug.Print("unexpected", in)
 	}

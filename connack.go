@@ -65,6 +65,9 @@ func (c *ConnAck) AssignedClientID() string     { return string(c.assignedClient
 func (c *ConnAck) SetTopicAliasMax(v uint16) { c.topicAliasMax = wuint16(v) }
 func (c *ConnAck) TopicAliasMax() uint16     { return uint16(c.topicAliasMax) }
 
+func (c *ConnAck) SetReasonCode(v ReasonCode) { c.reasonCode = wuint8(v) }
+func (c *ConnAck) ReasonCode() ReasonCode     { return ReasonCode(c.reasonCode) }
+
 func (c *ConnAck) SetReasonString(v string) { c.reasonString = wstring(v) }
 func (c *ConnAck) ReasonString() string     { return string(c.reasonString) }
 
