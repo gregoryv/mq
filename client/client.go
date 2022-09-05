@@ -1,70 +1,100 @@
 package client
 
 import (
-	"fmt"
+	"bytes"
+	"context"
+	"encoding/hex"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/gregoryv/mqtt"
 )
 
 func NewClient(conn io.ReadWriter) *Client {
-	return &Client{
+	c := &Client{
 		ReadWriter: conn,
-		Logger:     log.New(log.Writer(), "", log.Flags()),
+		debug:      log.New(log.Writer(), "", log.Flags()),
 	}
+	return c
 }
 
 type Client struct {
+	m sync.Mutex
 	io.ReadWriter
 
-	*log.Logger
+	debug *log.Logger
 }
 
 // Connect sends the packet and waits for acknoledgement. In the
 // future this would be a good place to implement support for
 // different auth methods.
-func (c *Client) Connect(p *mqtt.Connect) error {
+func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	c.setLogPrefix(p.ClientID())
 	c.Send(p)
-	// check ack
-	a, err := c.NextPacket()
+
+	in, err := c.NextPacket()
 	if err != nil {
 		return err
 	}
 
-	if a, ok := a.(*mqtt.ConnAck); !ok {
-		return fmt.Errorf("unexpected ack %T", a)
-	} else {
-		c.setLogPrefix(a.AssignedClientID())
+	switch in := in.(type) {
+	case *mqtt.ConnAck:
+		c.setLogPrefix(in.AssignedClientID())
+	default:
+		c.debug.Print("unexpected", in)
 	}
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				c.debug.Print(ctx.Err())
+				return
+
+			default:
+				c.debug.Print("unhandled", in)
+			}
+		}
+	}()
 	return nil
 }
 
 func (c *Client) Publish(p *mqtt.Publish) error {
-	// todo handle QoS variations
+	// todo handle QoS variations, async
+	return c.Send(p)
+}
+
+func (c *Client) Subscribe(p *mqtt.Subscribe) error {
+	// todo handle subscription, async
 	return c.Send(p)
 }
 
 func (c *Client) NextPacket() (mqtt.ControlPacket, error) {
-	a, err := mqtt.ReadPacket(c)
+	p, err := mqtt.ReadPacket(c)
 	if err != nil {
 		return nil, err
 	}
-	c.Print(a)
-	return a, nil
+	// debug incoming control packet
+	var buf bytes.Buffer
+	p.WriteTo(&buf)
+	c.debug.Print(p, "\n", hex.Dump(buf.Bytes()), "\n")
+	return p, nil
 }
 
 // Send packet to the underlying connection.
 func (c *Client) Send(p mqtt.ControlPacket) error {
 	// todo handle packet ids I guess
-
+	c.m.Lock()
 	_, err := p.WriteTo(c)
+	c.m.Unlock()
 	if err != nil {
-		c.Print(p, err)
+		c.debug.Print(p, err)
 		return err
 	}
-	c.Print(p)
+	var buf bytes.Buffer
+	p.WriteTo(&buf)
+	c.debug.Print(p, "\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }
 
@@ -74,9 +104,9 @@ func (c *Client) setLogPrefix(cid string) {
 		return
 
 	case len(cid) > 16:
-		c.Logger.SetPrefix(cid[len(cid)-6:] + " ")
+		c.debug.SetPrefix(cid[len(cid)-8:] + "  ")
 
 	default:
-		c.Logger.SetPrefix(cid + " ")
+		c.debug.SetPrefix(cid + " ")
 	}
 }

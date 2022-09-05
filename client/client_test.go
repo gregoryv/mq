@@ -1,9 +1,11 @@
 package client
 
 import (
+	"context"
 	"log"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/gregoryv/mqtt"
 )
@@ -29,8 +31,20 @@ func TestClient(t *testing.T) {
 
 	// connect mqtt client
 	{
+		ctx, cancel := context.WithTimeout(context.Background(), 1000*time.Millisecond)
 		p := mqtt.NewConnect()
-		if err := c.Connect(&p); err != nil {
+		if err := c.Connect(ctx, &p); err != nil {
+			t.Fatal(err)
+		}
+		defer cancel()
+	}
+
+	// subscribe
+	{
+		p := mqtt.NewSubscribe()
+		p.SetPacketID(101)
+		p.AddFilter("a/b", mqtt.FopQoS1)
+		if err := c.Subscribe(&p); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -38,8 +52,8 @@ func TestClient(t *testing.T) {
 	// publish application message
 	{
 		p := mqtt.NewPublish()
-		p.SetRetain(true)
-		p.SetTopicName("a/b/1")
+		p.SetQoS(2)
+		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		c.Publish(&p)
 	}
