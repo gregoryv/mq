@@ -33,7 +33,7 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	c.setLogPrefix(p.ClientID())
 	c.Send(p)
 
-	in, err := c.NextPacket()
+	in, err := c.nextPacket()
 	if err != nil {
 		return err
 	}
@@ -41,23 +41,36 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	switch in := in.(type) {
 	case *mqtt.ConnAck:
 		c.setLogPrefix(in.AssignedClientID())
+		c.debug.Print("reason", in.ReasonString())
 	default:
 		c.debug.Print("unexpected", in)
 	}
 
 	go func() {
 		for {
+			in, err := c.nextPacket()
+			if err != nil {
+				c.debug.Print(err)
+				c.debug.Print("no more packets will be handled")
+				return
+			}
+
 			select {
 			case <-ctx.Done():
 				c.debug.Print(ctx.Err())
 				return
 
 			default:
-				c.debug.Print("unhandled", in)
+				c.debug.Print("unhandled! ", in)
 			}
 		}
 	}()
 	return nil
+}
+
+func (c *Client) Disconnect(p *mqtt.Disconnect) error {
+	// todo handle session variations perhaps, async
+	return c.Send(p)
 }
 
 func (c *Client) Publish(p *mqtt.Publish) error {
@@ -70,7 +83,9 @@ func (c *Client) Subscribe(p *mqtt.Subscribe) error {
 	return c.Send(p)
 }
 
-func (c *Client) NextPacket() (mqtt.ControlPacket, error) {
+// ----------------------------------------
+
+func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 	p, err := mqtt.ReadPacket(c)
 	if err != nil {
 		return nil, err
@@ -78,7 +93,7 @@ func (c *Client) NextPacket() (mqtt.ControlPacket, error) {
 	// debug incoming control packet
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
-	c.debug.Print(p, "\n", hex.Dump(buf.Bytes()), "\n")
+	c.debug.Print(p, " <-\n", hex.Dump(buf.Bytes()), "\n")
 	return p, nil
 }
 
@@ -89,12 +104,12 @@ func (c *Client) Send(p mqtt.ControlPacket) error {
 	_, err := p.WriteTo(c)
 	c.m.Unlock()
 	if err != nil {
-		c.debug.Print(p, err)
+		c.debug.Print("<- ", p, err)
 		return err
 	}
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
-	c.debug.Print(p, "\n", hex.Dump(buf.Bytes()), "\n")
+	c.debug.Print("<- ", p, "\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }
 

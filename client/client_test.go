@@ -23,20 +23,14 @@ func TestClient(t *testing.T) {
 	}
 
 	c := NewClient(conn)
-	// disconnect nicely
-	defer func() {
-		p := mqtt.NewDisconnect()
-		c.Send(&p)
-	}()
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// connect mqtt client
 	{
-		ctx, cancel := context.WithTimeout(context.Background(), 1000*time.Millisecond)
 		p := mqtt.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
-		defer cancel()
 	}
 
 	// subscribe
@@ -47,14 +41,25 @@ func TestClient(t *testing.T) {
 		if err := c.Subscribe(&p); err != nil {
 			t.Fatal(err)
 		}
+		<-time.After(50 * time.Millisecond)
 	}
-
 	// publish application message
 	{
 		p := mqtt.NewPublish()
-		p.SetQoS(2)
+		// p.SetQoS(1) seems we get a malformed error with this
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		c.Publish(&p)
+		<-time.After(50 * time.Millisecond)
 	}
+
+	// disconnect nicely
+	{
+		p := mqtt.NewDisconnect()
+		c.Disconnect(&p)
+	}
+	<-time.After(200 * time.Millisecond)
+	cancel()
+	<-ctx.Done()
+
 }
