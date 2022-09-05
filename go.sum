@@ -6,9 +6,9 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gregoryv/asserter v0.4.2 h1:uVAXr67ZnAKk6v8+vZc75DXGxE+P7AYCHvCsA7lIDS8=
 github.com/gregoryv/asserter v0.4.2/go.mod h1:mJPm04j3XH8husxMfxiRd3m+5YBMZkd2UOKm5BixVXQ=
+github.com/gregoryv/gocyclo v0.1.1 h1:wRhY+jEiXtNqtxOSI1XfXmbRaRknzvVtO5QOSg5KVHo=
 github.com/gregoryv/gocyclo v0.1.1/go.mod h1:e1PwkEyshvXjhPGP0RUXqlEXx09aBSSNj0wL8I/P/3I=
-github.com/gregoryv/nexus v0.6.0 h1:d53Ug7bIWyJqxKnd2c9n3qPpYunwglq9cmNNzNJewFY=
-github.com/gregoryv/nexus v0.6.0/go.mod h1:DJ2Ia6WpPX26edFW6LCl+9nYyX2h6Ot/kyJ83J+SAL0=
+github.com/gregoryv/qual v0.4.2 h1:Pb8T2CRoAIYBKzwxCwfSxHyRNW20Mo8+kMtXQ8MOX5Q=
 github.com/gregoryv/qual v0.4.2/go.mod h1:qi5L/TR4lnCuIFsOC2G8dtTOui6787/lFNquekcjxmQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
