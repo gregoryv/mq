@@ -37,7 +37,7 @@ func TestClient(t *testing.T) {
 	{
 		p := mqtt.NewSubscribe()
 		p.SetPacketID(101)
-		p.AddFilter("a/b", mqtt.FopQoS1)
+		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
 		if err := c.Subscribe(&p); err != nil {
 			t.Fatal(err)
 		}
