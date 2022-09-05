@@ -46,7 +46,7 @@ func TestClient(t *testing.T) {
 	// publish application message
 	{
 		p := mqtt.NewPublish()
-		// p.SetQoS(1) seems we get a malformed error with this
+		p.SetQoS(2) // malformed error with this
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		c.Publish(&p)

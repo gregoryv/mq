@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"sync"
@@ -55,14 +56,20 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 				return
 			}
 
+			// debug incoming control packet
+			var buf bytes.Buffer
+			in.WriteTo(&buf)
+			msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
+
 			select {
 			case <-ctx.Done():
 				c.debug.Print(ctx.Err())
 				return
 
 			default:
-				c.debug.Print("unhandled! ", in)
+				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
 			}
+			c.debug.Print(msg, "\n\n")
 		}
 	}()
 	return nil
@@ -90,10 +97,6 @@ func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 	if err != nil {
 		return nil, err
 	}
-	// debug incoming control packet
-	var buf bytes.Buffer
-	p.WriteTo(&buf)
-	c.debug.Print(p, " <-\n", hex.Dump(buf.Bytes()), "\n")
 	return p, nil
 }
 
