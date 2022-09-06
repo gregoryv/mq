@@ -43,7 +43,6 @@ func TestClient(t *testing.T) {
 	// subscribe
 	{
 		p := mqtt.NewSubscribe()
-		p.SetPacketID(101)
 		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
 		if err := c.Subscribe(ctx, &p); err != nil {
 			t.Fatal(err)
@@ -56,7 +55,7 @@ func TestClient(t *testing.T) {
 		p.SetQoS(2) // malformed error with this
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		c.Publish(&p)
+		c.Publish(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
 

@@ -13,9 +13,11 @@ import (
 )
 
 func NewClient(conn io.ReadWriter) *Client {
+
 	c := &Client{
 		ReadWriter: conn,
 		debug:      log.New(log.Writer(), "", log.Flags()),
+		pool:       NewIDPool(100),
 	}
 	return c
 }
@@ -24,6 +26,7 @@ type Client struct {
 	m sync.Mutex
 	io.ReadWriter
 
+	pool  *IDPool
 	debug *log.Logger
 }
 
@@ -82,13 +85,20 @@ func (c *Client) Disconnect(p *mqtt.Disconnect) error {
 	return c.Send(p)
 }
 
-func (c *Client) Publish(p *mqtt.Publish) error {
+func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) error {
 	// todo handle QoS variations, async
+	if p.QoS() > 0 {
+		id := c.pool.Next(ctx)
+		p.SetPacketID(id)
+	}
 	return c.Send(p)
 }
 
-func (c *Client) Subscribe(_ context.Context, p *mqtt.Subscribe) error {
+func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
 	// todo handle subscription, async
+	id := c.pool.Next(ctx)
+	p.SetPacketID(id)
+
 	return c.Send(p)
 }
 
