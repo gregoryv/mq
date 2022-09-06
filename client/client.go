@@ -76,7 +76,18 @@ func (c *Client) handlePackets(ctx context.Context) {
 			return
 
 		default:
-			msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
+
+			switch in := in.(type) {
+			case *mqtt.SubAck:
+				c.pool.Reuse(in.PacketID())
+
+			case *mqtt.PubAck:
+				c.pool.Reuse(in.PacketID())
+
+			default:
+				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
+			}
+			msg = fmt.Sprintf(msg, "")
 		}
 		c.debug.Print(msg, "\n\n")
 	}
