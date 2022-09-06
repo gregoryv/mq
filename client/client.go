@@ -52,32 +52,34 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 		c.debug.Print("unexpected", in)
 	}
 
-	go func() {
-		for {
-			in, err := c.nextPacket()
-			if err != nil {
-				c.debug.Print(err)
-				c.debug.Print("no more packets will be handled")
-				return
-			}
-
-			// debug incoming control packet
-			var buf bytes.Buffer
-			in.WriteTo(&buf)
-			msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
-
-			select {
-			case <-ctx.Done():
-				c.debug.Print(ctx.Err())
-				return
-
-			default:
-				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
-			}
-			c.debug.Print(msg, "\n\n")
-		}
-	}()
+	go c.handlePackets(ctx)
 	return nil
+}
+
+func (c *Client) handlePackets(ctx context.Context) {
+	for {
+		in, err := c.nextPacket()
+		if err != nil {
+			c.debug.Print(err)
+			c.debug.Print("no more packets will be handled")
+			return
+		}
+
+		// debug incoming control packet
+		var buf bytes.Buffer
+		in.WriteTo(&buf)
+		msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
+
+		select {
+		case <-ctx.Done():
+			c.debug.Print(ctx.Err())
+			return
+
+		default:
+			msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
+		}
+		c.debug.Print(msg, "\n\n")
+	}
 }
 
 func (c *Client) Disconnect(p *mqtt.Disconnect) error {
