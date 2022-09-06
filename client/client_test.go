@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
 	"net"
 	"testing"
@@ -12,6 +13,12 @@ import (
 
 func init() {
 	log.SetFlags(0)
+}
+
+func TestA(t *testing.T) {
+	if !testing.Verbose() {
+		log.SetOutput(ioutil.Discard)
+	}
 }
 
 func TestClient(t *testing.T) {
@@ -38,7 +45,7 @@ func TestClient(t *testing.T) {
 		p := mqtt.NewSubscribe()
 		p.SetPacketID(101)
 		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
-		if err := c.Subscribe(&p); err != nil {
+		if err := c.Subscribe(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 		<-time.After(50 * time.Millisecond)

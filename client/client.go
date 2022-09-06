@@ -87,7 +87,7 @@ func (c *Client) Publish(p *mqtt.Publish) error {
 	return c.Send(p)
 }
 
-func (c *Client) Subscribe(p *mqtt.Subscribe) error {
+func (c *Client) Subscribe(_ context.Context, p *mqtt.Subscribe) error {
 	// todo handle subscription, async
 	return c.Send(p)
 }
