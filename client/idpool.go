@@ -65,5 +65,7 @@ func (p *IDPool) Reuse(v uint16) {
 	}
 }
 
-var USED = true
-var FREE = false
+var (
+	USED = true
+	FREE = false
+)

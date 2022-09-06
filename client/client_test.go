@@ -11,16 +11,6 @@ import (
 	"github.com/gregoryv/mqtt"
 )
 
-func init() {
-	log.SetFlags(0)
-}
-
-func TestA(t *testing.T) {
-	if !testing.Verbose() {
-		log.SetOutput(ioutil.Discard)
-	}
-}
-
 func TestClient(t *testing.T) {
 	// dial broker
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")
@@ -32,16 +22,14 @@ func TestClient(t *testing.T) {
 	c := NewClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	// connect mqtt client
-	{
+	{ // connect mqtt client
 		p := mqtt.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	// subscribe
-	{
+	{ // subscribe
 		p := mqtt.NewSubscribe()
 		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
 		if err := c.Subscribe(ctx, &p); err != nil {
@@ -49,18 +37,17 @@ func TestClient(t *testing.T) {
 		}
 		<-time.After(50 * time.Millisecond)
 	}
-	// publish application message
-	{
+
+	{ // publish application message
 		p := mqtt.NewPublish()
-		p.SetQoS(2) // malformed error with this
+		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		c.Publish(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
 
-	// disconnect nicely
-	{
+	{ // disconnect nicely
 		p := mqtt.NewDisconnect()
 		c.Disconnect(&p)
 	}
@@ -68,4 +55,14 @@ func TestClient(t *testing.T) {
 	cancel()
 	<-ctx.Done()
 
+}
+
+func init() {
+	log.SetFlags(0)
+}
+
+func TestA(t *testing.T) {
+	if !testing.Verbose() { // cannot do this in func init nor in TestMain
+		log.SetOutput(ioutil.Discard)
+	}
 }
