@@ -26,7 +26,8 @@ type Client struct {
 	m sync.Mutex
 	io.ReadWriter
 
-	pool  *IDPool
+	pool *IDPool
+
 	debug *log.Logger
 }
 
@@ -98,8 +99,13 @@ func (c *Client) Disconnect(p *mqtt.Disconnect) error {
 	return c.Send(p)
 }
 
-func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) error {
-	// todo handle QoS variations, async
+func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
+	if err := c.publish(ctx, p); err != nil {
+		c.debug.Print(err)
+	}
+}
+
+func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
 		p.SetPacketID(id)
