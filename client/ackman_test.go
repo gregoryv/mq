@@ -10,10 +10,10 @@ import (
 func TestAckman(t *testing.T) {
 	m := NewAckman(NewIDPool(3))
 	ctx := context.Background()
-	m.Next(ctx)
-	m.Next(ctx)
+	m.Next(ctx, false) // 1
+	m.Next(ctx, true)  // 2
 
 	a := mqtt.NewPubAck()
-	a.SetPacketID(1)
-	m.Handle(ctx, &a)
+	a.SetPacketID(2)
+	m.Handle(ctx, &a) // Handle packet id 1 should panic
 }

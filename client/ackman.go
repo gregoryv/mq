@@ -12,7 +12,10 @@ type Ackman struct {
 	pool *IDPool
 }
 
-func (a *Ackman) Next(ctx context.Context) uint16 {
+func (a *Ackman) Next(ctx context.Context, wait bool) uint16 {
+	if wait == true {
+		panic("todo implement Ackman.Next(_, true)")
+	}
 	return a.pool.Next(ctx)
 }
 

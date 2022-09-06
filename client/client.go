@@ -17,7 +17,7 @@ func NewClient(conn io.ReadWriter) *Client {
 	c := &Client{
 		ReadWriter: conn,
 		debug:      log.New(log.Writer(), "", log.Flags()),
-		pool:       NewIDPool(100),
+		ackman:     NewAckman(NewIDPool(100)),
 	}
 	return c
 }
@@ -26,9 +26,8 @@ type Client struct {
 	m sync.Mutex
 	io.ReadWriter
 
-	pool *IDPool
-
-	debug *log.Logger
+	ackman *Ackman
+	debug  *log.Logger
 }
 
 // Connect sends the packet and waits for acknoledgement. In the
@@ -80,10 +79,10 @@ func (c *Client) handlePackets(ctx context.Context) {
 
 			switch in := in.(type) {
 			case *mqtt.SubAck:
-				c.pool.Reuse(in.PacketID())
+				c.ackman.Handle(ctx, in)
 
 			case *mqtt.PubAck:
-				c.pool.Reuse(in.PacketID())
+				c.ackman.Handle(ctx, in)
 
 			default:
 				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
@@ -102,14 +101,14 @@ func (c *Client) Disconnect(p *mqtt.Disconnect) {
 }
 
 func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
-	if err := c.publish(ctx, p); err != nil {
+	if err := c.publish(ctx, p, false); err != nil {
 		c.debug.Print(err)
 	}
 }
 
-func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
+func (c *Client) publish(ctx context.Context, p *mqtt.Publish, wait bool) error {
 	if p.QoS() > 0 {
-		id := c.pool.Next(ctx)
+		id := c.ackman.Next(ctx, wait)
 		p.SetPacketID(id)
 	}
 	return c.Send(p)
@@ -117,7 +116,7 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 
 func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
 	// todo handle subscription, async
-	id := c.pool.Next(ctx)
+	id := c.ackman.Next(ctx, false)
 	p.SetPacketID(id)
 
 	return c.Send(p)
