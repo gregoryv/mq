@@ -94,9 +94,11 @@ func (c *Client) handlePackets(ctx context.Context) {
 	}
 }
 
-func (c *Client) Disconnect(p *mqtt.Disconnect) error {
+func (c *Client) Disconnect(p *mqtt.Disconnect) {
 	// todo handle session variations perhaps, async
-	return c.Send(p)
+	if err := c.Send(p); err != nil {
+		c.debug.Print(err)
+	}
 }
 
 func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
