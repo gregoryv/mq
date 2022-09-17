@@ -8,12 +8,20 @@ import (
 )
 
 func TestAckman(t *testing.T) {
+	// using a pool of maximum 3 packet ids, 1,2 and 3
 	m := NewAckman(NewIDPool(3))
 	ctx := context.Background()
-	m.Next(ctx, false) // 1
-	m.Next(ctx, true)  // 2
+	m.Next(ctx)         // 1
+	last := m.Next(ctx) // 2
 
 	a := mqtt.NewPubAck()
-	a.SetPacketID(2)
-	m.Handle(ctx, &a) // Handle packet id 1 should panic
+	a.SetPacketID(last)
+	if err := m.Handle(ctx, &a); err != nil {
+		t.Error(err)
+	}
+
+	a.SetPacketID(3) // not used
+	if err := m.Handle(ctx, &a); err == nil {
+		t.Error("expect error when trying to handle free packet id")
+	}
 }

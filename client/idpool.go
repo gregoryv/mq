@@ -16,7 +16,7 @@ func NewIDPool(max uint16) *IDPool {
 
 type IDPool struct {
 	i    int
-	m    sync.Mutex
+	m    sync.RWMutex
 	pool []bool
 
 	// last id that can be reused
@@ -52,6 +52,13 @@ func (p *IDPool) Next(ctx context.Context) uint16 {
 			}
 		}
 	}
+}
+
+func (p *IDPool) IsUsed(v uint16) bool {
+	p.m.RLock()
+	u := p.pool[v-1]
+	p.m.RUnlock()
+	return u
 }
 
 func (p *IDPool) Reuse(v uint16) {

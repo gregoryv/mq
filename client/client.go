@@ -101,14 +101,14 @@ func (c *Client) Disconnect(p *mqtt.Disconnect) {
 }
 
 func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
-	if err := c.publish(ctx, p, false); err != nil {
+	if err := c.publish(ctx, p); err != nil {
 		c.debug.Print(err)
 	}
 }
 
-func (c *Client) publish(ctx context.Context, p *mqtt.Publish, wait bool) error {
+func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 	if p.QoS() > 0 {
-		id := c.ackman.Next(ctx, wait)
+		id := c.ackman.Next(ctx)
 		p.SetPacketID(id)
 	}
 	return c.Send(p)
@@ -116,7 +116,7 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish, wait bool) error 
 
 func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
 	// todo handle subscription, async
-	id := c.ackman.Next(ctx, false)
+	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 
 	return c.Send(p)
