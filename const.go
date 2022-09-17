@@ -94,53 +94,56 @@ const (
 	DUP    byte = 0b0000_1000
 )
 
-const (
-	PropSessionExpiryInterval byte = 0x11
-	PropReceiveMax            byte = 0x21
-	PropMaxPacketSize         byte = 0x27
-)
-
 // Reason Codes
 //
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Handling_errors
+// MQTT_Version_5_0.html#_Toc3901031
 
 type ReasonCode byte
 
 const (
-	// todo reason codes are not the same everywhere
-	// ie. for suback 0x00 is Granted QoS
-	GrantedQoS0 ReasonCode = 0x00
-	GrantedQoS1 ReasonCode = 0x01
-	GrantedQoS2 ReasonCode = 0x02
+	Success               ReasonCode = 0x00 // ConnAck, PubAck, PubRec, PubRel, PubComp, UnsubAck, Auth
+	NormalDisconnect      ReasonCode = 0x00 // Disconnect
+	GrantedQoS0           ReasonCode = 0x00 // SubAck
+	GrantedQoS1           ReasonCode = 0x01 // SubAck
+	GrantedQoS2           ReasonCode = 0x02 // SubAck
+	DisconnectWithWill    ReasonCode = 0x04 // Disconnect
+	NoMatchingSubscribers ReasonCode = 0x10 // PubAck, PubRec
+	NoSubscriptionExisted ReasonCode = 0x11 // UnsubAck
+	ContinueAuth          ReasonCode = 0x18 // Auth
+	ReAuthenticate        ReasonCode = 0x19 // Auth
 
-	Success        ReasonCode = 0x00 // The Connection is accepted.
-	ReAuthenticate ReasonCode = 0x19
-
-	UnspecifiedError                    ReasonCode = 0x80 // The Server does not wish to reveal the reason for the failure, or none of the other Reason Codes apply.
-	MalformedPacket                     ReasonCode = 0x81 // Malformed Packet
-	ProtocolError                       ReasonCode = 0x82 // Protocol Error
-	ImplementationSpecificError         ReasonCode = 0x83 // The CONNECT is valid but is not accepted by this Server.
-	UnsupportedProtocolVersion          ReasonCode = 0x84 // The Server does not support the version of the MQTT protocol requested by the Client.
-	ClientIdentifierNotValid            ReasonCode = 0x85 // The Client Identifier is a valid string but is not allowed by the Server.
-	BadUserNameOrPassword               ReasonCode = 0x86 // The Server does not accept the User Name or Password specified by the Client
-	NotAuthorized                       ReasonCode = 0x87 // The Client is not authorized to connect.
-	ServerUnavailable                   ReasonCode = 0x88 // The MQTT Server is not available.
-	ServerBusy                          ReasonCode = 0x89 // The Server is busy. Try again later.
-	Banned                              ReasonCode = 0x8A // This Client has been banned by administrative action. Contact the server administrator.
-	BadAuthenticationMethod             ReasonCode = 0x8C // The authentication method is not supported or does not match the authentication method currently in use.
-	TopicNameInvalid                    ReasonCode = 0x90 // The Will Topic Name is not malformed, but is not accepted by this Server.
-	ReceiveMaximumExceeded              ReasonCode = 0x93 // Receive Maximum exceeded
-	PacketTooLarge                      ReasonCode = 0x95 // The CONNECT packet exceeded the maximum permissible size.
-	QuotaExceeded                       ReasonCode = 0x97 // An implementation or administrative imposed limit has been exceeded.
-	PayloadFormatInvalid                ReasonCode = 0x99 // The Will Payload does not match the specified Payload Format Indicator.
-	RetainNotSupported                  ReasonCode = 0x9A // Retain not supported
-	QoSNotSupported                     ReasonCode = 0x9B // QoS not supported
-	UseAnotherServer                    ReasonCode = 0x9C // The Client should temporarily use another server.
-	ServerMoved                         ReasonCode = 0x9D // The Client should permanently use another server.
-	SharedSubscriptionsNotSupported     ReasonCode = 0x9E // Shared Subscriptions not supported
-	ConnectionRateExceeded              ReasonCode = 0x9F // The connection rate limit has been exceeded.
-	SubscriptionIdentifiersNotSupported ReasonCode = 0xA1 // Subscription Identifiers not supported
-	WildcardSubscriptionsNotSupported   ReasonCode = 0xA2 // Wildcard Subscriptions not supported
+	// failures >= 0x80
+	UnspecifiedError                    ReasonCode = 0x80 //
+	MalformedPacket                     ReasonCode = 0x81 //
+	ProtocolError                       ReasonCode = 0x82 //
+	ImplementationSpecificError         ReasonCode = 0x83 //
+	UnsupportedProtocolVersion          ReasonCode = 0x84 //
+	ClientIdentifierNotValid            ReasonCode = 0x85 //
+	BadUserNameOrPassword               ReasonCode = 0x86 //
+	NotAuthorized                       ReasonCode = 0x87 //
+	ServerUnavailable                   ReasonCode = 0x88 //
+	ServerBusy                          ReasonCode = 0x89 //
+	Banned                              ReasonCode = 0x8A //
+	BadAuthenticationMethod             ReasonCode = 0x8C //
+	TopicNameInvalid                    ReasonCode = 0x90 //
+	PacketIdentifierInUse               ReasonCode = 0x91 // PubAck, PubRec, SubAck, UnsubAck
+	PacketIdentifierNotFound            ReasonCode = 0x92 // PubRel, PubComp
+	ReceiveMaximumExceeded              ReasonCode = 0x93 //
+	TopicAliasInvalid                   ReasonCode = 0x94 // Disconnect
+	PacketTooLarge                      ReasonCode = 0x95 //
+	MessageRateToHigh                   ReasonCode = 0x96 // Disconnect
+	QuotaExceeded                       ReasonCode = 0x97 //
+	AdministrativeAction                ReasonCode = 0x98 // Disconnect
+	PayloadFormatInvalid                ReasonCode = 0x99 //
+	RetainNotSupported                  ReasonCode = 0x9A //
+	QoSNotSupported                     ReasonCode = 0x9B //
+	UseAnotherServer                    ReasonCode = 0x9C //
+	ServerMoved                         ReasonCode = 0x9D //
+	SharedSubscriptionsNotSupported     ReasonCode = 0x9E //
+	ConnectionRateExceeded              ReasonCode = 0x9F //
+	MaximumConnectTime                  ReasonCode = 0xA0 // Disconnect
+	SubscriptionIdentifiersNotSupported ReasonCode = 0xA1 //
+	WildcardSubscriptionsNotSupported   ReasonCode = 0xA2 //
 )
 
 // Name an empty slice for increased readability when fill methods are
