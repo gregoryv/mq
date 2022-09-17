@@ -368,9 +368,6 @@ func (v *wuint32) UnmarshalBinary(data []byte) error {
 
 func (v wuint32) width() int { return 4 }
 
-// Ident is the same as wuint16 but is used to name the identifier codes
-type Ident uint8
-
 // only here to fulfill interface
 func (v Ident) fillProp(data []byte, i int, id Ident) int { return 0 }
 

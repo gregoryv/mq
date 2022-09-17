@@ -23,43 +23,37 @@ const (
 )
 
 // MQTT Packet property identifier codes
+// Ident is the same as wuint16 but is used to name the identifier codes
+type Ident uint8
 
 const (
-	// maybe todo rename with prefix Id and create value types for
-	// each property, e.g.  type ContentType u8str
 	PayloadFormatIndicator Ident = 0x01
 	MessageExpiryInterval  Ident = 0x02
 	ContentType            Ident = 0x03
-
-	ResponseTopic   Ident = 0x08
-	CorrelationData Ident = 0x09
-
-	SubscriptionID Ident = 0x0b
-
-	SessionExpiryInterval Ident = 0x11
-	AssignedClientID      Ident = 0x12
-	ServerKeepAlive       Ident = 0x13
-
-	AuthMethod          Ident = 0x15
-	AuthData            Ident = 0x16
-	RequestProblemInfo  Ident = 0x17
-	WillDelayInterval   Ident = 0x18
-	RequestResponseInfo Ident = 0x19
-	ResponseInformation Ident = 0x1a
-
-	ServerReference Ident = 0x1c
-	ReasonString    Ident = 0x1f
-
-	ReceiveMax           Ident = 0x21
-	TopicAliasMax        Ident = 0x22
-	TopicAlias           Ident = 0x23
-	MaxQoS               Ident = 0x24
-	RetainAvailable      Ident = 0x25
-	UserProperty         Ident = 0x26
-	MaxPacketSize        Ident = 0x27
-	WildcardSubAvailable Ident = 0x28
-	SubIDsAvailable      Ident = 0x29
-	SharedSubAvailable   Ident = 0x2a
+	ResponseTopic          Ident = 0x08
+	CorrelationData        Ident = 0x09
+	SubscriptionID         Ident = 0x0b
+	SessionExpiryInterval  Ident = 0x11
+	AssignedClientID       Ident = 0x12
+	ServerKeepAlive        Ident = 0x13
+	AuthMethod             Ident = 0x15
+	AuthData               Ident = 0x16
+	RequestProblemInfo     Ident = 0x17
+	WillDelayInterval      Ident = 0x18
+	RequestResponseInfo    Ident = 0x19
+	ResponseInformation    Ident = 0x1a
+	ServerReference        Ident = 0x1c
+	ReasonString           Ident = 0x1f
+	ReceiveMax             Ident = 0x21
+	TopicAliasMax          Ident = 0x22
+	TopicAlias             Ident = 0x23
+	MaxQoS                 Ident = 0x24
+	RetainAvailable        Ident = 0x25
+	UserProperty           Ident = 0x26
+	MaxPacketSize          Ident = 0x27
+	WildcardSubAvailable   Ident = 0x28
+	SubIDsAvailable        Ident = 0x29
+	SharedSubAvailable     Ident = 0x2a
 )
 
 const (
