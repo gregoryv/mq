@@ -22,7 +22,6 @@ func TestConnAck(t *testing.T) {
 	size := unsafe.Sizeof(a)
 
 	eq(t, a.SetSessionPresent, a.SessionPresent, true)
-
 	eq(t, a.SetSessionExpiryInterval, a.SessionExpiryInterval, 199)
 	eq(t, a.SetReceiveMax, a.ReceiveMax, 81)
 	eq(t, a.SetMaxQoS, a.MaxQoS, 1)
@@ -31,6 +30,7 @@ func TestConnAck(t *testing.T) {
 	eq(t, a.SetAssignedClientID, a.AssignedClientID, "macy")
 	eq(t, a.SetTopicAliasMax, a.TopicAliasMax, 11)
 	eq(t, a.SetReasonString, a.ReasonString, "because")
+	eq(t, a.SetReasonCode, a.ReasonCode, UnspecifiedError)
 
 	a.AddUserProp("color", "red")
 
