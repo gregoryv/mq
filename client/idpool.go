@@ -15,9 +15,9 @@ func NewIDPool(max uint16) *IDPool {
 }
 
 type IDPool struct {
-	i    int
-	m    sync.RWMutex
-	pool []bool
+	nextFreeIndex int
+	m             sync.RWMutex
+	pool          []bool
 
 	// last id that can be reused
 	lastFree chan uint16
@@ -30,19 +30,20 @@ func (p *IDPool) Next(ctx context.Context) uint16 {
 			return 0
 		default:
 		}
-		// next in line is most likely free
 		width := len(p.pool)
-		for i := p.i; i < len(p.pool); i++ {
+
+		// next in line is most likely free
+		for i := p.nextFreeIndex; i < len(p.pool); i++ {
 			if p.pool[i] == FREE {
 				p.m.Lock()
 				p.pool[i] = USED
 				p.m.Unlock()
-				p.i = i + 1 // ready for next
+				p.nextFreeIndex = i + 1 // ready for next
 				return uint16(i + 1)
 			}
 			width--
 		}
-		p.i = 0
+		p.nextFreeIndex = 0
 		if width == 0 {
 			// all ids are being used, wait for next free
 			select {

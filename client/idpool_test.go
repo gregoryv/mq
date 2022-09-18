@@ -11,15 +11,15 @@ func TestIDPool(t *testing.T) {
 	ctx := context.Background()
 	p.Next(ctx) // 1
 	p.Next(ctx) // 2
-	p.Next(ctx) // 3
 	p.Reuse(2)
 	if v := p.Next(ctx); v != 2 {
 		t.Error(v)
 	}
 
 	// check waiting for
-	go p.Reuse(2)
-	if v := p.Next(ctx); v != 2 {
+	p.Next() // 3
+	go p.Reuse(3)
+	if v := p.Next(ctx); v != 3 {
 		t.Error(v)
 	}
 }
