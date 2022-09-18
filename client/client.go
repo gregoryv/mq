@@ -22,6 +22,7 @@ func NewClient(conn io.ReadWriter) *Client {
 	return c
 }
 
+// todo what is the purpose of the client?
 type Client struct {
 	m sync.Mutex
 	io.ReadWriter
@@ -56,6 +57,7 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	return nil
 }
 
+// handlePackets is responsible for sending acks to incoming packets.
 func (c *Client) handlePackets(ctx context.Context) {
 	for {
 		in, err := c.nextPacket()
@@ -76,9 +78,13 @@ func (c *Client) handlePackets(ctx context.Context) {
 			return
 
 		default:
-
+			// reuse packet ids and handle acks
 			switch in := in.(type) {
 			case *mqtt.SubAck:
+				// todo How will the ackman know what needs to be done
+				// after ack ?  redesign this; as we need to possibly
+				// notify caller, ie. if Subscribe is done in a sync
+				// fashion
 				c.ackman.Handle(ctx, in)
 
 			case *mqtt.PubAck:

@@ -18,7 +18,6 @@ type Ackman struct {
 
 // Next returns next available packet id
 func (a *Ackman) Next(ctx context.Context) uint16 {
-
 	return a.pool.Next(ctx)
 }
 
