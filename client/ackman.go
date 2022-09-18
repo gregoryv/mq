@@ -23,7 +23,7 @@ func (a *Ackman) Next(ctx context.Context) uint16 {
 }
 
 func (a *Ackman) Handle(ctx context.Context, ack PubSubAck) error {
-	if v := ack.PacketID(); !a.pool.IsUsed(v) {
+	if v := ack.PacketID(); !a.pool.InUse(v) {
 		return fmt.Errorf("%v not used", v)
 	}
 	a.pool.Reuse(ack.PacketID())
