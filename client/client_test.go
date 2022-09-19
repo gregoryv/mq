@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"io/ioutil"
 	"log"
 	"net"
 	"testing"
@@ -59,10 +58,4 @@ func TestClient(t *testing.T) {
 
 func init() {
 	log.SetFlags(0)
-}
-
-func TestA(t *testing.T) {
-	if !testing.Verbose() { // cannot do this in func init nor in TestMain
-		log.SetOutput(ioutil.Discard)
-	}
 }
