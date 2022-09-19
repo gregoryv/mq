@@ -157,6 +157,7 @@ func (c *Client) Send(p mqtt.ControlPacket) error {
 func (c *Client) setLogPrefix(cid string) {
 	switch {
 	case cid == "":
+		c.debug.SetPrefix("          ")
 		return
 
 	case len(cid) > 16:
