@@ -36,7 +36,7 @@ type Client struct {
 // different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	c.setLogPrefix(p.ClientID())
-	c.Send(p)
+	c.send(p)
 
 	in, err := c.nextPacket()
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *Client) handlePackets(ctx context.Context) {
 
 func (c *Client) Disconnect(p *mqtt.Disconnect) {
 	// todo handle session variations perhaps, async
-	if err := c.Send(p); err != nil {
+	if err := c.send(p); err != nil {
 		c.debug.Print(err)
 	}
 }
@@ -117,7 +117,7 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 		id := c.ackman.Next(ctx)
 		p.SetPacketID(id)
 	}
-	return c.Send(p)
+	return c.send(p)
 }
 
 func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
@@ -125,7 +125,7 @@ func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 
-	return c.Send(p)
+	return c.send(p)
 }
 
 // ----------------------------------------
@@ -138,8 +138,8 @@ func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 	return p, nil
 }
 
-// Send packet to the underlying connection.
-func (c *Client) Send(p mqtt.ControlPacket) error {
+// send packet to the underlying connection.
+func (c *Client) send(p mqtt.ControlPacket) error {
 	// todo handle packet ids I guess
 	c.m.Lock()
 	_, err := p.WriteTo(c.wire)
