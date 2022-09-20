@@ -13,6 +13,12 @@ import (
 	"github.com/gregoryv/mqtt"
 )
 
+func NewNetClient(conn net.Conn) *Client {
+	c := NewClient()
+	c.SetReadWriter(conn)
+	return c
+}
+
 func NewClient() *Client {
 	c := &Client{
 		debug:  log.New(log.Writer(), "", log.Flags()),
@@ -30,7 +36,7 @@ type Client struct {
 	debug  *log.Logger
 }
 
-func (c *Client) SetConnection(v net.Conn) { c.wire = v }
+func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
 
 // Connect sends the packet and waits for acknoledgement. In the
 // future this would be a good place to implement support for

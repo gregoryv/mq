@@ -18,8 +18,7 @@ func TestThingClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewClient()
-	c.SetConnection(conn)
+	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	{ // connect mqtt client
@@ -53,8 +52,7 @@ func TestAppClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewClient()
-	c.SetConnection(conn)
+	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	{ // connect mqtt client
