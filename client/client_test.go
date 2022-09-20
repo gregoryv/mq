@@ -10,7 +10,7 @@ import (
 	"github.com/gregoryv/mqtt"
 )
 
-func TestClient(t *testing.T) {
+func TestThingClient(t *testing.T) {
 	// dial broker
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")
 	if err != nil {
@@ -28,16 +28,6 @@ func TestClient(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-
-	{ // subscribe
-		p := mqtt.NewSubscribe()
-		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
-		if err := c.Subscribe(ctx, &p); err != nil {
-			t.Fatal(err)
-		}
-		<-time.After(50 * time.Millisecond)
-	}
-
 	{ // publish application message
 		p := mqtt.NewPublish()
 		p.SetQoS(2)
@@ -46,12 +36,45 @@ func TestClient(t *testing.T) {
 		c.Publish(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
-
 	{ // disconnect nicely
 		p := mqtt.NewDisconnect()
 		c.Disconnect(&p)
 	}
 	<-time.After(200 * time.Millisecond)
+	cancel()
+	<-ctx.Done()
+}
+
+func TestAppClient(t *testing.T) {
+	// dial broker
+	conn, err := net.Dial("tcp", "127.0.0.1:1883")
+	if err != nil {
+		t.Log("no broker, did you run docker-compose up?")
+		t.Fatal(err)
+	}
+
+	c := NewClient()
+	c.SetConnection(conn)
+	ctx, cancel := context.WithCancel(context.Background())
+
+	{ // connect mqtt client
+		p := mqtt.NewConnect()
+		if err := c.Connect(ctx, &p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	{ // subscribe
+		p := mqtt.NewSubscribe()
+		p.AddFilter("a/b", mqtt.FopQoS1|mqtt.FopNL)
+		if err := c.Subscribe(ctx, &p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	{ // disconnect nicely
+		p := mqtt.NewDisconnect()
+		c.Disconnect(&p)
+		<-time.After(50 * time.Millisecond)
+	}
 	cancel()
 	<-ctx.Done()
 }
