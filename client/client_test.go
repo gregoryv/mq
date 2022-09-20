@@ -18,7 +18,8 @@ func TestClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewClient(conn)
+	c := NewClient()
+	c.SetConnection(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	{ // connect mqtt client
@@ -53,7 +54,6 @@ func TestClient(t *testing.T) {
 	<-time.After(200 * time.Millisecond)
 	cancel()
 	<-ctx.Done()
-
 }
 
 func init() {

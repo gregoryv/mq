@@ -7,15 +7,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"sync"
 
 	"github.com/gregoryv/mqtt"
 )
 
-func NewClient(conn io.ReadWriter) *Client {
-
+func NewClient() *Client {
 	c := &Client{
-		wire:   conn,
 		debug:  log.New(log.Writer(), "", log.Flags()),
 		ackman: NewAckman(NewIDPool(100)),
 	}
@@ -30,6 +29,8 @@ type Client struct {
 	ackman *Ackman
 	debug  *log.Logger
 }
+
+func (c *Client) SetConnection(v net.Conn) { c.wire = v }
 
 // Connect sends the packet and waits for acknoledgement. In the
 // future this would be a good place to implement support for
@@ -140,6 +141,9 @@ func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 
 // send packet to the underlying connection.
 func (c *Client) send(p mqtt.ControlPacket) error {
+	if c.wire == nil {
+		return ErrNoConnection
+	}
 	// todo handle packet ids I guess
 	c.m.Lock()
 	_, err := p.WriteTo(c.wire)
@@ -167,3 +171,5 @@ func (c *Client) setLogPrefix(cid string) {
 		c.debug.SetPrefix(cid + " ")
 	}
 }
+
+var ErrNoConnection = fmt.Errorf("no connection")
