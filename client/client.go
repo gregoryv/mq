@@ -43,7 +43,9 @@ func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
 // different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	c.setLogPrefix(p.ClientID())
-	c.send(p)
+	if err := c.send(p); err != nil {
+		return fmt.Errorf("%w: %v", ErrConnect, err)
+	}
 
 	in, err := c.nextPacket()
 	if err != nil {

@@ -77,6 +77,23 @@ func TestAppClient(t *testing.T) {
 	<-ctx.Done()
 }
 
+func TestClient_badConnect(t *testing.T) {
+	conn, err := net.Dial("tcp", "127.0.0.1:1883")
+	if err != nil {
+		t.Log("no broker, did you run docker-compose up?")
+		t.Fatal(err)
+	}
+
+	c := NewNetClient(conn)
+	conn.Close()
+
+	p := mqtt.NewConnect()
+	ctx := context.Background()
+	if err := c.Connect(ctx, &p); err == nil {
+		t.Fatal("expect error")
+	}
+}
+
 func init() {
 	log.SetFlags(0)
 }
