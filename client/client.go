@@ -38,7 +38,7 @@ type Client struct {
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
 
-// Connect sends the packet and waits for acknoledgement. In the
+// Connect sends the packet and waits for acknowledgement. In the
 // future this would be a good place to implement support for
 // different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
@@ -55,9 +55,12 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 		c.setLogPrefix(in.AssignedClientID())
 		if in.ReasonCode() != mqtt.Success {
 			c.debug.Print("reason", in.ReasonString())
+			return fmt.Errorf("%w: %s", ErrConnect, in.ReasonString())
 		}
+
 	default:
 		c.debug.Print("unexpected", in)
+		return fmt.Errorf("%w: unexpected %v", ErrConnect, in)
 	}
 
 	go c.handlePackets(ctx)
@@ -178,4 +181,7 @@ func (c *Client) setLogPrefix(cid string) {
 	}
 }
 
-var ErrNoConnection = fmt.Errorf("no connection")
+var (
+	ErrNoConnection = fmt.Errorf("no connection")
+	ErrConnect      = fmt.Errorf("connect error")
+)
