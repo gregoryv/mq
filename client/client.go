@@ -15,17 +15,17 @@ import (
 func NewClient(conn io.ReadWriter) *Client {
 
 	c := &Client{
-		ReadWriter: conn,
-		debug:      log.New(log.Writer(), "", log.Flags()),
-		ackman:     NewAckman(NewIDPool(100)),
+		wire:   conn,
+		debug:  log.New(log.Writer(), "", log.Flags()),
+		ackman: NewAckman(NewIDPool(100)),
 	}
 	return c
 }
 
 // todo what is the purpose of the client?
 type Client struct {
-	m sync.Mutex
-	io.ReadWriter
+	m    sync.Mutex
+	wire io.ReadWriter
 
 	ackman *Ackman
 	debug  *log.Logger
@@ -131,7 +131,7 @@ func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
 // ----------------------------------------
 
 func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
-	p, err := mqtt.ReadPacket(c)
+	p, err := mqtt.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 func (c *Client) Send(p mqtt.ControlPacket) error {
 	// todo handle packet ids I guess
 	c.m.Lock()
-	_, err := p.WriteTo(c)
+	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
 	if err != nil {
 		c.debug.Print("<- ", p, err)
