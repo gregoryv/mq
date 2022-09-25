@@ -20,9 +20,10 @@ func NewNetClient(conn net.Conn) *Client {
 }
 
 func NewClient() *Client {
+	maxConcurrentIds := uint16(100)
 	c := &Client{
 		debug:  log.New(log.Writer(), "", log.Flags()),
-		ackman: NewAckman(NewIDPool(100)),
+		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
 	}
 	return c
 }
@@ -133,7 +134,7 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 }
 
 func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
-	// todo handle subscription, async
+	// todo handle subscription, async wip
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 
