@@ -70,6 +70,34 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	return nil
 }
 
+func (c *Client) Disconnect(p *mqtt.Disconnect) {
+	// todo handle session variations perhaps, async
+	if err := c.send(p); err != nil {
+		c.debug.Print(err)
+	}
+}
+
+func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
+	if err := c.publish(ctx, p); err != nil {
+		c.debug.Print(err)
+	}
+}
+
+func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
+	if p.QoS() > 0 {
+		id := c.ackman.Next(ctx)
+		p.SetPacketID(id)
+	}
+	return c.send(p)
+}
+
+// Subscribe sends the subscribe packet to the connected broker.
+func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
+	id := c.ackman.Next(ctx)
+	p.SetPacketID(id)
+	return c.send(p)
+}
+
 // handlePackets is responsible for sending acks to incoming packets.
 func (c *Client) handlePackets(ctx context.Context) {
 	for {
@@ -110,35 +138,6 @@ func (c *Client) handlePackets(ctx context.Context) {
 		}
 		c.debug.Print(msg, "\n\n")
 	}
-}
-
-func (c *Client) Disconnect(p *mqtt.Disconnect) {
-	// todo handle session variations perhaps, async
-	if err := c.send(p); err != nil {
-		c.debug.Print(err)
-	}
-}
-
-func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
-	if err := c.publish(ctx, p); err != nil {
-		c.debug.Print(err)
-	}
-}
-
-func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
-	if p.QoS() > 0 {
-		id := c.ackman.Next(ctx)
-		p.SetPacketID(id)
-	}
-	return c.send(p)
-}
-
-func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
-	// todo handle subscription, async wip
-	id := c.ackman.Next(ctx)
-	p.SetPacketID(id)
-
-	return c.send(p)
 }
 
 // ----------------------------------------
