@@ -1,4 +1,4 @@
-package client
+package x
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/gregoryv/mqtt"
+	"github.com/gregoryv/mqtt/proto"
 )
 
 func NewNetClient(conn net.Conn) *Client {
@@ -28,7 +29,7 @@ func NewClient() *Client {
 	return c
 }
 
-// todo what is the purpose of the client?
+// todo what is the purpose of the x?
 type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
@@ -92,7 +93,8 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 }
 
 // Subscribe sends the subscribe packet to the connected broker.
-func (c *Client) Subscribe(ctx context.Context, p *mqtt.Subscribe) error {
+// wip maybe introduce a subscription type
+func (c *Client) Sub(ctx context.Context, p *mqtt.Subscribe, h proto.HandlerFunc) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 	return c.send(p)

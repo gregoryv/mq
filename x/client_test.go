@@ -1,4 +1,4 @@
-package client
+package x
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gregoryv/mqtt"
+	"github.com/gregoryv/mqtt/proto"
 )
 
 // thing is anything like an iot device that mostly sends stats to the
@@ -23,7 +24,7 @@ func TestThingClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mqtt client
+	{ // connect mqtt x
 		p := mqtt.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
@@ -57,7 +58,7 @@ func TestAppClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mqtt client
+	{ // connect mqtt x
 		p := mqtt.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
@@ -66,11 +67,11 @@ func TestAppClient(t *testing.T) {
 	{ // subscribe
 		p := mqtt.NewSubscribe()
 		p.AddFilter("a/b", mqtt.FopQoS1)
-		if err := c.Subscribe(ctx, &p); err != nil {
+		if err := c.Sub(ctx, &p, ignore); err != nil {
 			t.Fatal(err)
 		}
 	}
-	// todo use a client to send a message on the subscribed topic
+	// todo use a x to send a message on the subscribed topic
 	// wip, need to implement routing of subscribed filters in
 	// previous step and assert that the message arrives properly.
 	{
@@ -111,3 +112,5 @@ func TestClient_badConnect(t *testing.T) {
 func init() {
 	log.SetFlags(0)
 }
+
+func ignore(_ proto.Client, _ proto.Packet) {}
