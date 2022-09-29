@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/proto"
 )
 
 func TestSubscription(t *testing.T) {
@@ -16,7 +15,7 @@ func TestSubscription(t *testing.T) {
 	// configure settings...
 
 	s.SetPacket(&p)
-	s.SetHandler(func(_ context.Context, p proto.Packet) error {
+	s.SetHandler(func(_ context.Context, p mq.Packet) error {
 		return fmt.Errorf(": todo")
 	})
 }

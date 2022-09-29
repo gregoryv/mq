@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/proto"
 )
 
 // thing is anything like an iot device that mostly sends stats to the
@@ -114,4 +113,4 @@ func init() {
 	log.SetFlags(0)
 }
 
-func ignore(_ context.Context, _ proto.Packet) error { return nil }
+func ignore(_ context.Context, _ mq.Packet) error { return nil }

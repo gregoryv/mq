@@ -1,9 +1,7 @@
-package proto
+package mq
 
 import (
 	"context"
-
-	"github.com/gregoryv/mq"
 )
 
 // wip design the client and router
@@ -16,8 +14,8 @@ Client implementations are responsible for
 */
 type Client interface {
 	// should they block until acked? if ack is expected
-	Pub(context.Context, *mq.Publish) error
-	Sub(context.Context, *mq.Subscribe, HandlerFunc) error
+	Pub(context.Context, *Publish) error
+	Sub(context.Context, *Subscribe, HandlerFunc) error
 }
 
 type Router interface {
@@ -25,7 +23,7 @@ type Router interface {
 }
 
 type Subscription interface {
-	Packet() *mq.Subscribe
+	Packet() *Subscribe
 	Handler
 }
 

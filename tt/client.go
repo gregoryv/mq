@@ -11,7 +11,6 @@ import (
 	"sync"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/proto"
 )
 
 func NewNetClient(conn net.Conn) *Client {
@@ -94,7 +93,7 @@ func (c *Client) publish(ctx context.Context, p *mq.Publish) error {
 
 // Subscribe sends the subscribe packet to the connected broker.
 // wip maybe introduce a subscription type
-func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h proto.HandlerFunc) error {
+func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h mq.HandlerFunc) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 	return c.send(p)
