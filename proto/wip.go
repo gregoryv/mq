@@ -33,10 +33,10 @@ type Handler interface {
 	Act(context.Context, Packet) error
 }
 
-type HandlerFunc func(context.Context, Packet)
+type HandlerFunc func(context.Context, Packet) error
 
-func (h HandlerFunc) Act(ctx context.Context, p Packet) {
-	h(ctx, p)
+func (h HandlerFunc) Act(ctx context.Context, p Packet) error {
+	return h(ctx, p)
 }
 
 // Packet represents any packet that can or should be handled by the
