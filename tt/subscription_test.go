@@ -1,8 +1,6 @@
 package tt
 
 import (
-	"context"
-	"fmt"
 	"testing"
 
 	"github.com/gregoryv/mq"
@@ -15,7 +13,7 @@ func TestSubscription(t *testing.T) {
 	// configure settings...
 
 	s.SetPacket(&p)
-	s.SetHandler(func(_ context.Context, p mq.Packet) error {
-		return fmt.Errorf(": todo")
-	})
+	s.SetHandler(ignore)
+
+	t.Error("continue here")
 }
