@@ -120,3 +120,14 @@ BenchmarkPublish/their-16          479336       2846 ns/op     4064 B/op      41
 </pre>
 
 Not a huge difference, but still in the correct direction.
+
+
+Naming the packages;
+
+mqtt
+mqtt/x
+mqtt/proto
+
+mq/x
+mq/tt
+
