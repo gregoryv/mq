@@ -1,4 +1,4 @@
-package x
+package tt
 
 import (
 	"context"
@@ -24,7 +24,7 @@ func TestThingClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mq x
+	{ // connect mq tt
 		p := mq.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
@@ -58,7 +58,7 @@ func TestAppClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mq x
+	{ // connect mq tt
 		p := mq.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)

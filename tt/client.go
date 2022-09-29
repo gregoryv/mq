@@ -1,4 +1,4 @@
-package x
+package tt
 
 import (
 	"bytes"
@@ -29,7 +29,7 @@ func NewClient() *Client {
 	return c
 }
 
-// todo what is the purpose of the x?
+// todo what is the purpose of the tt?
 type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
