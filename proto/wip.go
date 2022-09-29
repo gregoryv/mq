@@ -6,6 +6,14 @@ import (
 	"github.com/gregoryv/mqtt"
 )
 
+// wip design the client and router
+
+/*
+Client implementations are responsible for
+
+1. Sync writes and reads of packets
+2. Add packet ID's and acknowledge packets
+*/
 type Client interface {
 	// should they block until acked? if ack is expected
 	Pub(context.Context, *mqtt.Publish) error
@@ -22,18 +30,19 @@ type Subscription interface {
 }
 
 type Handler interface {
-	Act(Client, Packet)
+	Act(context.Context, Packet) error
 }
 
-type HandlerFunc func(Client, Packet)
+type HandlerFunc func(context.Context, Packet)
 
-func (h HandlerFunc) Act(c Client, p Packet) {
-	h(c, p)
+func (h HandlerFunc) Act(ctx context.Context, p Packet) {
+	h(ctx, p)
 }
 
 // Packet represents any packet that can or should be handled by the
 // application layer.
 type Packet interface {
+	Client() Client
 	IsAck() bool
 
 	// valid for Publish packets, ie. !IsAck()
