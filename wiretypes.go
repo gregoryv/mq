@@ -1,11 +1,11 @@
 /*
-Package mqtt provides a MQTT v5.0 protocol implementation
+Package mq provides a MQTT v5.0 protocol implementation
 
 The specification is found at
-https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
+https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html
 
 */
-package mqtt
+package mq
 
 import (
 	"encoding"
@@ -63,7 +63,7 @@ func (f firstByte) String() string {
 	return sb.String()
 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901013
 type property [2]string
 
 func (v property) fillProp(data []byte, i int, id Ident) int {
@@ -103,10 +103,10 @@ func (v property) width() int {
 	return wstring(v[0]).width() + wstring(v[1]).width()
 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901010
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901010
 type wstring = bindata
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901012
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901012
 type bindata []byte
 
 func (v bindata) fillProp(data []byte, i int, id Ident) int {
@@ -144,7 +144,7 @@ func (v bindata) width() int {
 	return 2 + len(v)
 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901011
 type vbint uint
 
 func (v vbint) fillProp(data []byte, i int, id Ident) int {
@@ -264,7 +264,7 @@ func (v *wbool) UnmarshalBinary(data []byte) error {
 }
 func (v wbool) width() int { return 1 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901007
 type Bits byte
 
 func (v Bits) Has(b byte) bool { return byte(v)&b == b }
@@ -314,7 +314,7 @@ func (v *Bits) toggle(flag byte, on bool) {
 	*v = *v & Bits(^flag)
 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901008
 type wuint16 uint16
 
 func (v wuint16) fillProp(data []byte, i int, id Ident) int {
@@ -341,7 +341,7 @@ func (v *wuint16) UnmarshalBinary(data []byte) error {
 
 func (v wuint16) width() int { return 2 }
 
-// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901009
+// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901009
 type wuint32 uint32
 
 func (v wuint32) fillProp(data []byte, i int, id Ident) int {

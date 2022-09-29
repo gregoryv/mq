@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gregoryv/mqtt"
+	"github.com/gregoryv/mq"
 )
 
 func TestAckman(t *testing.T) {
@@ -14,7 +14,7 @@ func TestAckman(t *testing.T) {
 	m.Next(ctx)         // 1
 	last := m.Next(ctx) // 2
 
-	a := mqtt.NewPubAck()
+	a := mq.NewPubAck()
 	a.SetPacketID(last)
 	if err := m.Handle(ctx, &a); err != nil {
 		t.Error(err)

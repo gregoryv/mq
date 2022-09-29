@@ -1,4 +1,4 @@
-module github.com/gregoryv/mqtt
+module github.com/gregoryv/mq
 
 go 1.18
 

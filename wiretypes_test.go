@@ -1,4 +1,4 @@
-package mqtt
+package mq
 
 import (
 	"bytes"
@@ -263,8 +263,8 @@ func ExampleMalformed_Error() {
 	e.ref = "remaining length"
 	fmt.Println(e.Error())
 	// output:
-	// malformed mqtt.Connect unmarshal: missing data
-	// malformed mqtt.Connect unmarshal: remaining length missing data
+	// malformed mq.Connect unmarshal: missing data
+	// malformed mq.Connect unmarshal: remaining length missing data
 }
 
 type brokenRW struct{}

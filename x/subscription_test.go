@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gregoryv/mqtt"
-	"github.com/gregoryv/mqtt/proto"
+	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/proto"
 )
 
 func TestSubscription(t *testing.T) {
 	s := NewSubscription()
 
-	p := mqtt.NewSubscribe()
+	p := mq.NewSubscribe()
 	// configure settings...
 
 	s.SetPacket(&p)

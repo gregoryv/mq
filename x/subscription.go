@@ -1,8 +1,8 @@
 package x
 
 import (
-	"github.com/gregoryv/mqtt"
-	"github.com/gregoryv/mqtt/proto"
+	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/proto"
 )
 
 func NewSubscription() *Subscription {
@@ -10,12 +10,12 @@ func NewSubscription() *Subscription {
 }
 
 type Subscription struct {
-	packet  *mqtt.Subscribe
+	packet  *mq.Subscribe
 	handler proto.Handler
 }
 
-func (s *Subscription) SetPacket(v *mqtt.Subscribe) { s.packet = v }
-func (s *Subscription) Packet() *mqtt.Subscribe     { return s.packet }
+func (s *Subscription) SetPacket(v *mq.Subscribe) { s.packet = v }
+func (s *Subscription) Packet() *mq.Subscribe     { return s.packet }
 
 func (s *Subscription) SetHandler(v proto.HandlerFunc) { s.handler = v }
 func (s *Subscription) Handler() proto.Handler         { return s.handler }

@@ -1,7 +1,7 @@
 # Writing the MQTT module
 
 I've mainly used
-https://pkg.go.dev/github.com/eclipse/paho.mqtt.golang for systems
+https://pkg.go.dev/github.com/eclipse/paho.mq.golang for systems
 that required MQTT as a communication protocol. In one such project
 difficulties where encountered and I needed to learn more about the
 protocol details.
@@ -45,7 +45,7 @@ The inverse initial optimization
 <pre>
 goos: linux
 goarch: amd64
-pkg: github.com/gregoryv/mqtt
+pkg: github.com/gregoryv/mq
 cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
 BenchmarkConnect/make/our-16     15082816        77.58 ns/op      24 B/op       3 allocs/op
 BenchmarkConnect/make/their-16    3935006       279.30 ns/op     512 B/op       5 allocs/op

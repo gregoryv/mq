@@ -10,8 +10,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/gregoryv/mqtt"
-	"github.com/gregoryv/mqtt/proto"
+	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/proto"
 )
 
 func NewNetClient(conn net.Conn) *Client {
@@ -43,7 +43,7 @@ func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
 // Connect sends the packet and waits for acknowledgement. In the
 // future this would be a good place to implement support for
 // different auth methods.
-func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
+func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 	c.setLogPrefix(p.ClientID())
 	if err := c.send(p); err != nil {
 		return fmt.Errorf("%w: %v", ErrConnect, err)
@@ -55,9 +55,9 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	}
 
 	switch in := in.(type) {
-	case *mqtt.ConnAck:
+	case *mq.ConnAck:
 		c.setLogPrefix(in.AssignedClientID())
-		if in.ReasonCode() != mqtt.Success {
+		if in.ReasonCode() != mq.Success {
 			c.debug.Print("reason", in.ReasonString())
 			return fmt.Errorf("%w: %s", ErrConnect, in.ReasonString())
 		}
@@ -71,20 +71,20 @@ func (c *Client) Connect(ctx context.Context, p *mqtt.Connect) error {
 	return nil
 }
 
-func (c *Client) Disconnect(p *mqtt.Disconnect) {
+func (c *Client) Disconnect(p *mq.Disconnect) {
 	// todo handle session variations perhaps, async
 	if err := c.send(p); err != nil {
 		c.debug.Print(err)
 	}
 }
 
-func (c *Client) Publish(ctx context.Context, p *mqtt.Publish) {
+func (c *Client) Publish(ctx context.Context, p *mq.Publish) {
 	if err := c.publish(ctx, p); err != nil {
 		c.debug.Print(err)
 	}
 }
 
-func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
+func (c *Client) publish(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
 		id := c.ackman.Next(ctx)
 		p.SetPacketID(id)
@@ -94,7 +94,7 @@ func (c *Client) publish(ctx context.Context, p *mqtt.Publish) error {
 
 // Subscribe sends the subscribe packet to the connected broker.
 // wip maybe introduce a subscription type
-func (c *Client) Sub(ctx context.Context, p *mqtt.Subscribe, h proto.HandlerFunc) error {
+func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h proto.HandlerFunc) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 	return c.send(p)
@@ -123,14 +123,14 @@ func (c *Client) handlePackets(ctx context.Context) {
 		default:
 			// reuse packet ids and handle acks
 			switch in := in.(type) {
-			case *mqtt.SubAck:
+			case *mq.SubAck:
 				// todo How will the ackman know what needs to be done
 				// after ack ?  redesign this; as we need to possibly
 				// notify caller, ie. if Subscribe is done in a sync
 				// fashion
 				c.ackman.Handle(ctx, in)
 
-			case *mqtt.PubAck:
+			case *mq.PubAck:
 				c.ackman.Handle(ctx, in)
 
 			default:
@@ -144,8 +144,8 @@ func (c *Client) handlePackets(ctx context.Context) {
 
 // ----------------------------------------
 
-func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
-	p, err := mqtt.ReadPacket(c.wire)
+func (c *Client) nextPacket() (mq.ControlPacket, error) {
+	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (c *Client) nextPacket() (mqtt.ControlPacket, error) {
 }
 
 // send packet to the underlying connection.
-func (c *Client) send(p mqtt.ControlPacket) error {
+func (c *Client) send(p mq.ControlPacket) error {
 	if c.wire == nil {
 		return ErrNoConnection
 	}

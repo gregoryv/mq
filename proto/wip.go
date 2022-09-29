@@ -3,7 +3,7 @@ package proto
 import (
 	"context"
 
-	"github.com/gregoryv/mqtt"
+	"github.com/gregoryv/mq"
 )
 
 // wip design the client and router
@@ -16,8 +16,8 @@ Client implementations are responsible for
 */
 type Client interface {
 	// should they block until acked? if ack is expected
-	Pub(context.Context, *mqtt.Publish) error
-	Sub(context.Context, *mqtt.Subscribe, HandlerFunc) error
+	Pub(context.Context, *mq.Publish) error
+	Sub(context.Context, *mq.Subscribe, HandlerFunc) error
 }
 
 type Router interface {
@@ -25,7 +25,7 @@ type Router interface {
 }
 
 type Subscription interface {
-	Packet() *mqtt.Subscribe
+	Packet() *mq.Subscribe
 	Handler
 }
 

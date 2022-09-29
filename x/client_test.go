@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gregoryv/mqtt"
-	"github.com/gregoryv/mqtt/proto"
+	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/proto"
 )
 
 // thing is anything like an iot device that mostly sends stats to the
@@ -24,14 +24,14 @@ func TestThingClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mqtt x
-		p := mqtt.NewConnect()
+	{ // connect mq x
+		p := mq.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
 	{ // publish application message
-		p := mqtt.NewPublish()
+		p := mq.NewPublish()
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
@@ -39,7 +39,7 @@ func TestThingClient(t *testing.T) {
 		<-time.After(50 * time.Millisecond)
 	}
 	{ // disconnect nicely
-		p := mqtt.NewDisconnect()
+		p := mq.NewDisconnect()
 		c.Disconnect(&p)
 	}
 	<-time.After(200 * time.Millisecond)
@@ -58,15 +58,15 @@ func TestAppClient(t *testing.T) {
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	{ // connect mqtt x
-		p := mqtt.NewConnect()
+	{ // connect mq x
+		p := mq.NewConnect()
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
 	{ // subscribe
-		p := mqtt.NewSubscribe()
-		p.AddFilter("a/b", mqtt.FopQoS1)
+		p := mq.NewSubscribe()
+		p.AddFilter("a/b", mq.FopQoS1)
 		if err := c.Sub(ctx, &p, ignore); err != nil {
 			t.Fatal(err)
 		}
@@ -77,7 +77,7 @@ func TestAppClient(t *testing.T) {
 	// properly.
 	{
 		// publish application message
-		p := mqtt.NewPublish()
+		p := mq.NewPublish()
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
@@ -85,7 +85,7 @@ func TestAppClient(t *testing.T) {
 		<-time.After(50 * time.Millisecond)
 	}
 	{ // disconnect nicely
-		p := mqtt.NewDisconnect()
+		p := mq.NewDisconnect()
 		c.Disconnect(&p)
 		<-time.After(50 * time.Millisecond)
 	}
@@ -103,7 +103,7 @@ func TestClient_badConnect(t *testing.T) {
 	c := NewNetClient(conn)
 	conn.Close()
 
-	p := mqtt.NewConnect()
+	p := mq.NewConnect()
 	ctx := context.Background()
 	if err := c.Connect(ctx, &p); err == nil {
 		t.Fatal("expect error")
@@ -114,4 +114,4 @@ func init() {
 	log.SetFlags(0)
 }
 
-func ignore(_ proto.Client, _ proto.Packet) {}
+func ignore(_ context.Context, _ proto.Packet) error { return nil }
