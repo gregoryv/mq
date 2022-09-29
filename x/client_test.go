@@ -71,9 +71,10 @@ func TestAppClient(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	// todo use a x to send a message on the subscribed topic
-	// wip, need to implement routing of subscribed filters in
-	// previous step and assert that the message arrives properly.
+	// todo use a client to publish an application message on the
+	// subscribed topic wip, need to implement routing of subscribed
+	// filters in previous step and assert that the message arrives
+	// properly.
 	{
 		// publish application message
 		p := mqtt.NewPublish()
