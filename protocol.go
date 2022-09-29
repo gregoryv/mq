@@ -9,8 +9,9 @@ import (
 /*
 Client implementations are responsible for
 
-1. Sync writes and reads of packets
-2. Add packet ID's and acknowledge packets
+  - Sync writes and reads of packets
+  - Add packet ID's and acknowledge packets
+
 */
 type Client interface {
 	// should they block until acked? if ack is expected
@@ -27,6 +28,8 @@ type Subscription interface {
 	Handler
 }
 
+// Handler acts on incoming packets. Initially designed for the client
+// side though could be used on the server aswell. Time will tell.
 type Handler interface {
 	Act(context.Context, Packet) error
 }
@@ -38,7 +41,9 @@ func (h HandlerFunc) Act(ctx context.Context, p Packet) error {
 }
 
 // Packet represents any packet that can or should be handled by the
-// application layer.
+// application layer. Using a combined type for acknowledgements and
+// publish control packets will hopefully make it easier to write
+// handlers (todo remove this sentence) when done.
 type Packet interface {
 	Client() Client
 	IsAck() bool
