@@ -1,16 +1,8 @@
 package mq
 
 import (
-	"encoding"
-	"fmt"
 	"io"
 )
-
-type ControlPacket interface {
-	io.WriterTo
-	encoding.BinaryUnmarshaler
-	fmt.Stringer
-}
 
 func ReadPacket(r io.Reader) (ControlPacket, error) {
 	var fh FixedHeader

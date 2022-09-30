@@ -40,14 +40,14 @@ type Client struct {
 
 	// todo use it in handlePackets
 	first    mq.Receiver
-	Incoming chan mq.ControlPacket // allows for intercepting packets
+	Incoming chan mq.Packet // allows for intercepting packets
 
 	ackman *Ackman
 	debug  *log.Logger
 }
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
-	return func(p mq.ControlPacket) error {
+	return func(p mq.Packet) error {
 		c.debug.Print(p)
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
@@ -59,7 +59,7 @@ func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 }
 
 func (c *Client) interceptPacket(next mq.Receiver) mq.Receiver {
-	return func(p mq.ControlPacket) error {
+	return func(p mq.Packet) error {
 		select {
 		case c.Incoming <- p:
 		default:
@@ -68,7 +68,7 @@ func (c *Client) interceptPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) handleAckPacket(p mq.ControlPacket) error {
+func (c *Client) handleAckPacket(p mq.Packet) error {
 	ctx := context.Background()
 	// reuse packet ids and handle acks
 	switch p := p.(type) {
@@ -148,7 +148,7 @@ func (c *Client) handlePackets(ctx context.Context) error {
 
 // ----------------------------------------
 
-func (c *Client) nextPacket() (mq.ControlPacket, error) {
+func (c *Client) nextPacket() (mq.Packet, error) {
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (c *Client) nextPacket() (mq.ControlPacket, error) {
 }
 
 // send packet to the underlying connection.
-func (c *Client) send(p mq.ControlPacket) error {
+func (c *Client) send(p mq.Packet) error {
 	if c.wire == nil {
 		return ErrNoConnection
 	}

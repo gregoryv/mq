@@ -2,6 +2,9 @@ package mq
 
 import (
 	"context"
+	"encoding"
+	"fmt"
+	"io"
 )
 
 /*
@@ -37,4 +40,13 @@ type Subscription struct {
 
 // Receiver is called on incoming packets. Initially designed for the
 // client side.
-type Receiver func(ControlPacket) error
+type Receiver func(Packet) error
+
+// Packet and ControlPacket can be used interchangebly.
+type Packet = ControlPacket
+
+type ControlPacket interface {
+	io.WriterTo
+	encoding.BinaryUnmarshaler
+	fmt.Stringer
+}
