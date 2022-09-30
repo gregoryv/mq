@@ -4,8 +4,6 @@ import (
 	"context"
 )
 
-// wip design the client and router
-
 /*
 Client implementations are responsible for
 
@@ -13,17 +11,20 @@ Client implementations are responsible for
   - Add packet ID's and acknowledge packets
 */
 type Client interface {
-	Router
-	// should they block until acked? if ack is expected
+	// Pub writes the given control packet on the wire, fails if could
+	// not be written. The call does not wait for a PubAck, see
+	// Receiver.
 	Pub(context.Context, *Publish) error
 
-	// Sub sends subscribe packets for all subscriptions in the router
-	// that have not yet been send.
-	Sub(context.Context) error
+	// Sub writes the given control packet on the wire, fails if could
+	// not be written. The call does not wait for a SubAck, see
+	// Receiver.
+	Sub(context.Context, *Subscribe) error
 }
 
 type Router interface {
-	Add(Subscription)
+	Add(...Subscription)
+	Subscriptions() []*Subscription
 }
 
 type Subscription struct {
@@ -31,16 +32,19 @@ type Subscription struct {
 	Receiver
 }
 
-// Handler acts on incoming packets. Initially designed for the client
-// side though could be used on the server aswell. Time will tell.
+// Receiver is called on incoming packets. Initially designed for the
+// client side.
 type Receiver func(Packet) error
 
 // Packet represents any packet that can or should be handled by the
 // application layer. Using a combined type for acknowledgements and
 // publish control packets will hopefully make it easier to write
-// handlers (todo remove this sentence) when done.
+// receivers (todo remove this sentence) when done.
 type Packet interface {
 	Client() Client
+
+	// IsAck returns true if the packet is of ConnAck, PubAck, SubAck
+	// or UnsubAck.
 	IsAck() bool
 
 	// valid for Publish packets, ie. !IsAck()
