@@ -82,15 +82,15 @@ func TestAppClient(t *testing.T) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		c.Pub(ctx, &p)
-		<-time.After(50 * time.Millisecond)
+		if p, ok := (<-c.Incoming).(*mq.PubAck); !ok {
+			t.Error("expected ack, got", p)
+		}
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
 		c.Disconnect(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
-	cancel()
-	<-ctx.Done()
 }
 
 func TestClient_badConnect(t *testing.T) {

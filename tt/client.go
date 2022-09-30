@@ -48,11 +48,11 @@ type Client struct {
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
-		c.debug.Print(p)
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
 		msg := fmt.Sprint(p, " <- %s\n", hex.Dump(buf.Bytes()))
-		c.debug.Print(msg, "\n\n")
+		c.debug.Printf(msg, "")
+		c.debug.Print("\n\n")
 
 		return next(p)
 	}
