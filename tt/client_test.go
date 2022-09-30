@@ -9,6 +9,7 @@ import (
 
 	"github.com/gregoryv/mq"
 )
+
 var _ mq.Client = &Client{}
 
 // thing is anything like an iot device that mostly sends stats to the
@@ -53,6 +54,8 @@ func TestAppClient(t *testing.T) {
 
 	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
+	go c.Run(ctx)
+	t.Cleanup(cancel)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
@@ -94,10 +97,17 @@ func TestClient_badConnect(t *testing.T) {
 	conn := dialBroker(t)
 
 	c := NewNetClient(conn)
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	go func() {
+		if err := c.Run(ctx); err == nil {
+			t.Error(err)
+		}
+	}()
+
 	conn.Close() // close before we write connect packet
 
 	p := mq.NewConnect()
-	ctx := context.Background()
 	if err := c.Connect(ctx, &p); err == nil {
 		t.Fatal("expect error")
 	}
