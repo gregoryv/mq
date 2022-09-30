@@ -11,6 +11,9 @@ Client implementations are responsible for
   - Add packet ID's and acknowledge packets
 */
 type Client interface {
+	Connect(context.Context, *Connect) error
+	Disconnect(context.Context, *Disconnect) error
+
 	// Pub writes the given control packet on the wire, fails if could
 	// not be written. The call does not wait for a PubAck, see
 	// Receiver.

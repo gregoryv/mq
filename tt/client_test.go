@@ -39,7 +39,7 @@ func TestThingClient(t *testing.T) {
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		c.Disconnect(&p)
+		c.Disconnect(ctx, &p)
 	}
 	<-time.After(200 * time.Millisecond)
 	cancel()
@@ -85,7 +85,7 @@ func TestAppClient(t *testing.T) {
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		c.Disconnect(&p)
+		c.Disconnect(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
 	cancel()

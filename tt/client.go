@@ -69,11 +69,9 @@ func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 	return nil
 }
 
-func (c *Client) Disconnect(p *mq.Disconnect) {
+func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 	// todo handle session variations perhaps, async
-	if err := c.send(p); err != nil {
-		c.debug.Print(err)
-	}
+	return c.debugErr(c.send(p))
 }
 
 func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
