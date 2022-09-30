@@ -42,8 +42,10 @@ type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
 
-	// todo use it in handlePackets
-	first    mq.Receiver
+	first mq.Receiver
+
+	// todo tests could replace the first with the intercept thing
+	// no need to always have it here
 	Incoming chan mq.Packet // allows for intercepting packets
 
 	ackman *Ackman
