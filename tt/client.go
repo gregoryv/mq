@@ -76,18 +76,19 @@ func (c *Client) Disconnect(p *mq.Disconnect) {
 	}
 }
 
-func (c *Client) Publish(ctx context.Context, p *mq.Publish) {
-	if err := c.publish(ctx, p); err != nil {
-		c.debug.Print(err)
-	}
-}
-
-func (c *Client) publish(ctx context.Context, p *mq.Publish) error {
+func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
 		id := c.ackman.Next(ctx)
 		p.SetPacketID(id)
 	}
-	return c.send(p)
+	return c.debugErr(c.send(p))
+}
+
+func (c *Client) debugErr(err error) error {
+	if err != nil {
+		c.debug.Print(err)
+	}
+	return err
 }
 
 // Subscribe sends the subscribe packet to the connected broker.

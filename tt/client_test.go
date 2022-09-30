@@ -34,7 +34,7 @@ func TestThingClient(t *testing.T) {
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		c.Publish(ctx, &p)
+		c.Pub(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
 	{ // disconnect nicely
@@ -54,7 +54,7 @@ func TestAppClient(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := NewNetClient(conn)
+	var c mq.Client = NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	{ // connect mq tt
@@ -80,7 +80,7 @@ func TestAppClient(t *testing.T) {
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		c.Publish(ctx, &p)
+		c.Pub(ctx, &p)
 		<-time.After(50 * time.Millisecond)
 	}
 	{ // disconnect nicely
