@@ -13,6 +13,10 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+// todo maybe this is more like a port that can be used both on client
+// and server side it's first when you set the application receiver
+// that they differ, right?
+
 func NewNetClient(conn net.Conn) *Client {
 	c := NewClient()
 	c.SetReadWriter(conn)
@@ -92,11 +96,6 @@ func (c *Client) handleAckPacket(p mq.Packet) error {
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
 
-// Run must be called before trying to send packets.
-func (c *Client) Run(ctx context.Context) error {
-	return c.handlePackets(ctx)
-}
-
 // Connect sends the packet and waits for acknowledgement. In the
 // future this would be a good place to implement support for
 // different auth methods.
@@ -133,6 +132,11 @@ func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	return c.debugErr(c.send(p))
 }
 
+// Run must be called before trying to send packets.
+func (c *Client) Run(ctx context.Context) error {
+	return c.handlePackets(ctx)
+}
+
 // handlePackets is responsible for sending acks to incoming packets.
 func (c *Client) handlePackets(ctx context.Context) error {
 	for {
@@ -142,7 +146,9 @@ func (c *Client) handlePackets(ctx context.Context) error {
 			c.debug.Print("no more packets will be handled")
 			return err
 		}
-		c.first(p)
+		if p != nil {
+			c.first(p)
+		}
 	}
 }
 

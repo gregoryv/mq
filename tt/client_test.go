@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 	"testing"
-	"time"
 
 	"github.com/gregoryv/mq"
 )
@@ -25,20 +24,16 @@ func TestThingClient(t *testing.T) {
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
-		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
-			t.Error("expected ack, got", p)
-		}
+		_ = (<-c.Incoming).(*mq.ConnAck)
 	}
 	{ // publish application message
 		p := mq.NewPublish()
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		c.Pub(ctx, &p)
 
-		if p, ok := (<-c.Incoming).(*mq.PubAck); !ok {
-			t.Error("expected ack, got", p)
-		}
+		_ = c.Pub(ctx, &p)
+		_ = (<-c.Incoming).(*mq.PubAck)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
@@ -46,7 +41,6 @@ func TestThingClient(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	<-time.After(200 * time.Millisecond)
 }
 
 func TestAppClient(t *testing.T) {
@@ -60,6 +54,7 @@ func TestAppClient(t *testing.T) {
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
+
 		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
 			t.Error("expected ack, got", p)
 		}
@@ -67,29 +62,24 @@ func TestAppClient(t *testing.T) {
 	{ // subscribe
 		p := mq.NewSubscribe()
 		p.AddFilter("a/b", mq.FopQoS1)
-		if err := c.Sub(ctx, &p); err != nil {
-			t.Fatal(err)
-		}
+		_ = c.Sub(ctx, &p)
+		_ = (<-c.Incoming).(*mq.SubAck)
 	}
 	// todo use a client to publish an application message on the
 	// subscribed topic wip, need to implement routing of subscribed
 	// filters in previous step and assert that the message arrives
 	// properly.
-	{
-		// publish application message
+	{ // publish application message
 		p := mq.NewPublish()
-		p.SetQoS(2)
+		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		c.Pub(ctx, &p)
-		if p, ok := (<-c.Incoming).(*mq.PubAck); !ok {
-			t.Error("expected ack, got", p)
-		}
+		_ = c.Pub(ctx, &p)
+		_ = (<-c.Incoming).(*mq.PubAck)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		c.Disconnect(ctx, &p)
-		<-time.After(50 * time.Millisecond)
+		_ = c.Disconnect(ctx, &p)
 	}
 }
 
@@ -101,7 +91,7 @@ func TestClient_badConnect(t *testing.T) {
 	t.Cleanup(cancel)
 	go func() {
 		if err := c.Run(ctx); err == nil {
-			t.Error(err)
+			t.Error("Run should fail with error")
 		}
 	}()
 
