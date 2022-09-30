@@ -37,24 +37,4 @@ type Subscription struct {
 
 // Receiver is called on incoming packets. Initially designed for the
 // client side.
-type Receiver func(Packet) error
-
-// Packet represents any packet that can or should be handled by the
-// application layer. Using a combined type for acknowledgements and
-// publish control packets will hopefully make it easier to write
-// receivers (todo remove this sentence) when done.
-type Packet interface {
-	Client() Client
-
-	// IsAck returns true if the packet is of ConnAck, PubAck, SubAck
-	// or UnsubAck.
-	IsAck() bool
-
-	// valid for Publish packets, ie. !IsAck()
-	ContentType() string
-	CorrelationData() []byte
-	Duplicate() bool
-	Payload() []byte
-	PacketID() uint16
-	ResponseTopic() string
-}
+type Receiver func(ControlPacket) error

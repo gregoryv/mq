@@ -24,18 +24,13 @@ func NewClient() *Client {
 	c := &Client{
 		debug:    log.New(log.Writer(), "", log.Flags()),
 		ackman:   NewAckman(NewIDPool(maxConcurrentIds)),
-		Incoming: make(chan mq.Packet, 0),
+		Incoming: make(chan mq.ControlPacket, 0),
 	}
-	c.first = func(p mq.Packet) error {
-		c.debug.Print(p)
-		c.Incoming <- p
-		select {
-		case c.Incoming <- p:
-		default:
-		}
-
-		return nil
-	}
+	c.first = c.debugPacket(
+		c.interceptPacket(
+			c.ackPacket,
+		),
+	)
 	return c
 }
 
@@ -45,10 +40,51 @@ type Client struct {
 
 	// todo use it in handlePackets
 	first    mq.Receiver
-	Incoming chan mq.Packet // allows for intercepting packets
+	Incoming chan mq.ControlPacket // allows for intercepting packets
 
 	ackman *Ackman
 	debug  *log.Logger
+}
+
+func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
+	return func(p mq.ControlPacket) error {
+		c.debug.Print(p)
+		var buf bytes.Buffer
+		p.WriteTo(&buf)
+		msg := fmt.Sprint(p, " <- %s\n", hex.Dump(buf.Bytes()))
+		c.debug.Print(msg, "\n\n")
+
+		return next(p)
+	}
+}
+
+func (c *Client) interceptPacket(next mq.Receiver) mq.Receiver {
+	return func(p mq.ControlPacket) error {
+		select {
+		case c.Incoming <- p:
+		default:
+		}
+		return next(p)
+	}
+}
+
+func (c *Client) ackPacket(p mq.ControlPacket) error {
+	ctx := context.Background()
+	// reuse packet ids and handle acks
+	switch p := p.(type) {
+	case *mq.SubAck:
+		c.ackman.Handle(ctx, p) // todo move to first or subsequent, why?
+
+	case *mq.PubAck:
+		c.ackman.Handle(ctx, p)
+
+	case *mq.Publish:
+		c.ackman.Handle(ctx, p)
+
+	default:
+		return fmt.Errorf("todo ack %s", p)
+	}
+	return nil
 }
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
@@ -128,43 +164,7 @@ func (c *Client) handlePackets(ctx context.Context) error {
 			return err
 		}
 
-		// debug incoming control packet, todo move to the first receiver
-		var buf bytes.Buffer
-		in.WriteTo(&buf)
-		msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
-
-		// wrap control packet in a slimmer representation, but why
-		p := &Packet{
-			client: c,
-		}
-
-		select {
-		case <-ctx.Done():
-			return c.debugErr(ctx.Err())
-
-		default:
-			// reuse packet ids and handle acks
-			switch in := in.(type) {
-			case *mq.SubAck:
-				c.ackman.Handle(ctx, in) // todo move to first or subsequent
-				p.ack = in
-
-			case *mq.PubAck:
-				c.ackman.Handle(ctx, in)
-				p.ack = in
-
-			case *mq.Publish:
-				c.ackman.Handle(ctx, in)
-				p.Publish = in
-
-			default:
-				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
-			}
-			msg = fmt.Sprintf(msg, "")
-		}
-		//c.debug.Print(msg, "\n\n")
-
-		c.first(p)
+		c.first(in)
 	}
 }
 

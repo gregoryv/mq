@@ -36,8 +36,9 @@ func TestThingClient(t *testing.T) {
 			c.Pub(ctx, &p)
 		}()
 
-		if v := <-c.Incoming; !v.IsAck() {
-			t.Error("expected ack, got", v)
+		p := <-c.Incoming
+		if _, ok := p.(*mq.PubAck); !ok {
+			t.Error("expected ack, got", p)
 		}
 	}
 	{ // disconnect nicely
@@ -105,7 +106,7 @@ func init() {
 	log.SetFlags(0)
 }
 
-func ignore(_ mq.Packet) error { return nil }
+func ignore(_ mq.ControlPacket) error { return nil }
 
 func dialBroker(t *testing.T) net.Conn {
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")

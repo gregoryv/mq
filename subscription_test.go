@@ -6,13 +6,13 @@ import (
 )
 
 func ExampleSubscription() {
-	_ = NewSubscription("my/topic", func(p Packet) error {
+	_ = NewSubscription("my/topic", func(p ControlPacket) error {
 		return nil
 	})
 }
 
 func TestSubscription(t *testing.T) {
-	s := NewSubscription("my/topic", func(p Packet) error {
+	s := NewSubscription("my/topic", func(p ControlPacket) error {
 		return nil
 	})
 	if v := s.String(); !strings.Contains(v, "my/topic") {
