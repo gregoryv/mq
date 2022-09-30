@@ -9,6 +9,7 @@ import (
 
 	"github.com/gregoryv/mq"
 )
+var _ mq.Client = &Client{}
 
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
@@ -22,22 +23,17 @@ func TestThingClient(t *testing.T) {
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		if err := c.Connect(ctx, &p); err != nil {
-			t.Fatal(err)
-		}
+		_ = c.Connect(ctx, &p)
 		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
 			t.Error("expected ack, got", p)
 		}
 	}
 	{ // publish application message
-		go func() {
-			p := mq.NewPublish()
-			p.SetQoS(2)
-			p.SetTopicName("a/b")
-			p.SetPayload([]byte("gopher"))
-			<-time.After(20 * time.Millisecond)
-			c.Pub(ctx, &p)
-		}()
+		p := mq.NewPublish()
+		p.SetQoS(2)
+		p.SetTopicName("a/b")
+		p.SetPayload([]byte("gopher"))
+		c.Pub(ctx, &p)
 
 		if p, ok := (<-c.Incoming).(*mq.PubAck); !ok {
 			t.Error("expected ack, got", p)
@@ -55,13 +51,14 @@ func TestThingClient(t *testing.T) {
 func TestAppClient(t *testing.T) {
 	conn := dialBroker(t)
 
-	var c mq.Client = NewNetClient(conn)
+	c := NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		if err := c.Connect(ctx, &p); err != nil {
-			t.Fatal(err)
+		_ = c.Connect(ctx, &p)
+		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
+			t.Error("expected ack, got", p)
 		}
 	}
 	{ // subscribe
