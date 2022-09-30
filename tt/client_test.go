@@ -113,4 +113,4 @@ func init() {
 	log.SetFlags(0)
 }
 
-func ignore(_ context.Context, _ mq.Packet) error { return nil }
+func ignore(_ mq.Packet) error { return nil }

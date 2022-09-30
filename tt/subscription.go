@@ -1,20 +1,29 @@
 package tt
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/gregoryv/mq"
 )
 
-func NewSubscription() *Subscription {
-	return &Subscription{}
+func NewSubscription(filter string, h mq.HandlerFunc) *Subscription {
+	p := mq.NewSubscribe()
+	p.AddFilter(filter, 0)
+
+	return &Subscription{
+		Subscribe: &p,
+		Handler:   h,
+	}
 }
 
 type Subscription struct {
-	packet  *mq.Subscribe
-	handler mq.Handler
+	*mq.Subscribe
+	mq.Handler
 }
 
-func (s *Subscription) SetPacket(v *mq.Subscribe) { s.packet = v }
-func (s *Subscription) Packet() *mq.Subscribe     { return s.packet }
+func missingHandler(_ context.Context, _ mq.Packet) error {
+	return ErrMissingHandler
+}
 
-func (s *Subscription) SetHandler(v mq.HandlerFunc) { s.handler = v }
-func (s *Subscription) Handler() mq.Handler         { return s.handler }
+var ErrMissingHandler = fmt.Errorf("missing handler")

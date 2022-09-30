@@ -31,13 +31,13 @@ type Subscription interface {
 // Handler acts on incoming packets. Initially designed for the client
 // side though could be used on the server aswell. Time will tell.
 type Handler interface {
-	Act(context.Context, Packet) error
+	Act(Packet) error
 }
 
-type HandlerFunc func(context.Context, Packet) error
+type HandlerFunc func( Packet) error
 
-func (h HandlerFunc) Act(ctx context.Context, p Packet) error {
-	return h(ctx, p)
+func (h HandlerFunc) Act( p Packet) error {
+	return h( p)
 }
 
 // Packet represents any packet that can or should be handled by the
