@@ -92,7 +92,7 @@ func (c *Client) publish(ctx context.Context, p *mq.Publish) error {
 
 // Subscribe sends the subscribe packet to the connected broker.
 // wip maybe introduce a subscription type
-func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h mq.HandlerFunc) error {
+func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h mq.Receiver) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
 	return c.send(p)

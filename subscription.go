@@ -1,11 +1,11 @@
 package mq
 
-func NewSubscription(filter string, h HandlerFunc) *Subscription {
+func NewSubscription(filter string, r Receiver) *Subscription {
 	p := NewSubscribe()
 	p.AddFilter(filter, 0)
 
 	return &Subscription{
-		Subscribe:   &p,
-		HandlerFunc: h,
+		Subscribe: &p,
+		Receiver:  r,
 	}
 }

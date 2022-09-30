@@ -11,7 +11,6 @@ Client implementations are responsible for
 
   - Sync writes and reads of packets
   - Add packet ID's and acknowledge packets
-
 */
 type Client interface {
 	Router
@@ -29,12 +28,12 @@ type Router interface {
 
 type Subscription struct {
 	*Subscribe
-	HandlerFunc
+	Receiver
 }
 
 // Handler acts on incoming packets. Initially designed for the client
 // side though could be used on the server aswell. Time will tell.
-type HandlerFunc func(Packet) error
+type Receiver func(Packet) error
 
 // Packet represents any packet that can or should be handled by the
 // application layer. Using a combined type for acknowledgements and

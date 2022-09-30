@@ -210,8 +210,8 @@ type connAckFlags byte
 // String returns flags represented with a letter.
 // Improper flags are marked with '!' and unset are marked with '-'.
 //
-//   SessionPresent s
-//   Reserved      !
+//	SessionPresent s
+//	Reserved      !
 func (c connAckFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 8)
 

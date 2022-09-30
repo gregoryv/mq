@@ -419,13 +419,13 @@ type connectFlags byte
 // String returns flags represented with a letter.
 // Improper flags are marked with '!' and unset are marked with '-'.
 //
-//   UsernameFlag  u
-//   PasswordFlag  p
-//   WillRetain    r
-//   WillQoS       1, 2 or !
-//   WillFlag      2
-//   CleanStart    s
-//   Reserved      !
+//	UsernameFlag  u
+//	PasswordFlag  p
+//	WillRetain    r
+//	WillQoS       1, 2 or !
+//	WillFlag      2
+//	CleanStart    s
+//	Reserved      !
 func (c connectFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 8)
 

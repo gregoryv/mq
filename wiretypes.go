@@ -3,7 +3,6 @@ Package mq provides a MQTT v5.0 protocol implementation
 
 The specification is found at
 https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html
-
 */
 package mq
 
