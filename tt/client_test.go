@@ -13,15 +13,10 @@ import (
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	//dial broker
-	conn, err := net.Dial("tcp", "127.0.0.1:1883")
-	if err != nil {
-		t.Log("no broker, did you run docker-compose up?")
-		t.Fatal(err)
-	}
+	conn := dialBroker(t)
 
 	c := NewNetClient(conn)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	{ // connect mq tt
 		p := mq.NewConnect()
@@ -42,17 +37,10 @@ func TestThingClient(t *testing.T) {
 		c.Disconnect(ctx, &p)
 	}
 	<-time.After(200 * time.Millisecond)
-	cancel()
-	<-ctx.Done()
 }
 
 func TestAppClient(t *testing.T) {
-	// dial broker
-	conn, err := net.Dial("tcp", "127.0.0.1:1883")
-	if err != nil {
-		t.Log("no broker, did you run docker-compose up?")
-		t.Fatal(err)
-	}
+	conn := dialBroker(t)
 
 	var c mq.Client = NewNetClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -93,14 +81,10 @@ func TestAppClient(t *testing.T) {
 }
 
 func TestClient_badConnect(t *testing.T) {
-	conn, err := net.Dial("tcp", "127.0.0.1:1883")
-	if err != nil {
-		t.Log("no broker, did you run docker-compose up?")
-		t.Fatal(err)
-	}
+	conn := dialBroker(t)
 
 	c := NewNetClient(conn)
-	conn.Close()
+	conn.Close() // close before we write connect packet
 
 	p := mq.NewConnect()
 	ctx := context.Background()
@@ -114,3 +98,13 @@ func init() {
 }
 
 func ignore(_ mq.Packet) error { return nil }
+
+func dialBroker(t *testing.T) net.Conn {
+	conn, err := net.Dial("tcp", "127.0.0.1:1883")
+	if err != nil {
+		t.Log("no broker, did you run docker-compose up?")
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { conn.Close() })
+	return conn
+}
