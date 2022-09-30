@@ -25,6 +25,10 @@ func NewClient() *Client {
 		debug:  log.New(log.Writer(), "", log.Flags()),
 		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
 	}
+	c.first = func(p mq.Packet) error {
+		c.debug.Print(p)
+		return nil
+	}
 	return c
 }
 
@@ -32,11 +36,19 @@ type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
 
+	// todo
+	first mq.Receiver
+
 	ackman *Ackman
 	debug  *log.Logger
 }
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
+
+// Run must be called before trying to send packets.
+func (c *Client) Run(ctx context.Context) error {
+	return c.handlePackets(ctx)
+}
 
 // Connect sends the packet and waits for acknowledgement. In the
 // future this would be a good place to implement support for
@@ -47,7 +59,9 @@ func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 		return fmt.Errorf("%w: %v", ErrConnect, err)
 	}
 
-	in, err := c.nextPacket()
+	in, err := c.nextPacket() // todo move this to the chain of
+	// receivers so we can intercept and use
+	// shared logging
 	if err != nil {
 		return err
 	}
@@ -65,7 +79,6 @@ func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 		return fmt.Errorf("%w: unexpected %v", ErrConnect, in)
 	}
 
-	go c.handlePackets(ctx)
 	return nil
 }
 
@@ -98,24 +111,23 @@ func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 }
 
 // handlePackets is responsible for sending acks to incoming packets.
-func (c *Client) handlePackets(ctx context.Context) {
+func (c *Client) handlePackets(ctx context.Context) error {
 	for {
 		in, err := c.nextPacket()
 		if err != nil {
 			c.debug.Print(err)
 			c.debug.Print("no more packets will be handled")
-			return
+			return err
 		}
 
-		// debug incoming control packet
+		// debug incoming control packet, todo move to the first receiver
 		var buf bytes.Buffer
 		in.WriteTo(&buf)
 		msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
 
 		select {
 		case <-ctx.Done():
-			c.debug.Print(ctx.Err())
-			return
+			return c.debugErr(ctx.Err())
 
 		default:
 			// reuse packet ids and handle acks

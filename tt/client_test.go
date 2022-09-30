@@ -16,7 +16,9 @@ func TestThingClient(t *testing.T) {
 	conn := dialBroker(t)
 
 	c := NewNetClient(conn)
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	go c.Run(ctx)
+	t.Cleanup(cancel)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
