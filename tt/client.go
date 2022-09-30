@@ -28,7 +28,7 @@ func NewClient() *Client {
 	}
 	c.first = c.debugPacket(
 		c.interceptPacket(
-			c.ackPacket,
+			c.handleAckPacket,
 		),
 	)
 	return c
@@ -68,7 +68,7 @@ func (c *Client) interceptPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) ackPacket(p mq.ControlPacket) error {
+func (c *Client) handleAckPacket(p mq.ControlPacket) error {
 	ctx := context.Background()
 	// reuse packet ids and handle acks
 	switch p := p.(type) {
@@ -81,8 +81,11 @@ func (c *Client) ackPacket(p mq.ControlPacket) error {
 	case *mq.Publish:
 		c.ackman.Handle(ctx, p)
 
-	default:
-		return fmt.Errorf("todo ack %s", p)
+	case *mq.ConnAck:
+		c.setLogPrefix(p.AssignedClientID())
+		if p.ReasonCode() != mq.Success {
+			c.debug.Print("reason", p.ReasonString())
+		}
 	}
 	return nil
 }
@@ -99,31 +102,7 @@ func (c *Client) Run(ctx context.Context) error {
 // different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 	c.setLogPrefix(p.ClientID())
-	if err := c.send(p); err != nil {
-		return fmt.Errorf("%w: %v", ErrConnect, err)
-	}
-
-	in, err := c.nextPacket() // todo move this to the chain of
-	// receivers so we can intercept and use
-	// shared logging
-	if err != nil {
-		return err
-	}
-
-	switch in := in.(type) {
-	case *mq.ConnAck:
-		c.setLogPrefix(in.AssignedClientID())
-		if in.ReasonCode() != mq.Success {
-			c.debug.Print("reason", in.ReasonString())
-			return fmt.Errorf("%w: %s", ErrConnect, in.ReasonString())
-		}
-
-	default:
-		c.debug.Print("unexpected", in)
-		return fmt.Errorf("%w: unexpected %v", ErrConnect, in)
-	}
-
-	return nil
+	return c.debugErr(c.send(p))
 }
 
 func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
@@ -157,14 +136,13 @@ func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 // handlePackets is responsible for sending acks to incoming packets.
 func (c *Client) handlePackets(ctx context.Context) error {
 	for {
-		in, err := c.nextPacket()
+		p, err := c.nextPacket()
 		if err != nil {
 			c.debug.Print(err)
 			c.debug.Print("no more packets will be handled")
 			return err
 		}
-
-		c.first(in)
+		c.first(p)
 	}
 }
 

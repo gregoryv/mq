@@ -25,25 +25,29 @@ func TestThingClient(t *testing.T) {
 		if err := c.Connect(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
+		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
+			t.Error("expected ack, got", p)
+		}
 	}
 	{ // publish application message
 		go func() {
-			<-time.After(time.Millisecond)
 			p := mq.NewPublish()
 			p.SetQoS(2)
 			p.SetTopicName("a/b")
 			p.SetPayload([]byte("gopher"))
+			<-time.After(20 * time.Millisecond)
 			c.Pub(ctx, &p)
 		}()
 
-		p := <-c.Incoming
-		if _, ok := p.(*mq.PubAck); !ok {
+		if p, ok := (<-c.Incoming).(*mq.PubAck); !ok {
 			t.Error("expected ack, got", p)
 		}
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		c.Disconnect(ctx, &p)
+		if err := c.Disconnect(ctx, &p); err != nil {
+			t.Fatal(err)
+		}
 	}
 	<-time.After(200 * time.Millisecond)
 }
