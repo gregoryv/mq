@@ -93,10 +93,10 @@ func (c *Client) debugErr(err error) error {
 
 // Subscribe sends the subscribe packet to the connected broker.
 // wip maybe introduce a subscription type
-func (c *Client) Sub(ctx context.Context, p *mq.Subscribe, h mq.Receiver) error {
+func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	id := c.ackman.Next(ctx)
 	p.SetPacketID(id)
-	return c.send(p)
+	return c.debugErr(c.send(p))
 }
 
 // handlePackets is responsible for sending acks to incoming packets.

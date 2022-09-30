@@ -66,7 +66,7 @@ func TestAppClient(t *testing.T) {
 	{ // subscribe
 		p := mq.NewSubscribe()
 		p.AddFilter("a/b", mq.FopQoS1)
-		if err := c.Sub(ctx, &p, ignore); err != nil {
+		if err := c.Sub(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
