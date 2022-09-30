@@ -22,11 +22,18 @@ func NewNetClient(conn net.Conn) *Client {
 func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
-		debug:  log.New(log.Writer(), "", log.Flags()),
-		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
+		debug:    log.New(log.Writer(), "", log.Flags()),
+		ackman:   NewAckman(NewIDPool(maxConcurrentIds)),
+		Incoming: make(chan mq.Packet, 0),
 	}
 	c.first = func(p mq.Packet) error {
 		c.debug.Print(p)
+		c.Incoming <- p
+		select {
+		case c.Incoming <- p:
+		default:
+		}
+
 		return nil
 	}
 	return c
@@ -36,8 +43,9 @@ type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
 
-	// todo
-	first mq.Receiver
+	// todo use it in handlePackets
+	first    mq.Receiver
+	Incoming chan mq.Packet // allows for intercepting packets
 
 	ackman *Ackman
 	debug  *log.Logger
@@ -125,6 +133,11 @@ func (c *Client) handlePackets(ctx context.Context) error {
 		in.WriteTo(&buf)
 		msg := fmt.Sprint(in, " <- %s\n", hex.Dump(buf.Bytes()))
 
+		// wrap control packet in a slimmer representation, but why
+		p := &Packet{
+			client: c,
+		}
+
 		select {
 		case <-ctx.Done():
 			return c.debugErr(ctx.Err())
@@ -133,21 +146,25 @@ func (c *Client) handlePackets(ctx context.Context) error {
 			// reuse packet ids and handle acks
 			switch in := in.(type) {
 			case *mq.SubAck:
-				// todo How will the ackman know what needs to be done
-				// after ack ?  redesign this; as we need to possibly
-				// notify caller, ie. if Subscribe is done in a sync
-				// fashion
-				c.ackman.Handle(ctx, in)
+				c.ackman.Handle(ctx, in) // todo move to first or subsequent
+				p.ack = in
 
 			case *mq.PubAck:
 				c.ackman.Handle(ctx, in)
+				p.ack = in
+
+			case *mq.Publish:
+				c.ackman.Handle(ctx, in)
+				p.Publish = in
 
 			default:
 				msg = fmt.Sprintf(msg, "        (UNHANDLED!)")
 			}
 			msg = fmt.Sprintf(msg, "")
 		}
-		c.debug.Print(msg, "\n\n")
+		//c.debug.Print(msg, "\n\n")
+
+		c.first(p)
 	}
 }
 

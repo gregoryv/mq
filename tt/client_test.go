@@ -27,12 +27,18 @@ func TestThingClient(t *testing.T) {
 		}
 	}
 	{ // publish application message
-		p := mq.NewPublish()
-		p.SetQoS(2)
-		p.SetTopicName("a/b")
-		p.SetPayload([]byte("gopher"))
-		c.Pub(ctx, &p)
-		<-time.After(50 * time.Millisecond)
+		go func() {
+			<-time.After(time.Millisecond)
+			p := mq.NewPublish()
+			p.SetQoS(2)
+			p.SetTopicName("a/b")
+			p.SetPayload([]byte("gopher"))
+			c.Pub(ctx, &p)
+		}()
+
+		if v := <-c.Incoming; !v.IsAck() {
+			t.Error("expected ack, got", v)
+		}
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
