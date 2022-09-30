@@ -14,31 +14,27 @@ Client implementations are responsible for
 
 */
 type Client interface {
+	Router
 	// should they block until acked? if ack is expected
 	Pub(context.Context, *Publish) error
-	Sub(context.Context, *Subscribe, HandlerFunc) error
+
+	// Sub sends subscribe packets for all subscriptions in the router
+	// that have not yet been send.
+	Sub(context.Context) error
 }
 
 type Router interface {
 	Add(Subscription)
 }
 
-type Subscription interface {
-	Packet() *Subscribe
-	Handler
+type Subscription struct {
+	*Subscribe
+	HandlerFunc
 }
 
 // Handler acts on incoming packets. Initially designed for the client
 // side though could be used on the server aswell. Time will tell.
-type Handler interface {
-	Act(Packet) error
-}
-
-type HandlerFunc func( Packet) error
-
-func (h HandlerFunc) Act( p Packet) error {
-	return h( p)
-}
+type HandlerFunc func(Packet) error
 
 // Packet represents any packet that can or should be handled by the
 // application layer. Using a combined type for acknowledgements and
