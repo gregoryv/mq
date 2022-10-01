@@ -20,20 +20,20 @@ func TestThingClient(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go c.Run(ctx)
 	t.Cleanup(cancel)
+	incoming := interceptIncoming(c)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
-		_ = (<-c.Incoming).(*mq.ConnAck)
+		_ = (<-incoming).(*mq.ConnAck)
 	}
 	{ // publish application message
 		p := mq.NewPublish()
 		p.SetQoS(2)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-
 		_ = c.Pub(ctx, &p)
-		_ = (<-c.Incoming).(*mq.PubAck)
+		_ = (<-incoming).(*mq.PubAck)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
@@ -50,12 +50,12 @@ func TestAppClient(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go c.Run(ctx)
 	t.Cleanup(cancel)
+	incoming := interceptIncoming(c)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
-
-		if p, ok := (<-c.Incoming).(*mq.ConnAck); !ok {
+		if p, ok := (<-incoming).(*mq.ConnAck); !ok {
 			t.Error("expected ack, got", p)
 		}
 	}
@@ -63,7 +63,7 @@ func TestAppClient(t *testing.T) {
 		p := mq.NewSubscribe()
 		p.AddFilter("a/b", mq.FopQoS1)
 		_ = c.Sub(ctx, &p)
-		_ = (<-c.Incoming).(*mq.SubAck)
+		_ = (<-incoming).(*mq.SubAck)
 	}
 	// todo use a client to publish an application message on the
 	// subscribed topic wip, need to implement routing of subscribed
@@ -75,7 +75,7 @@ func TestAppClient(t *testing.T) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		_ = c.Pub(ctx, &p)
-		_ = (<-c.Incoming).(*mq.PubAck)
+		_ = (<-incoming).(*mq.PubAck)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
@@ -105,6 +105,19 @@ func TestClient_badConnect(t *testing.T) {
 
 func init() {
 	log.SetFlags(0)
+}
+
+func interceptIncoming(c *Client) chan mq.Packet {
+	ch := make(chan mq.Packet, 0)
+	next := c.first
+	c.first = func(p mq.Packet) error {
+		select {
+		case ch <- p: // if anyone is interested
+		default:
+		}
+		return next(p)
+	}
+	return ch
 }
 
 func ignore(_ mq.ControlPacket) error { return nil }

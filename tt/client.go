@@ -26,14 +26,11 @@ func NewNetClient(conn net.Conn) *Client {
 func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
-		debug:    log.New(log.Writer(), "", log.Flags()),
-		ackman:   NewAckman(NewIDPool(maxConcurrentIds)),
-		Incoming: make(chan mq.ControlPacket, 0),
+		debug:  log.New(log.Writer(), "", log.Flags()),
+		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
 	}
 	c.first = c.debugPacket(
-		c.interceptPacket(
-			c.handleAckPacket,
-		),
+		c.handleAckPacket,
 	)
 	return c
 }
@@ -43,10 +40,6 @@ type Client struct {
 	wire io.ReadWriter
 
 	first mq.Receiver
-
-	// todo tests could replace the first with the intercept thing
-	// no need to always have it here
-	Incoming chan mq.Packet // allows for intercepting packets
 
 	ackman *Ackman
 	debug  *log.Logger
@@ -60,16 +53,6 @@ func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 		c.debug.Printf(msg, "")
 		c.debug.Print("\n\n")
 
-		return next(p)
-	}
-}
-
-func (c *Client) interceptPacket(next mq.Receiver) mq.Receiver {
-	return func(p mq.Packet) error {
-		select {
-		case c.Incoming <- p:
-		default:
-		}
 		return next(p)
 	}
 }
