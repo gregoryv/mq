@@ -28,16 +28,6 @@ type Client interface {
 	Sub(context.Context, *Subscribe) error
 }
 
-type Router interface {
-	Add(...Subscription)
-	Subscriptions() []*Subscription
-}
-
-type Subscription struct {
-	*Subscribe
-	Receiver
-}
-
 // Receiver is called on incoming packets. Initially designed for the
 // client side.
 type Receiver func(Packet) error
