@@ -29,7 +29,13 @@ func NewClient() *Client {
 		debug:  log.New(log.Writer(), "", log.Flags()),
 		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
 	}
-	c.first = c.debugPacket(c.handleAckPacket)
+	// sequence of receivers for incoming packets
+	c.first = c.debugPacket(c.handleAckPacket(
+		// final step forwards to the configured receiver
+		func(p mq.Packet) error {
+			return c.receiver(p)
+		},
+	))
 	c.receiver = func(_ mq.Packet) error { return ErrUnsetReceiver }
 	return c
 }
@@ -60,26 +66,28 @@ func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) handleAckPacket(p mq.Packet) error {
-	ctx := context.Background()
-	// reuse packet ids and handle acks
-	switch p := p.(type) {
-	case *mq.SubAck:
-		c.ackman.Handle(ctx, p) // todo move to first or subsequent, why?
+func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
+	return func(p mq.Packet) error {
+		ctx := context.Background()
+		// reuse packet ids and handle acks
+		switch p := p.(type) {
+		case *mq.SubAck:
+			c.ackman.Handle(ctx, p) // todo move to first or subsequent, why?
 
-	case *mq.PubAck:
-		c.ackman.Handle(ctx, p)
+		case *mq.PubAck:
+			c.ackman.Handle(ctx, p)
 
-	case *mq.Publish:
-		c.ackman.Handle(ctx, p)
+		case *mq.Publish:
+			c.ackman.Handle(ctx, p)
 
-	case *mq.ConnAck:
-		c.setLogPrefix(p.AssignedClientID())
-		if p.ReasonCode() != mq.Success {
-			c.debug.Print("reason", p.ReasonString())
+		case *mq.ConnAck:
+			c.setLogPrefix(p.AssignedClientID())
+			if p.ReasonCode() != mq.Success {
+				c.debug.Print("reason", p.ReasonString())
+			}
 		}
+		return next(p)
 	}
-	return c.debugErr(c.receiver(p))
 }
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
