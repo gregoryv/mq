@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func newAckman(pool *IDPool) *ackman {
+func newAckman(pool *pool) *ackman {
 	return &ackman{
 		pool: pool,
 	}
@@ -13,7 +13,7 @@ func newAckman(pool *IDPool) *ackman {
 
 // Ack manager handles a pool of packet ids that require acks.
 type ackman struct {
-	pool *IDPool
+	pool *pool
 }
 
 // Next returns next available packet id

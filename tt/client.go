@@ -27,7 +27,7 @@ func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
 		debug:  log.New(log.Writer(), "", log.Flags()),
-		ackman: newAckman(NewIDPool(maxConcurrentIds)),
+		ackman: newAckman(newPool(maxConcurrentIds)),
 	}
 	// sequence of receivers for incoming packets
 	c.first = c.debugPacket(c.handleAckPacket(

@@ -7,7 +7,7 @@ import (
 
 func Test_ackman(t *testing.T) {
 	// using a pool of maximum 3 packet ids, 1,2 and 3
-	m := newAckman(NewIDPool(3))
+	m := newAckman(newPool(3))
 	ctx := context.Background()
 	m.Next(ctx)         // 1
 	last := m.Next(ctx) // 2

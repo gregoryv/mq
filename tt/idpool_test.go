@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestIDPool(t *testing.T) {
-	p := NewIDPool(3) // 1 .. 3
+func Test_pool(t *testing.T) {
+	p := newPool(3) // 1 .. 3
 
 	ctx := context.Background()
 	p.Next(ctx) // 1

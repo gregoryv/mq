@@ -5,16 +5,15 @@ import (
 	"sync"
 )
 
-// NewIDPool returns a pool of reusable id's from 1..max, 0 is not
-// used
-func NewIDPool(max uint16) *IDPool {
-	return &IDPool{
+// newPool returns a pool of reusable id's from 1..max, 0 is not used
+func newPool(max uint16) *pool {
+	return &pool{
 		pool:     make([]bool, max),
 		lastFree: make(chan uint16),
 	}
 }
 
-type IDPool struct {
+type pool struct {
 	nextFreeIndex int
 	m             sync.RWMutex
 	pool          []bool
@@ -23,7 +22,7 @@ type IDPool struct {
 	lastFree chan uint16
 }
 
-func (p *IDPool) Next(ctx context.Context) uint16 {
+func (p *pool) Next(ctx context.Context) uint16 {
 	for {
 		select {
 		case <-ctx.Done():
@@ -57,7 +56,7 @@ func (p *IDPool) Next(ctx context.Context) uint16 {
 
 // InUse returns true if the given value is not in the pool at this
 // moment.
-func (p *IDPool) InUse(v uint16) bool {
+func (p *pool) InUse(v uint16) bool {
 	p.m.RLock()
 	u := p.pool[v-1]
 	p.m.RUnlock()
@@ -65,7 +64,7 @@ func (p *IDPool) InUse(v uint16) bool {
 }
 
 // Reuse returns the given value to the pool
-func (p *IDPool) Reuse(v uint16) {
+func (p *pool) Reuse(v uint16) {
 	p.m.Lock()
 	p.pool[v-1] = FREE
 	p.m.Unlock()
