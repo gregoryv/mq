@@ -108,6 +108,13 @@ func TestClient_Connect_shortClientID(t *testing.T) {
 	_ = (<-incoming).(*mq.ConnAck)
 }
 
+func TestClient_Receiver(t *testing.T) {
+	c := NewNetClient(dialBroker(t))
+	if v := c.Receiver(); v == nil {
+		t.Error("missing initial receiver")
+	}
+}
+
 // ----------------------------------------
 
 func init() {

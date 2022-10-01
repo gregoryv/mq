@@ -29,9 +29,8 @@ func NewClient() *Client {
 		debug:  log.New(log.Writer(), "", log.Flags()),
 		ackman: NewAckman(NewIDPool(maxConcurrentIds)),
 	}
-	c.first = c.debugPacket(
-		c.handleAckPacket,
-	)
+	c.first = c.debugPacket(c.handleAckPacket)
+	c.receiver = func(_ mq.Packet) error { return ErrUnsetReceiver }
 	return c
 }
 
@@ -186,6 +185,7 @@ func (c *Client) setLogPrefix(cid string) {
 }
 
 var (
-	ErrNoConnection = fmt.Errorf("no connection")
-	ErrConnect      = fmt.Errorf("connect error")
+	ErrNoConnection  = fmt.Errorf("no connection")
+	ErrConnect       = fmt.Errorf("connect error")
+	ErrUnsetReceiver = fmt.Errorf("unset receiver")
 )
