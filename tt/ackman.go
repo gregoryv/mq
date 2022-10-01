@@ -5,23 +5,23 @@ import (
 	"fmt"
 )
 
-func NewAckman(pool *IDPool) *Ackman {
-	return &Ackman{
+func newAckman(pool *IDPool) *ackman {
+	return &ackman{
 		pool: pool,
 	}
 }
 
 // Ack manager handles a pool of packet ids that require acks.
-type Ackman struct {
+type ackman struct {
 	pool *IDPool
 }
 
 // Next returns next available packet id
-func (a *Ackman) Next(ctx context.Context) uint16 {
+func (a *ackman) Next(ctx context.Context) uint16 {
 	return a.pool.Next(ctx)
 }
 
-func (a *Ackman) Handle(ctx context.Context, packetID uint16) error {
+func (a *ackman) Handle(ctx context.Context, packetID uint16) error {
 	if !a.pool.InUse(packetID) {
 		return fmt.Errorf("%v not used", packetID)
 	}
