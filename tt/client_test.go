@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"sync"
 	"testing"
 
 	"github.com/gregoryv/mq"
@@ -45,9 +46,7 @@ func TestAppClient(t *testing.T) {
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
-		if p, ok := (<-incoming).(*mq.ConnAck); !ok {
-			t.Error("expected ack, got", p)
-		}
+		_ = (<-incoming).(*mq.ConnAck)
 	}
 	{ // subscribe
 		p := mq.NewSubscribe()
@@ -59,6 +58,10 @@ func TestAppClient(t *testing.T) {
 	// subscribed topic wip, need to implement routing of subscribed
 	// filters in previous step and assert that the message arrives
 	// properly.
+	var wg sync.WaitGroup
+	wg.Add(1)
+	c.SetReceiver(func(p mq.Packet) error { wg.Done(); return nil })
+
 	{ // publish application message
 		p := mq.NewPublish()
 		p.SetQoS(1)
@@ -66,7 +69,11 @@ func TestAppClient(t *testing.T) {
 		p.SetPayload([]byte("gopher"))
 		_ = c.Pub(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
+		// it's not possible to do a _ = (<-incoming).(*mq.Publish) as
+		// the timing is off.
 	}
+	// so we wait for the packet to be received and routed properly
+	wg.Wait()
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
 		_ = c.Disconnect(ctx, &p)

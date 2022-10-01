@@ -39,11 +39,15 @@ type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
 
-	first mq.Receiver
+	first    mq.Receiver
+	receiver mq.Receiver // the application layer
 
 	ackman *Ackman
 	debug  *log.Logger
 }
+
+func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
+func (c *Client) Receiver() mq.Receiver     { return c.receiver }
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
@@ -69,6 +73,7 @@ func (c *Client) handleAckPacket(p mq.Packet) error {
 
 	case *mq.Publish:
 		c.ackman.Handle(ctx, p)
+		return c.debugErr(c.receiver(p))
 
 	case *mq.ConnAck:
 		c.setLogPrefix(p.AssignedClientID())
