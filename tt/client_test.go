@@ -54,15 +54,12 @@ func TestAppClient(t *testing.T) {
 		_ = c.Sub(ctx, &p)
 		_ = (<-incoming).(*mq.SubAck)
 	}
-	// todo use a client to publish an application message on the
-	// subscribed topic wip, need to implement routing of subscribed
-	// filters in previous step and assert that the message arrives
-	// properly.
-	var wg sync.WaitGroup
-	wg.Add(1)
-	c.SetReceiver(func(p mq.Packet) error { wg.Done(); return nil })
 
-	{ // publish application message
+	// publish application message
+	var wg sync.WaitGroup
+	wg.Add(2) // one ack and one publish
+	c.SetReceiver(func(p mq.Packet) error { wg.Done(); return nil })
+	{
 		p := mq.NewPublish()
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
@@ -70,10 +67,11 @@ func TestAppClient(t *testing.T) {
 		_ = c.Pub(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
 		// it's not possible to do a _ = (<-incoming).(*mq.Publish) as
-		// the timing is off.
+		// the timing is off.  so we wait for the packet to be
+		// received and routed properly
+		wg.Wait()
 	}
-	// so we wait for the packet to be received and routed properly
-	wg.Wait()
+
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
 		_ = c.Disconnect(ctx, &p)
@@ -110,8 +108,16 @@ func TestClient_Connect_shortClientID(t *testing.T) {
 
 func TestClient_Receiver(t *testing.T) {
 	c := NewNetClient(dialBroker(t))
-	if v := c.Receiver(); v == nil {
-		t.Error("missing initial receiver")
+	ctx, incoming := runIntercepted(t, c)
+
+	v := c.Receiver()
+	if v == nil {
+		t.Fatal("missing initial receiver")
+	}
+	{ // connect mq tt
+		p := mq.NewConnect()
+		_ = c.Connect(ctx, &p)
+		_ = (<-incoming).(*mq.ConnAck)
 	}
 }
 

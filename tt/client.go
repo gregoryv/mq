@@ -72,7 +72,6 @@ func (c *Client) handleAckPacket(p mq.Packet) error {
 
 	case *mq.Publish:
 		c.ackman.Handle(ctx, p)
-		return c.debugErr(c.receiver(p))
 
 	case *mq.ConnAck:
 		c.setLogPrefix(p.AssignedClientID())
@@ -80,7 +79,7 @@ func (c *Client) handleAckPacket(p mq.Packet) error {
 			c.debug.Print("reason", p.ReasonString())
 		}
 	}
-	return nil
+	return c.debugErr(c.receiver(p))
 }
 
 func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
