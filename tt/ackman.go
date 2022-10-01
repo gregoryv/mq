@@ -21,14 +21,10 @@ func (a *Ackman) Next(ctx context.Context) uint16 {
 	return a.pool.Next(ctx)
 }
 
-func (a *Ackman) Handle(ctx context.Context, ack PubSubAck) error {
-	if v := ack.PacketID(); !a.pool.InUse(v) {
-		return fmt.Errorf("%v not used", v)
+func (a *Ackman) Handle(ctx context.Context, packetID uint16) error {
+	if !a.pool.InUse(packetID) {
+		return fmt.Errorf("%v not used", packetID)
 	}
-	a.pool.Reuse(ack.PacketID())
+	a.pool.Reuse(packetID)
 	return nil
-}
-
-type PubSubAck interface {
-	PacketID() uint16
 }

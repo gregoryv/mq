@@ -3,8 +3,6 @@ package tt
 import (
 	"context"
 	"testing"
-
-	"github.com/gregoryv/mq"
 )
 
 func TestAckman(t *testing.T) {
@@ -14,14 +12,12 @@ func TestAckman(t *testing.T) {
 	m.Next(ctx)         // 1
 	last := m.Next(ctx) // 2
 
-	a := mq.NewPubAck()
-	a.SetPacketID(last)
-	if err := m.Handle(ctx, &a); err != nil {
+	if err := m.Handle(ctx, last); err != nil {
 		t.Error(err)
 	}
 
-	a.SetPacketID(3) // not used
-	if err := m.Handle(ctx, &a); err == nil {
+	notUsed := uint16(3)
+	if err := m.Handle(ctx, notUsed); err == nil {
 		t.Error("expect error when trying to handle free packet id")
 	}
 }

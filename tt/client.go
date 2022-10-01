@@ -72,13 +72,13 @@ func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 		// reuse packet ids and handle acks
 		switch p := p.(type) {
 		case *mq.Publish:
-			c.ackman.Handle(ctx, p)
+			c.ackman.Handle(ctx, p.PacketID())
 
 		case *mq.PubAck:
-			c.ackman.Handle(ctx, p)
+			c.ackman.Handle(ctx, p.PacketID())
 
 		case *mq.SubAck:
-			c.ackman.Handle(ctx, p)
+			c.ackman.Handle(ctx, p.PacketID())
 
 		case *mq.ConnAck:
 			c.setLogPrefix(p.AssignedClientID())
