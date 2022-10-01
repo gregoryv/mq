@@ -71,13 +71,13 @@ func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 		ctx := context.Background()
 		// reuse packet ids and handle acks
 		switch p := p.(type) {
-		case *mq.SubAck:
-			c.ackman.Handle(ctx, p) // todo move to first or subsequent, why?
+		case *mq.Publish:
+			c.ackman.Handle(ctx, p)
 
 		case *mq.PubAck:
 			c.ackman.Handle(ctx, p)
 
-		case *mq.Publish:
+		case *mq.SubAck:
 			c.ackman.Handle(ctx, p)
 
 		case *mq.ConnAck:
