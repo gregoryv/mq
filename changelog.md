@@ -6,7 +6,11 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-
+- Add protocol related interfaces in package mq
+- Add alias mq.Packet for mq.ControlPacket for shorter receiver funcs
+- tt.Client can connect, publish and receive published packets
+- Rename package mqtt to mq and put one client implementation in
+  subpackage mq/tt
 
 ## [0.14.0] 2022-09-18
 
