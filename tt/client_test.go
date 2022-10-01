@@ -14,13 +14,8 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	conn := dialBroker(t)
-
-	c := NewNetClient(conn)
-	ctx, cancel := context.WithCancel(context.Background())
-	go c.Run(ctx)
-	t.Cleanup(cancel)
-	incoming := interceptIncoming(c)
+	c := NewNetClient(dialBroker(t))
+	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
@@ -44,13 +39,8 @@ func TestThingClient(t *testing.T) {
 }
 
 func TestAppClient(t *testing.T) {
-	conn := dialBroker(t)
-
-	c := NewNetClient(conn)
-	ctx, cancel := context.WithCancel(context.Background())
-	go c.Run(ctx)
-	t.Cleanup(cancel)
-	incoming := interceptIncoming(c)
+	c := NewNetClient(dialBroker(t))
+	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
@@ -85,10 +75,8 @@ func TestAppClient(t *testing.T) {
 
 func TestClient_badConnect(t *testing.T) {
 	conn := dialBroker(t)
-
 	c := NewNetClient(conn)
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
+	ctx, _ := runIntercepted(t, c)
 	go func() {
 		if err := c.Run(ctx); err == nil {
 			t.Error("Run should fail with error")
@@ -103,8 +91,17 @@ func TestClient_badConnect(t *testing.T) {
 	}
 }
 
+// ----------------------------------------
+
 func init() {
 	log.SetFlags(0)
+}
+
+func runIntercepted(t *testing.T, c *Client) (context.Context, chan mq.Packet) {
+	ctx, cancel := context.WithCancel(context.Background())
+	go c.Run(ctx)
+	t.Cleanup(cancel)
+	return ctx, interceptIncoming(c)
 }
 
 func interceptIncoming(c *Client) chan mq.Packet {
