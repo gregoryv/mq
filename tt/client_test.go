@@ -91,6 +91,16 @@ func TestClient_badConnect(t *testing.T) {
 	}
 }
 
+func TestClient_Connect_shortClientID(t *testing.T) {
+	c := NewNetClient(dialBroker(t))
+	ctx, incoming := runIntercepted(t, c)
+
+	p := mq.NewConnect()
+	p.SetClientID("short")
+	_ = c.Connect(ctx, &p)
+	_ = (<-incoming).(*mq.ConnAck)
+}
+
 // ----------------------------------------
 
 func init() {
