@@ -2,6 +2,7 @@ package tt
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -15,7 +16,7 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	c := NewNetClient(dialBroker(t))
+	c := newClient(t)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -40,7 +41,7 @@ func TestThingClient(t *testing.T) {
 }
 
 func TestAppClient(t *testing.T) {
-	c := NewNetClient(dialBroker(t))
+	c := newClient(t)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -79,8 +80,7 @@ func TestAppClient(t *testing.T) {
 }
 
 func TestClient_badConnect(t *testing.T) {
-	conn := dialBroker(t)
-	c := NewNetClient(conn)
+	c := newClient(t)
 	ctx, _ := runIntercepted(t, c)
 	go func() {
 		if err := c.Run(ctx); err == nil {
@@ -88,7 +88,7 @@ func TestClient_badConnect(t *testing.T) {
 		}
 	}()
 
-	conn.Close() // close before we write connect packet
+	c.wire.(io.Closer).Close() // close before we write connect packet
 
 	p := mq.NewConnect()
 	if err := c.Connect(ctx, &p); err == nil {
@@ -97,7 +97,7 @@ func TestClient_badConnect(t *testing.T) {
 }
 
 func TestClient_Connect_shortClientID(t *testing.T) {
-	c := NewNetClient(dialBroker(t))
+	c := newClient(t)
 	ctx, incoming := runIntercepted(t, c)
 
 	p := mq.NewConnect()
@@ -107,7 +107,7 @@ func TestClient_Connect_shortClientID(t *testing.T) {
 }
 
 func TestClient_Receiver(t *testing.T) {
-	c := NewNetClient(dialBroker(t))
+	c := newClient(t)
 	ctx, incoming := runIntercepted(t, c)
 
 	v := c.Receiver()
@@ -148,6 +148,12 @@ func interceptIncoming(c *Client) chan mq.Packet {
 }
 
 func ignore(_ mq.ControlPacket) error { return nil }
+
+func newClient(t *testing.T) *Client {
+	c := NewClient()
+	c.SetIO(dialBroker(t))
+	return c
+}
 
 func dialBroker(t *testing.T) net.Conn {
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")

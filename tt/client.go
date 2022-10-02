@@ -7,21 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"sync"
 
 	"github.com/gregoryv/mq"
 )
-
-// todo maybe this is more like a port that can be used both on client
-// and server side it's first when you set the application receiver
-// that they differ, right?
-
-func NewNetClient(conn net.Conn) *Client {
-	c := NewClient()
-	c.SetIO(conn)
-	return c
-}
 
 func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
