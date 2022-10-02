@@ -15,8 +15,8 @@ import (
 func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
-		debug: log.New(log.Writer(), "", log.Flags()),
 		pool:  newPool(maxConcurrentIds),
+		debug: log.New(log.Writer(), "", log.Flags()),
 	}
 	// sequence of receivers for incoming packets
 	c.first = c.debugPacket(c.handleAckPacket(
@@ -30,22 +30,26 @@ func NewClient() *Client {
 }
 
 type Client struct {
+	pool  *pool // of packet IDs
+	debug *log.Logger
+
 	m    sync.Mutex
 	wire io.ReadWriter
 
 	first    mq.Receiver
 	receiver mq.Receiver // the application layer
-
-	pool  *pool
-	debug *log.Logger
 }
 
 // SetIO sets the read writer used for serializing packets from and to.
 // Should be set before calling Run
 func (c *Client) SetIO(v io.ReadWriter) { c.wire = v }
 
+// SetReceiver configures receiver for any incoming mq.Publish
+// packets. The client handles PacketID reuse.
 func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
-func (c *Client) Receiver() mq.Receiver     { return c.receiver }
+
+// Receiver returns receiver setting.
+func (c *Client) Receiver() mq.Receiver { return c.receiver }
 
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
@@ -87,7 +91,7 @@ func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 }
 
 // Sub sends the packet and is safe for concurrent use by multiple
-// goroutines.
+// goroutines. Configure receiver using SetReceiver.
 func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id)
