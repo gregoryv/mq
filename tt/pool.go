@@ -57,15 +57,6 @@ func (p *pool) Next(ctx context.Context) uint16 {
 	}
 }
 
-// InUse returns true if the given value is not in the pool at this
-// moment.
-func (p *pool) InUse(v uint16) bool {
-	p.m.RLock()
-	u := p.pool[v-1]
-	p.m.RUnlock()
-	return u
-}
-
 // Reuse returns the given value to the pool
 func (p *pool) Reuse(v uint16) {
 	p.m.Lock()
