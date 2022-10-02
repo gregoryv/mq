@@ -16,7 +16,24 @@ func Example_newClient() {
 	var conn bytes.Buffer // replace with e.g. net.Conn
 	c.SetIO(&conn)
 	c.SetReceiver(func(p mq.Packet) error {
+
+		switch p := p.(type) {
+		case *mq.Publish:
+			// handle incoming publish packet
+
+		case *mq.PubAck: // includes PubRec, PubRel PubComp
+			switch p.AckType() {
+			case mq.PUBACK:
+			case mq.PUBREC:
+			case mq.PUBCOMP:
+			case mq.PUBREL:
+			}
+		case *mq.SubAck:
+		case *mq.ConnAck:
+			_ = p
+		}
 		log.Print(p)
+		// todo specify when errors should be returned by receivers
 		return nil
 	})
 

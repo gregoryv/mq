@@ -3,9 +3,10 @@
 
 <img src="logo.svg" alt="logo" />
 
-This article documents development efforts and thoughts of
-[github.com/gregoryv/mq](https://github.com/gregoryv/mq),
-an alternative MQTT v5 implementation in Golang.
+This article documents development efforts and thoughts
+of [github.com/gregoryv/mq](https://github.com/gregoryv/mq), an
+alternative MQTT v5 implementation in Go. Development started on Aug
+3, 2022 and is still ongoing.
 
 <nav>
 	<ul>
