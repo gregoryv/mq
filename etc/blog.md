@@ -1,8 +1,10 @@
 <a name="top"></a>
-# Writing the MQ/TT packages <a class="link" href="blog.html">§</a>
+# Writing the mq/tt packages <a class="link" href="blog.html">§</a>
+
+<img src="logo.svg" alt="logo" />
 
 This article documents development efforts of
-[mq](https://github.com/gregoryv/mq)/[mq](https://github.com/gregoryv/mq/tt),
+[github.com/gregoryv/mq](https://github.com/gregoryv/mq),
 an alternative MQTT v5 implementation in Golang.
 
 <nav>
