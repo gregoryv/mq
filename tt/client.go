@@ -51,8 +51,57 @@ type Client struct {
 	debug *log.Logger
 }
 
+func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
+
 func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
 func (c *Client) Receiver() mq.Receiver     { return c.receiver }
+
+// Run begins handling incoming packets and must be called before
+// trying to send packets. Run blocks until context is interrupted or
+// the IO has closed.
+func (c *Client) Run(ctx context.Context) error {
+	// handlePackets is responsible for sending acks to incoming packets.
+	for {
+		p, err := c.nextPacket()
+		if err != nil {
+			c.debug.Print(err)
+			c.debug.Print("no more packets will be handled")
+			return err
+		}
+		if p != nil {
+			c.first(p)
+		}
+	}
+}
+
+// Connect sends the packet and waits for acknowledgement. In the
+// future this would be a good place to implement support for
+// different auth methods.
+func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
+	c.setLogPrefix(p.ClientID())
+	return c.debugErr(c.send(p))
+}
+
+func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
+	// todo handle session variations perhaps, async
+	return c.debugErr(c.send(p))
+}
+
+func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
+	if p.QoS() > 0 {
+		id := c.pool.Next(ctx)
+		p.SetPacketID(id)
+	}
+	return c.debugErr(c.send(p))
+}
+
+// Subscribe sends the subscribe packet to the connected broker.
+// wip maybe introduce a subscription type
+func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
+	id := c.pool.Next(ctx)
+	p.SetPacketID(id)
+	return c.debugErr(c.send(p))
+}
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
@@ -89,62 +138,11 @@ func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
-
-// Connect sends the packet and waits for acknowledgement. In the
-// future this would be a good place to implement support for
-// different auth methods.
-func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
-	c.setLogPrefix(p.ClientID())
-	return c.debugErr(c.send(p))
-}
-
-func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
-	// todo handle session variations perhaps, async
-	return c.debugErr(c.send(p))
-}
-
-func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
-	if p.QoS() > 0 {
-		id := c.pool.Next(ctx)
-		p.SetPacketID(id)
-	}
-	return c.debugErr(c.send(p))
-}
-
 func (c *Client) debugErr(err error) error {
 	if err != nil {
 		c.debug.Print(err)
 	}
 	return err
-}
-
-// Subscribe sends the subscribe packet to the connected broker.
-// wip maybe introduce a subscription type
-func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
-	id := c.pool.Next(ctx)
-	p.SetPacketID(id)
-	return c.debugErr(c.send(p))
-}
-
-// Run must be called before trying to send packets.
-func (c *Client) Run(ctx context.Context) error {
-	return c.handlePackets(ctx)
-}
-
-// handlePackets is responsible for sending acks to incoming packets.
-func (c *Client) handlePackets(ctx context.Context) error {
-	for {
-		p, err := c.nextPacket()
-		if err != nil {
-			c.debug.Print(err)
-			c.debug.Print("no more packets will be handled")
-			return err
-		}
-		if p != nil {
-			c.first(p)
-		}
-	}
 }
 
 // ----------------------------------------
