@@ -1,21 +1,25 @@
-package tt
+package tt_test
 
 import (
 	"bytes"
 	"context"
+
+	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt"
 )
 
+var connection bytes.Buffer // replace with e.g. net.Conn
+
 func Example_newClient() {
-	c := NewClient()
+	c := tt.NewClient()
+	c.SetIO(&connection)
 
-	var buf bytes.Buffer // network connection substitute
-	c.SetIO(&buf)
-
-	ctx, cancel := context.WithCancel(context.Background())
+	// start handling packet flow
+	ctx, _ := context.WithCancel(context.Background())
 	go c.Run(ctx)
 
-	// use the transceiver...
-
-	// and finally stop it
-	cancel()
+	// connect
+	p := mq.NewConnect()
+	p.SetClientID("gopher")
+	c.Connect(ctx, &p)
 }

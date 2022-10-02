@@ -40,14 +40,16 @@ type Client struct {
 	debug *log.Logger
 }
 
+// SetIO sets the read writer used for serializing packets from and to.
+// Should be set before calling Run
 func (c *Client) SetIO(v io.ReadWriter) { c.wire = v }
 
 func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
 func (c *Client) Receiver() mq.Receiver     { return c.receiver }
 
 // Run begins handling incoming packets and must be called before
-// trying to send packets. Run blocks until context is interrupted or
-// the wire has closed.
+// trying to send packets. Run blocks until context is interrupted,
+// the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
 	for {
 		p, err := c.nextPacket()

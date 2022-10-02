@@ -1,4 +1,5 @@
 /*
-Package tt provides a client for MQTT v5 communication
+Package tt provides a low level client for MQTT v5 communication.
+
 */
 package tt
