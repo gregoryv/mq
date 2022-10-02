@@ -22,6 +22,9 @@ type pool struct {
 	lastFree chan uint16
 }
 
+// Next returns the next available ID, blocks until one is available
+// or context is canceled. Next is safe for concurrent use by multiple
+// goroutines.
 func (p *pool) Next(ctx context.Context) uint16 {
 	for {
 		select {

@@ -64,9 +64,8 @@ func (c *Client) Run(ctx context.Context) error {
 	}
 }
 
-// Connect sends the packet and waits for acknowledgement. In the
-// future this would be a good place to implement support for
-// different auth methods.
+// Connect sends the packet. In the future this would be a good place
+// to implement support for different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 	c.setLogPrefix(p.ClientID())
 	return c.debugErr(c.send(p))
@@ -77,6 +76,8 @@ func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 	return c.debugErr(c.send(p))
 }
 
+// Pub sends the packet and is safe for concurrent use by multiple
+// goroutines.
 func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
@@ -85,8 +86,8 @@ func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	return c.debugErr(c.send(p))
 }
 
-// Subscribe sends the subscribe packet to the connected broker.
-// wip maybe introduce a subscription type
+// Sub sends the packet and is safe for concurrent use by multiple
+// goroutines.
 func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id)
