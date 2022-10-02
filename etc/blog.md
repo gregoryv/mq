@@ -70,6 +70,17 @@ protocol? One way would be to start writing the client and then add on
 what you need as you go along. I've never been a fan of such top down
 development, hard to do test driven developent(TDD) in that scenario.
 
+First thing is to actually read the specification and get a feel for
+it. The requirements are spread out within the document which gives
+them context and they follow RFC2119 for phrasing which is nice.
+
+As I read on, navigation became a bit of a hassle. Having to jump up
+and down to the table of contents and then into a specific section was
+cumbersome with that many sections. This became even more disturbing
+once development started. To remedy that I saved a local copy and
+added anchors with proper names where needed, ie. #connect to directly
+jump to the Connect packet section.
+
 <a name="design"></a>
 ## Design <a class="link" href="#design">§</a>
 
@@ -172,6 +183,7 @@ mq/tt
 ## References <a class="link" href="#references">§</a>
 
 <ol>
-	<li><a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">MQTT Version 5.0</a> specification</li>
+	<li><a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">mqtt-v5.0</a> specification</li>
 	<li><a href="https://pkg.go.dev/github.com/eclipse/paho.mqtt.golang">paho.mqtt.golang</a> implementation</li>
+	<li><a href="http://www.rfc-editor.org/info/rfc2119">RFC2119</a></li>
 </ol>
