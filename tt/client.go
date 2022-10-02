@@ -19,7 +19,7 @@ import (
 
 func NewNetClient(conn net.Conn) *Client {
 	c := NewClient()
-	c.SetReadWriter(conn)
+	c.SetIO(conn)
 	return c
 }
 
@@ -51,16 +51,15 @@ type Client struct {
 	debug *log.Logger
 }
 
-func (c *Client) SetReadWriter(v io.ReadWriter) { c.wire = v }
+func (c *Client) SetIO(v io.ReadWriter) { c.wire = v }
 
 func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
 func (c *Client) Receiver() mq.Receiver     { return c.receiver }
 
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted or
-// the IO has closed.
+// the wire has closed.
 func (c *Client) Run(ctx context.Context) error {
-	// handlePackets is responsible for sending acks to incoming packets.
 	for {
 		p, err := c.nextPacket()
 		if err != nil {
