@@ -1,8 +1,7 @@
 <a name="top"></a>
-# Writing the MQ/TT packages <a href="blog.html">§</a>
+# Writing the MQ/TT packages <a class="link" href="blog.html">§</a>
 
-This article describes the development efforts of
-modules
+This article documents development efforts of
 [mq](https://github.com/gregoryv/mq)/[mq](https://github.com/gregoryv/mq/tt),
 an alternative MQTT v5 implementation in Golang.
 
@@ -10,7 +9,9 @@ an alternative MQTT v5 implementation in Golang.
 	<ul>
 		<li><a href="#background">Background</a></li>
 		<li><a href="#goal">Goal</a></li>
-		<li><a href="#references">References</a></li>				
+		<li><a href="#angleofattack">Angle of attack</a></li>
+		<li><a href="#design">Design</a></li>
+		<li><a href="#references">References</a></li>
 	</ul>
 </nav>
 
@@ -59,6 +60,18 @@ never tried. Hopefully with benchmarks in place I can provide some
 useful insights to the community about either my own improvements or
 possible ones in the paho module.
 
+<a name="angleofattack"></a>
+<h2>Angle of attack</h2>
+
+How do you go about starting to implement a specification of a
+protocol? One way would be to start writing the client and then add on
+what you need as you go along. I've never been a fan of such top down
+development, hard to do test driven developent(TDD) in that scenario.
+
+<a name="design"></a>
+<h2>Design</h2>
+
+Package naming ...
 
 
 <h2>Initial benchmarks and optimization</h2>
@@ -70,15 +83,15 @@ pkg: github.com/gregoryv/mq
 cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
 BenchmarkConnect/make/our     15082816        77.58 ns/op      24 B/op       3 allocs/op
 BenchmarkConnect/make/their    3935006       279.30 ns/op     512 B/op       5 allocs/op
-<b>BenchmarkConnect/write/our      483277      2096.00 ns/op     48 B/op       1 allocs/op</b>
+<em>BenchmarkConnect/write/our      483277      2096.00 ns/op     48 B/op       1 allocs/op</em>
 BenchmarkConnect/write/their   2359382       862.40 ns/op     368 B/op      10 allocs/op
-<b>BenchmarkConnect/read/our      1553311       859.40 ns/op    440 B/op       8 allocs/op</b>
+<em>BenchmarkConnect/read/our      1553311       859.40 ns/op    440 B/op       8 allocs/op</em>
 BenchmarkConnect/read/their     549508      2507.00 ns/op    3288 B/op      24 allocs/op
 </pre>
 
 Writing a control packet uses one allocation but is still a lot slower
 than their version when it comes to writing. Though in the reading the
-roles are inversed, our version has fewer allocations and is quicker.
+roles are reversed, our version has fewer allocations and is quicker.
 We'll have to do an overall test, i.e. reading And writing messages,
 and maybe focus on the Publish message.
 
@@ -88,8 +101,9 @@ packet was when writing fields defined in the propertyMap. Replacing
 the loop with direct access yielded quite an improvement
 
 <pre>
-BenchmarkConnect/write/our      <b>7871455       150.6 ns/op</b>      48 B/op       1 allocs/op
-BenchmarkConnect/write/their    2347669       629.5 ns/op     368 B/op      10 allocs/op
+BenchmarkConnect/write/our       483277     2096.00 ns/op      48 B/op       1 allocs/op
+... after...
+<em>BenchmarkConnect/write/our      7871455       150.6 ns/op      48 B/op       1 allocs/op</em>
 </pre>
 
 
@@ -123,7 +137,7 @@ Benchmark/Auth/our            1595908         850 ns/op       296 B/op     18 al
 Benchmark/Auth/their           396902        5372 ns/op      4208 B/op     43 allocs/op
 Benchmark/Connect/our          675033        1586 ns/op       880 B/op     16 allocs/op
 Benchmark/Connect/their        207224        5237 ns/op      5552 B/op     50 allocs/op
-<b>Benchmark/Publish/our          504354        1990 ns/op       880 B/op     32 allocs/op</b>
+<em>Benchmark/Publish/our          504354        1990 ns/op       880 B/op     32 allocs/op</em>
 Benchmark/Publish/their        609014        4074 ns/op      4064 B/op     41 allocs/op
 </pre>
 
