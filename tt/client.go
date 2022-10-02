@@ -26,8 +26,8 @@ func NewNetClient(conn net.Conn) *Client {
 func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
-		debug:  log.New(log.Writer(), "", log.Flags()),
-		ackman: newAckman(newPool(maxConcurrentIds)),
+		debug: log.New(log.Writer(), "", log.Flags()),
+		pool:  newPool(maxConcurrentIds),
 	}
 	// sequence of receivers for incoming packets
 	c.first = c.debugPacket(c.handleAckPacket(
@@ -47,8 +47,8 @@ type Client struct {
 	first    mq.Receiver
 	receiver mq.Receiver // the application layer
 
-	ackman *ackman
-	debug  *log.Logger
+	pool  *pool
+	debug *log.Logger
 }
 
 func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
@@ -68,17 +68,16 @@ func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 
 func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
-		ctx := context.Background()
 		// reuse packet ids and handle acks
 		switch p := p.(type) {
 		case *mq.Publish:
-			c.ackman.Handle(ctx, p.PacketID())
+			c.pool.Reuse(p.PacketID())
 
 		case *mq.PubAck:
-			c.ackman.Handle(ctx, p.PacketID())
+			c.pool.Reuse(p.PacketID())
 
 		case *mq.SubAck:
-			c.ackman.Handle(ctx, p.PacketID())
+			c.pool.Reuse(p.PacketID())
 
 		case *mq.ConnAck:
 			c.setLogPrefix(p.AssignedClientID())
@@ -107,7 +106,7 @@ func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 
 func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
-		id := c.ackman.Next(ctx)
+		id := c.pool.Next(ctx)
 		p.SetPacketID(id)
 	}
 	return c.debugErr(c.send(p))
@@ -123,7 +122,7 @@ func (c *Client) debugErr(err error) error {
 // Subscribe sends the subscribe packet to the connected broker.
 // wip maybe introduce a subscription type
 func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
-	id := c.ackman.Next(ctx)
+	id := c.pool.Next(ctx)
 	p.SetPacketID(id)
 	return c.debugErr(c.send(p))
 }
@@ -163,7 +162,6 @@ func (c *Client) send(p mq.Packet) error {
 	if c.wire == nil {
 		return ErrNoConnection
 	}
-	// todo handle packet ids I guess
 	c.m.Lock()
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()

@@ -449,8 +449,7 @@ func (c connectFlags) String() string {
 	return string(flags) // + fmt.Sprintf(" %08b", c)
 }
 
-// CONNECT flags
-// todo hide these and use methods on Connect, e.g. Connect.IsCleanStart()
+// CONNECT flags used in Connect.HasFlag()
 const (
 	Reserved byte = 1 << iota
 	CleanStart
