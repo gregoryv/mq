@@ -3,7 +3,7 @@
 
 <img src="logo.svg" alt="logo" />
 
-This article documents development efforts of
+This article documents development efforts and thoughts of
 [github.com/gregoryv/mq](https://github.com/gregoryv/mq),
 an alternative MQTT v5 implementation in Golang.
 
@@ -11,14 +11,14 @@ an alternative MQTT v5 implementation in Golang.
 	<ul>
 		<li><a href="#background">Background</a></li>
 		<li><a href="#goal">Goal</a></li>
-		<li><a href="#angleofattack">Angle of attack</a></li>
+		<li><a href="#approach">Approach</a></li>
 		<li><a href="#design">Design</a></li>
 		<li><a href="#references">References</a></li>
 	</ul>
 </nav>
 
 <a name="background"></a>
-## Background
+## Background <a class="link" href="#background">§</a>
 
 I've mainly used <a
 href="https://github.com/eclipse/paho.mqtt.golang">github.com/eclipse/paho.mqtt.golang</a>
@@ -38,7 +38,7 @@ of the specification on my own.
 
 
 <a name="goal"></a>
-## Goal
+## Goal <a class="link" href="#goal">§</a>
 
 MQTT as a protocol is meant to be small and efficient, I set my goals
 accordingly. Having a ready implementation in the paho module made it
@@ -62,8 +62,8 @@ never tried. Hopefully with benchmarks in place I can provide some
 useful insights to the community about either my own improvements or
 possible ones in the paho module.
 
-<a name="angleofattack"></a>
-<h2>Angle of attack</h2>
+<a name="approach"></a>
+## Approach <a class="link" href="#approach">§</a>
 
 How do you go about starting to implement a specification of a
 protocol? One way would be to start writing the client and then add on
@@ -71,12 +71,12 @@ what you need as you go along. I've never been a fan of such top down
 development, hard to do test driven developent(TDD) in that scenario.
 
 <a name="design"></a>
-<h2>Design</h2>
+## Design <a class="link" href="#design">§</a>
 
 Package naming ...
 
-
-<h2>Initial benchmarks and optimization</h2>
+<a name="performance"></a>
+## Initial benchmarks and optimization <a class="link" href="#performance">§</a>
 
 <pre>
 goos: linux
@@ -169,7 +169,7 @@ mq/x
 mq/tt
 
 <a name="references"></a>
-<h2>References</h2>
+## References <a class="link" href="#references">§</a>
 
 <ol>
 	<li><a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">MQTT Version 5.0</a> specification</li>
