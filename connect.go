@@ -405,10 +405,11 @@ func (c *Connect) propertyMap() map[Ident]wireType {
 }
 
 func (c *Connect) String() string {
-	return fmt.Sprintf("%s %s %s%v %s %v bytes",
+	return fmt.Sprintf("%s %s %s%v %s %s %v bytes",
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),
 		c.protocolName,
 		c.protocolVersion,
+		c.clientID,
 		time.Duration(c.keepAlive)*time.Second,
 		c.fill(_LEN, 0),
 	)

@@ -16,7 +16,7 @@ func ExampleConnect() {
 
 	fmt.Print(c.String())
 	// output:
-	// CONNECT ---- up------ MQTT5 4m59s 34 bytes
+	// CONNECT ---- up------ MQTT5 macy 4m59s 34 bytes
 }
 
 func TestConnect(t *testing.T) {
