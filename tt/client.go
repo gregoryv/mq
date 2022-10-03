@@ -71,7 +71,8 @@ func (c *Client) Run(ctx context.Context) error {
 // Connect sends the packet. In the future this would be a good place
 // to implement support for different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
-	c.setLogPrefix(p.ClientIDShort())
+	_, cid := p.ClientIDShort()
+	c.setLogPrefix(cid)
 	return c.debugErr(c.send(p))
 }
 
@@ -102,9 +103,7 @@ func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
-		msg := fmt.Sprint(p, " <- %s\n", hex.Dump(buf.Bytes()))
-		c.debug.Printf(msg, "")
-		c.debug.Print("\n\n")
+		c.debug.Print(p, " <- wire\n", hex.Dump(buf.Bytes()), "\n\n")
 
 		return next(p)
 	}
@@ -159,13 +158,13 @@ func (c *Client) send(p mq.Packet) error {
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
 	if err != nil {
-		c.debug.Print("<- ", p, err)
+		c.debug.Print("wire <- ", p, err)
 		return err
 	}
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
 	// todo include hex dump only in debug and log short oneliner with other logger
-	c.debug.Print("<- ", p, "\n", hex.Dump(buf.Bytes()), "\n")
+	c.debug.Print("wire <- ", p, "\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }
 
