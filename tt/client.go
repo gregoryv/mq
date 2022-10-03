@@ -164,6 +164,7 @@ func (c *Client) send(p mq.Packet) error {
 	}
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
+	// todo include hex dump only in debug and log short oneliner with other logger
 	c.debug.Print("<- ", p, "\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }

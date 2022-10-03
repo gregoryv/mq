@@ -1,67 +1,67 @@
 package tt_test
 
 import (
-	"bytes"
 	"context"
 	"log"
+	"net"
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 )
 
-func Example_newClient() {
+func init() {
+	log.SetFlags(log.Lshortfile)
+}
+
+func Example_runClient() {
 	c := tt.NewClient()
+	ctx, _ := context.WithCancel(context.Background())
 
+	// create network connection
+	conn, err := net.Dial("tcp", "127.0.0.1:1883")
+	if err != nil {
+		panic(err)
+	}
 	// configure
-	var conn bytes.Buffer // replace with e.g. net.Conn
-	c.SetIO(&conn)
+	c.SetIO(conn)
 	c.SetReceiver(func(p mq.Packet) error {
-
-		switch p := p.(type) {
-		case *mq.Publish:
-			// handle incoming publish packet
-
-		case *mq.PubAck: // includes PubRec, PubRel PubComp
-			switch p.AckType() {
-			case mq.PUBACK:
-			case mq.PUBREC:
-			case mq.PUBCOMP:
-			case mq.PUBREL:
-			}
-		case *mq.SubAck:
-		case *mq.ConnAck:
-			_ = p
-		}
-		log.Print(p)
+		// do something with it ...
 		// todo specify when errors should be returned by receivers
 		return nil
 	})
 
 	// start handling packet flow
+	go c.Run(ctx)
+
+	// output:
+}
+
+func ExampleClient_Connect() {
+	c := tt.NewClient()
 	ctx, _ := context.WithCancel(context.Background())
+
+	// create network connection
+	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
+
+	// configure
+	c.SetIO(conn)
+	c.SetReceiver(func(p mq.Packet) error {
+		switch p.(type) {
+		case *mq.ConnAck:
+			// connected, maybe subscribe to topics now
+		}
+		return nil
+	})
+
+	// start handling packet flow
 	go c.Run(ctx)
 
 	// connect
-	cp := mq.NewConnect()
-	cp.SetClientID("gopher")
-	_ = c.Connect(ctx, &cp)
+	p := mq.NewConnect()
+	p.SetClientID("example-connect")
+	_ = c.Connect(ctx, &p)
 
-	// subscribe
-	sp := mq.NewSubscribe()
-	sp.AddFilter("a/b", mq.FopQoS1)
-	_ = c.Sub(ctx, &sp)
-
-	// publish
-	pp := mq.NewPublish()
-	pp.SetQoS(1)
-	pp.SetTopicName("a/b")
-	pp.SetPayload([]byte("gopher"))
-	_ = c.Pub(ctx, &pp) // todo if Pub and Sub only can fail on
-	// send errors then c.Run will fail so
-	// there is no reason for returning error here?
-
-	// disconnect
-	dp := mq.NewDisconnect()
-	_ = c.Disconnect(ctx, &dp)
-
+	// output:
 }
+
+// todo maybe add a mechanism for sequenced packets
