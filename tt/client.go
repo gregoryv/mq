@@ -71,7 +71,7 @@ func (c *Client) Run(ctx context.Context) error {
 // Connect sends the packet. In the future this would be a good place
 // to implement support for different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
-	c.setLogPrefix(p.ClientID())
+	c.setLogPrefix(p.ClientIDShort())
 	return c.debugErr(c.send(p))
 }
 
@@ -170,17 +170,7 @@ func (c *Client) send(p mq.Packet) error {
 }
 
 func (c *Client) setLogPrefix(cid string) {
-	switch {
-	case cid == "":
-		c.debug.SetPrefix("          ")
-		return
-
-	case len(cid) > 16:
-		c.debug.SetPrefix(cid[len(cid)-8:] + "  ")
-
-	default:
-		c.debug.SetPrefix(cid + " ")
-	}
+	c.debug.SetPrefix(cid + "  ")
 }
 
 var (
