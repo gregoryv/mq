@@ -3,7 +3,6 @@ package tt
 import (
 	"context"
 	"io"
-	"log"
 	"net"
 	"sync"
 	"testing"
@@ -122,10 +121,6 @@ func TestClient_Receiver(t *testing.T) {
 }
 
 // ----------------------------------------
-
-func init() {
-	log.SetFlags(0)
-}
 
 func runIntercepted(t *testing.T, c *Client) (context.Context, chan mq.Packet) {
 	ctx, cancel := context.WithCancel(context.Background())
