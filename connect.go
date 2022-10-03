@@ -92,6 +92,15 @@ func (c *Connect) ProtocolName() string     { return string(c.protocolName) }
 func (c *Connect) SetClientID(v string) { c.clientID = wstring(v) }
 func (c *Connect) ClientID() string     { return string(c.clientID) }
 
+// ClientIDShort returns last 8 characters of ClientID if it's length
+// is longer.
+func (c *Connect) ClientIDShort() string {
+	if v := len(c.clientID); v > 8 {
+		return string(c.clientID)[v-8:]
+	}
+	return string(c.clientID)
+}
+
 func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
