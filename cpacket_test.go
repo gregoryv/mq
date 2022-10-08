@@ -46,10 +46,10 @@ func TestReadPacket_broken(t *testing.T) {
 // test helper for each control packet, should be called from each
 // specific test e.g. TestPublish
 func testControlPacket(t *testing.T, in ControlPacket) {
-	t.Log(in)
 	// write it out
 	var buf bytes.Buffer
 	if _, err := in.WriteTo(&buf); err != nil {
+		t.Log(in)
 		t.Error("WriteTo", err)
 	}
 	data := make([]byte, buf.Len())

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"sync"
 
@@ -51,6 +52,30 @@ func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
 
 // Receiver returns receiver setting.
 func (c *Client) Receiver() mq.Receiver { return c.receiver }
+
+func (c *Client) SetLogLevel(v LogLevel) {
+	switch v {
+	case LogLevelDebug:
+		c.info.SetOutput(log.Writer())
+		c.debug.SetOutput(log.Writer())
+
+	case LogLevelInfo:
+		c.info.SetOutput(log.Writer())
+		c.debug.SetOutput(ioutil.Discard)
+
+	case LogLevelNone:
+		c.info.SetOutput(ioutil.Discard)
+		c.debug.SetOutput(ioutil.Discard)
+	}
+}
+
+type LogLevel int
+
+const (
+	LogLevelDebug LogLevel = iota
+	LogLevelInfo
+	LogLevelNone
+)
 
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
@@ -159,13 +184,13 @@ func (c *Client) send(p mq.Packet) error {
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
 	if err != nil {
-		c.debug.Print("wire <- ", p, err)
+		c.info.Print("wire <- ", p, err)
 		return err
 	}
+
+	c.info.Print("wire <- ", p)
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
-	// todo include hex dump only in debug and log short oneliner with other logger
-	c.info.Print("wire <- ", p)
 	c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }

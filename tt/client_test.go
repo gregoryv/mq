@@ -147,6 +147,7 @@ func ignore(_ mq.ControlPacket) error { return nil }
 func newClient(t *testing.T) *Client {
 	c := NewClient()
 	c.SetIO(dialBroker(t))
+	c.SetLogLevel(LogLevelNone)
 	return c
 }
 

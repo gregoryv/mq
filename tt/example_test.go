@@ -45,6 +45,7 @@ func ExampleClient_Connect() {
 
 	// configure
 	c.SetIO(conn)
+	c.SetLogLevel(tt.LogLevelNone)
 	c.SetReceiver(func(p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
