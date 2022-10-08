@@ -16,7 +16,8 @@ func NewClient() *Client {
 	maxConcurrentIds := uint16(100)
 	c := &Client{
 		pool:  newPool(maxConcurrentIds),
-		debug: log.New(log.Writer(), "", log.Flags()),
+		info:  log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
+		debug: log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
 	}
 	// sequence of receivers for incoming packets
 	c.first = c.debugPacket(c.handleAckPacket(
@@ -30,6 +31,7 @@ func NewClient() *Client {
 
 type Client struct {
 	pool  *pool // of packet IDs
+	info  *log.Logger
 	debug *log.Logger
 
 	m    sync.Mutex
@@ -100,10 +102,10 @@ func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
+		c.debug.Print(p, " <- wire")
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
-		c.debug.Print(p, " <- wire\n", hex.Dump(buf.Bytes()), "\n\n")
-
+		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n\n")
 		return next(p)
 	}
 }
@@ -163,12 +165,13 @@ func (c *Client) send(p mq.Packet) error {
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
 	// todo include hex dump only in debug and log short oneliner with other logger
-	c.debug.Print("wire <- ", p, "\n", hex.Dump(buf.Bytes()), "\n")
+	c.info.Print("wire <- ", p)
+	c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
 	return nil
 }
 
 func (c *Client) setLogPrefix(cid string) {
-	c.debug.SetPrefix(fmt.Sprintf("%s  ", cid))
+	c.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
 
 var (
