@@ -21,10 +21,9 @@ func NewClient() *Client {
 	// sequence of receivers for incoming packets
 	c.first = c.debugPacket(c.handleAckPacket(
 		// final step forwards to the configured receiver
-		func(p mq.Packet) error {
-			return c.receiver(p)
-		},
+		func(p mq.Packet) error { return c.receiver(p) },
 	))
+	// this receiver should be replaced by the application layer
 	c.receiver = func(_ mq.Packet) error { return ErrUnsetReceiver }
 	return c
 }
@@ -71,7 +70,7 @@ func (c *Client) Run(ctx context.Context) error {
 // Connect sends the packet. In the future this would be a good place
 // to implement support for different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
-	_, cid := p.ClientIDShort()
+	cid := p.ClientIDShort()
 	c.setLogPrefix(cid)
 	return c.debugErr(c.send(p))
 }
@@ -169,7 +168,7 @@ func (c *Client) send(p mq.Packet) error {
 }
 
 func (c *Client) setLogPrefix(cid string) {
-	c.debug.SetPrefix(cid + "  ")
+	c.debug.SetPrefix(fmt.Sprintf("%s  ", cid))
 }
 
 var (
