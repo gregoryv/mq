@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gregoryv/mq"
 )
@@ -22,7 +23,7 @@ func NewClient() *Client {
 
 		// this receiver should be replaced by the application layer
 		receiver: func(_ mq.Packet) error { return ErrUnsetReceiver },
-		out:      func(_ mq.Packet) error { return ErrUnsetReceiver },
+		out:      func(p mq.Packet) error { panic(p.String()) },
 	}
 	c.instack = []mq.Middleware{
 		c.debugPacket,
@@ -75,6 +76,18 @@ func (c *Client) LogLevelSet(v LogLevel) {
 	case LogLevelNone:
 		c.info.SetOutput(ioutil.Discard)
 		c.debug.SetOutput(ioutil.Discard)
+	}
+}
+
+func (c *Client) Start(ctx context.Context) {
+	go c.Run(ctx)
+	// wait for the run loo to be ready
+	for {
+		<-time.After(time.Millisecond)
+		if c.out != nil {
+			time.After(5 * time.Millisecond)
+			return
+		}
 	}
 }
 
@@ -197,6 +210,7 @@ func (c *Client) send(p mq.Packet) error {
 	c.m.Lock()
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
+	// todo replace with middleware
 	if err != nil {
 		c.info.Print("wire <- ", p, err)
 		return err
