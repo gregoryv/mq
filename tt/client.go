@@ -72,14 +72,6 @@ func (c *Client) LogLevelSet(v LogLevel) {
 	}
 }
 
-type LogLevel int
-
-const (
-	LogLevelDebug LogLevel = iota
-	LogLevelInfo
-	LogLevelNone
-)
-
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.

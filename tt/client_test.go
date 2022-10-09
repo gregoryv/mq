@@ -3,7 +3,6 @@ package tt
 import (
 	"context"
 	"io"
-	"log"
 	"net"
 	"testing"
 	"time"
@@ -146,7 +145,6 @@ type Interceptor struct {
 
 func (r *Interceptor) intercept(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
-		log.Print("got one")
 		select {
 		case r.c <- p: // if anyone is interested
 		case <-time.After(10 * time.Millisecond):
