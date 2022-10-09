@@ -14,15 +14,14 @@ func init() {
 }
 
 func Example_runClient() {
-	c := tt.NewClient()
-	ctx, _ := context.WithCancel(context.Background())
-
 	// create network connection
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+
 	// configure
+	c := tt.NewClient()
 	c.IOSet(conn)
 	c.ReceiverSet(func(p mq.Packet) error {
 		// do something with it ...
@@ -31,7 +30,8 @@ func Example_runClient() {
 	})
 
 	// start handling packet flow
-	go c.Run(ctx)
+	ctx, _ := context.WithCancel(context.Background())
+	go c.Run(ctx) //todo how to handle that last error
 
 	// output:
 }
@@ -59,7 +59,7 @@ func ExampleClient_Connect() {
 
 	// connect
 	p := mq.NewConnect()
-	p.SetClientID("example-connect")
+	p.SetClientID("example")
 	_ = c.Connect(ctx, &p)
 
 	// output:
