@@ -19,14 +19,14 @@ func NewClient() *Client {
 		pool:  newPool(MaxDefaultConcurrentID),
 		info:  log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
 		debug: log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
+
+		// this receiver should be replaced by the application layer
+		receiver: func(_ mq.Packet) error { return ErrUnsetReceiver },
 	}
-	// sequence of receivers for incoming packets
-	c.first = c.debugPacket(c.handleAckPacket(
-		// final step forwards to the configured receiver
-		func(p mq.Packet) error { return c.receiver(p) },
-	))
-	// this receiver should be replaced by the application layer
-	c.receiver = func(_ mq.Packet) error { return ErrUnsetReceiver }
+	c.instack = []mq.Middleware{
+		c.debugPacket,
+		c.handleAckPacket,
+	}
 	return c
 }
 
@@ -38,8 +38,11 @@ type Client struct {
 	m    sync.Mutex
 	wire io.ReadWriter
 
-	first    mq.Receiver
-	receiver mq.Receiver // the application layer
+	// sequence of receivers for incoming packets
+	instack  []mq.Middleware
+	receiver mq.Receiver // final
+
+	outstack []mq.Middleware
 }
 
 // IOSet sets the read writer used for serializing packets from and to.
@@ -81,6 +84,7 @@ const (
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
+	incoming := stack(c.instack, c.receiver)
 	for {
 		p, err := c.nextPacket()
 		if err != nil {
@@ -89,9 +93,16 @@ func (c *Client) Run(ctx context.Context) error {
 			return err
 		}
 		if p != nil {
-			c.first(p)
+			incoming(p)
 		}
 	}
+}
+
+func stack(v []mq.Middleware, last mq.Receiver) mq.Receiver {
+	if len(v) == 0 {
+		return last
+	}
+	return v[0](stack(v[1:], last))
 }
 
 // Connect sends the packet. In the future this would be a good place

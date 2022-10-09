@@ -6,6 +6,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- tt.Client uses stack of middlewares
+- Add mq.Middleware interface
 - Add tt.LogLevel with info and debug
 - Remove tt.ackman
 

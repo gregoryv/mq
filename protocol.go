@@ -32,6 +32,8 @@ type Client interface {
 // client side.
 type Receiver func(Packet) error
 
+type Middleware func(next Receiver) Receiver
+
 // Packet and ControlPacket can be used interchangebly.
 type Packet = ControlPacket
 

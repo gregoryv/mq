@@ -3,8 +3,8 @@ package tt
 import (
 	"context"
 	"io"
+	"log"
 	"net"
-	"sync"
 	"testing"
 	"time"
 
@@ -66,24 +66,15 @@ func TestAppClient(t *testing.T) {
 		_ = c.Sub(ctx, &p)
 		_ = (<-incoming).(*mq.SubAck)
 	}
-
-	// publish application message
-	var wg sync.WaitGroup
-	wg.Add(2) // one ack and one publish
-	c.ReceiverSet(func(p mq.Packet) error { wg.Done(); return nil })
-	{
+	{ // publish application message
 		p := mq.NewPublish()
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		_ = c.Pub(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
-		// it's not possible to do a _ = (<-incoming).(*mq.Publish) as
-		// the timing is off.  so we wait for the packet to be
-		// received and routed properly
-		wg.Wait()
+		_ = (<-incoming).(*mq.Publish)
 	}
-
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
 		_ = c.Disconnect(ctx, &p)
@@ -134,24 +125,34 @@ func TestClient_Receiver(t *testing.T) {
 
 // ----------------------------------------
 
-func runIntercepted(t *testing.T, c *Client) (context.Context, chan mq.Packet) {
+func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
+	r := NewInterceptor()
+	c.instack = append([]mq.Middleware{r.intercept}, c.instack...) // prepend
 	ctx, cancel := context.WithCancel(context.Background())
 	go c.Run(ctx)
 	t.Cleanup(cancel)
-	return ctx, interceptIncoming(c)
+	return ctx, r.c
 }
 
-func interceptIncoming(c *Client) chan mq.Packet {
-	ch := make(chan mq.Packet, 0)
-	next := c.first
-	c.first = func(p mq.Packet) error {
+func NewInterceptor() *Interceptor {
+	return &Interceptor{
+		c: make(chan mq.Packet, 0),
+	}
+}
+
+type Interceptor struct {
+	c chan mq.Packet
+}
+
+func (r *Interceptor) intercept(next mq.Receiver) mq.Receiver {
+	return func(p mq.Packet) error {
+		log.Print("got one")
 		select {
-		case ch <- p: // if anyone is interested
+		case r.c <- p: // if anyone is interested
 		case <-time.After(10 * time.Millisecond):
 		}
 		return next(p)
 	}
-	return ch
 }
 
 func ignore(_ mq.ControlPacket) error { return nil }
