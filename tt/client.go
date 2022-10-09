@@ -18,19 +18,19 @@ import (
 func NewClient() *Client {
 	c := &Client{
 		pool:  newPool(MaxDefaultConcurrentID),
-		info:  log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
-		debug: log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
+		info:  log.New(log.Writer(), "", log.Flags()),
+		debug: log.New(log.Writer(), "", log.Flags()),
 
 		// this receiver should be replaced by the application layer
 		receiver: func(_ mq.Packet) error { return ErrUnsetReceiver },
 		out:      func(p mq.Packet) error { panic(p.String()) },
 	}
 	c.instack = []mq.Middleware{
-		c.debugPacket,
+		c.logIncoming,
 		c.handleAckPacket,
 	}
 	c.outstack = []mq.Middleware{
-		c.debugErr,
+		c.logOutgoing,
 	}
 	c.LogLevelSet(LogLevelNone)
 	return c
@@ -149,16 +149,6 @@ func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	return c.out(p)
 }
 
-func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
-	return func(p mq.Packet) error {
-		c.debug.Print(p, " <- wire")
-		var buf bytes.Buffer
-		p.WriteTo(&buf)
-		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n\n")
-		return next(p)
-	}
-}
-
 func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 	return func(p mq.Packet) error {
 		// reuse packet ids and handle acks
@@ -182,18 +172,6 @@ func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) debugErr(next mq.Receiver) mq.Receiver {
-	return func(p mq.Packet) error {
-		err := next(p)
-		if err != nil {
-			c.debug.Print(err)
-		}
-		return err
-	}
-}
-
-// ----------------------------------------
-
 func (c *Client) nextPacket() (mq.Packet, error) {
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
@@ -210,17 +188,32 @@ func (c *Client) send(p mq.Packet) error {
 	c.m.Lock()
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
-	// todo replace with middleware
-	if err != nil {
-		c.info.Print("wire <- ", p, err)
-		return err
-	}
+	return err
+}
 
-	c.info.Print("wire <- ", p)
-	var buf bytes.Buffer
-	p.WriteTo(&buf)
-	c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
-	return nil
+func (c *Client) logIncoming(next mq.Receiver) mq.Receiver {
+	return func(p mq.Packet) error {
+		c.debug.Print(p, " <- wire")
+		var buf bytes.Buffer
+		p.WriteTo(&buf)
+		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
+		return next(p)
+	}
+}
+
+func (c *Client) logOutgoing(next mq.Receiver) mq.Receiver {
+	return func(p mq.Packet) error {
+		if err := next(p); err != nil {
+			c.info.Print("wire <- ", p, err)
+			return err
+		}
+
+		c.info.Print("wire <- ", p)
+		var buf bytes.Buffer
+		p.WriteTo(&buf)
+		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
+		return nil
+	}
 }
 
 func (c *Client) setLogPrefix(cid string) {

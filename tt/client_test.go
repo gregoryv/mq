@@ -51,6 +51,7 @@ func TestThingClient(t *testing.T) {
 
 func TestAppClient(t *testing.T) {
 	c := newClient(t)
+	//c.LogLevelSet(LogLevelDebug)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -72,6 +73,7 @@ func TestAppClient(t *testing.T) {
 		_ = c.Pub(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
 		_ = (<-incoming).(*mq.Publish)
+
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
