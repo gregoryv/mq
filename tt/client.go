@@ -108,7 +108,7 @@ func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 }
 
 // Pub sends the packet and is safe for concurrent use by multiple
-// goroutines.
+// goroutines. The packet ID is set if QoS > 0.
 func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
@@ -201,6 +201,5 @@ func (c *Client) setLogPrefix(cid string) {
 
 var (
 	ErrNoConnection  = fmt.Errorf("no connection")
-	ErrConnect       = fmt.Errorf("connect error")
 	ErrUnsetReceiver = fmt.Errorf("unset receiver")
 )
