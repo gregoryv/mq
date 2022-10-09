@@ -5,6 +5,10 @@ import (
 	"sync"
 )
 
+// Max packet id one client will use starting with 1. This also
+// dictates the maximum number of packets in flight.
+var MaxDefaultConcurrentID uint16 = 100
+
 // newPool returns a pool of reusable id's from 1..max, 0 is not used
 func newPool(max uint16) *pool {
 	return &pool{

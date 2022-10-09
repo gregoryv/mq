@@ -13,10 +13,10 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+// NewClient returns a client with MaxDefaultConcurrentID
 func NewClient() *Client {
-	maxConcurrentIds := uint16(100)
 	c := &Client{
-		pool:  newPool(maxConcurrentIds),
+		pool:  newPool(MaxDefaultConcurrentID),
 		info:  log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
 		debug: log.New(log.Writer(), "", log.Flags()|log.Lmsgprefix),
 	}
