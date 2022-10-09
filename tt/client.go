@@ -42,18 +42,18 @@ type Client struct {
 	receiver mq.Receiver // the application layer
 }
 
-// SetIO sets the read writer used for serializing packets from and to.
+// IOSet sets the read writer used for serializing packets from and to.
 // Should be set before calling Run
-func (c *Client) SetIO(v io.ReadWriter) { c.wire = v }
+func (c *Client) IOSet(v io.ReadWriter) { c.wire = v }
 
-// SetReceiver configures receiver for any incoming mq.Publish
+// ReceiverSet configures receiver for any incoming mq.Publish
 // packets. The client handles PacketID reuse.
-func (c *Client) SetReceiver(v mq.Receiver) { c.receiver = v }
+func (c *Client) ReceiverSet(v mq.Receiver) { c.receiver = v }
 
 // Receiver returns receiver setting.
 func (c *Client) Receiver() mq.Receiver { return c.receiver }
 
-func (c *Client) SetLogLevel(v LogLevel) {
+func (c *Client) LogLevelSet(v LogLevel) {
 	switch v {
 	case LogLevelDebug:
 		c.info.SetOutput(log.Writer())

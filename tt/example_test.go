@@ -23,8 +23,8 @@ func Example_runClient() {
 		panic(err)
 	}
 	// configure
-	c.SetIO(conn)
-	c.SetReceiver(func(p mq.Packet) error {
+	c.IOSet(conn)
+	c.ReceiverSet(func(p mq.Packet) error {
 		// do something with it ...
 		// todo specify when errors should be returned by receivers
 		return nil
@@ -44,9 +44,9 @@ func ExampleClient_Connect() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
 	// configure
-	c.SetIO(conn)
-	c.SetLogLevel(tt.LogLevelNone)
-	c.SetReceiver(func(p mq.Packet) error {
+	c.IOSet(conn)
+	c.LogLevelSet(tt.LogLevelNone)
+	c.ReceiverSet(func(p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
 			// connected, maybe subscribe to topics now

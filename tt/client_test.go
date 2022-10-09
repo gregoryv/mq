@@ -58,7 +58,7 @@ func TestAppClient(t *testing.T) {
 	// publish application message
 	var wg sync.WaitGroup
 	wg.Add(2) // one ack and one publish
-	c.SetReceiver(func(p mq.Packet) error { wg.Done(); return nil })
+	c.ReceiverSet(func(p mq.Packet) error { wg.Done(); return nil })
 	{
 		p := mq.NewPublish()
 		p.SetQoS(1)
@@ -146,8 +146,8 @@ func ignore(_ mq.ControlPacket) error { return nil }
 
 func newClient(t *testing.T) *Client {
 	c := NewClient()
-	c.SetIO(dialBroker(t))
-	c.SetLogLevel(LogLevelNone)
+	c.IOSet(dialBroker(t))
+	c.LogLevelSet(LogLevelNone)
 	return c
 }
 
