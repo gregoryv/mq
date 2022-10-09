@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/gregoryv/mq"
 )
@@ -15,20 +16,31 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	c := newClient(t)
+	c := NewClient()
+	conn, server := Dial()
+	c.IOSet(conn)
+	c.LogLevelSet(LogLevelNone)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
+
+		ack := mq.NewConnAck()
+		ack.WriteTo(server)
+
 		_ = (<-incoming).(*mq.ConnAck)
 	}
 	{ // publish application message
 		p := mq.NewPublish()
-		p.SetQoS(2)
+		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 		_ = c.Pub(ctx, &p)
+
+		ack := mq.NewPubAck()
+		ack.SetPacketID(p.PacketID())
+		ack.WriteTo(server)
 		_ = (<-incoming).(*mq.PubAck)
 	}
 	{ // disconnect nicely
@@ -135,7 +147,7 @@ func interceptIncoming(c *Client) chan mq.Packet {
 	c.first = func(p mq.Packet) error {
 		select {
 		case ch <- p: // if anyone is interested
-		default:
+		case <-time.After(10 * time.Millisecond):
 		}
 		return next(p)
 	}
