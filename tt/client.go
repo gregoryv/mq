@@ -13,7 +13,7 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-// NewClient returns a client with MaxDefaultConcurrentID
+// NewClient returns a client with MaxDefaultConcurrentID and disabled logging
 func NewClient() *Client {
 	c := &Client{
 		pool:  newPool(MaxDefaultConcurrentID),
@@ -31,6 +31,7 @@ func NewClient() *Client {
 	c.outstack = []mq.Middleware{
 		c.debugErr,
 	}
+	c.LogLevelSet(LogLevelNone)
 	return c
 }
 

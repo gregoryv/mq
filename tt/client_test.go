@@ -18,7 +18,6 @@ func TestThingClient(t *testing.T) {
 	c := NewClient()
 	conn, server := Dial()
 	c.IOSet(conn)
-	c.LogLevelSet(LogLevelNone)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
