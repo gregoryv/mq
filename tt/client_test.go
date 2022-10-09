@@ -129,6 +129,7 @@ func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet)
 	c.instack = append([]mq.Middleware{r.intercept}, c.instack...) // prepend
 	ctx, cancel := context.WithCancel(context.Background())
 	go c.Run(ctx)
+	<-time.After(10 * time.Millisecond)
 	t.Cleanup(cancel)
 	return ctx, r.c
 }

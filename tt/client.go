@@ -22,10 +22,14 @@ func NewClient() *Client {
 
 		// this receiver should be replaced by the application layer
 		receiver: func(_ mq.Packet) error { return ErrUnsetReceiver },
+		out:      func(_ mq.Packet) error { return ErrUnsetReceiver },
 	}
 	c.instack = []mq.Middleware{
 		c.debugPacket,
 		c.handleAckPacket,
+	}
+	c.outstack = []mq.Middleware{
+		c.debugErr,
 	}
 	return c
 }
@@ -43,6 +47,7 @@ type Client struct {
 	receiver mq.Receiver // final
 
 	outstack []mq.Middleware
+	out      mq.Receiver // first outgoing handler
 }
 
 // IOSet sets the read writer used for serializing packets from and to.
@@ -77,6 +82,8 @@ func (c *Client) LogLevelSet(v LogLevel) {
 // the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
 	incoming := stack(c.instack, c.receiver)
+	c.out = stack(c.outstack, c.send)
+
 	for {
 		p, err := c.nextPacket()
 		if err != nil {
@@ -102,12 +109,12 @@ func stack(v []mq.Middleware, last mq.Receiver) mq.Receiver {
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
 	cid := p.ClientIDShort()
 	c.setLogPrefix(cid)
-	return c.debugErr(c.send(p))
+	return c.out(p)
 }
 
 func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 	// todo handle session variations perhaps, async
-	return c.debugErr(c.send(p))
+	return c.out(p)
 }
 
 // Pub sends the packet and is safe for concurrent use by multiple
@@ -117,7 +124,7 @@ func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 		id := c.pool.Next(ctx)
 		p.SetPacketID(id)
 	}
-	return c.debugErr(c.send(p))
+	return c.out(p)
 }
 
 // Sub sends the packet and is safe for concurrent use by multiple
@@ -125,7 +132,7 @@ func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id)
-	return c.debugErr(c.send(p))
+	return c.out(p)
 }
 
 func (c *Client) debugPacket(next mq.Receiver) mq.Receiver {
@@ -161,11 +168,14 @@ func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) debugErr(err error) error {
-	if err != nil {
-		c.debug.Print(err)
+func (c *Client) debugErr(next mq.Receiver) mq.Receiver {
+	return func(p mq.Packet) error {
+		err := next(p)
+		if err != nil {
+			c.debug.Print(err)
+		}
+		return err
 	}
-	return err
 }
 
 // ----------------------------------------
