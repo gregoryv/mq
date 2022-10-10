@@ -180,6 +180,31 @@ mqtt/proto
 mq/x
 mq/tt
 
+
+## benchmark tt.Client
+
+Initial benchmark, the QoS1 is a lot less efficient but that is due to
+the fact that we have to wait for an ack from the server. These
+benchmarks do not include any network latencies.
+
+<pre>
+goos: linux
+goarch: amd64
+pkg: github.com/gregoryv/mq/tt
+cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
+BenchmarkClient_PubQoS0-16       1000000              1002 ns/op             560 B/op         11 allocs/op
+BenchmarkClient_PubQoS1-16        105883             12934 ns/op            1072 B/op         24 allocs/op
+PASS
+ok      github.com/gregoryv/mq/tt       3.481s
+</pre>
+
+after improving the pool allocation of next packet id
+
+<pre>
+BenchmarkClient_PubQoS0-16       1304368              1016 ns/op             560 B/op         11 allocs/op
+BenchmarkClient_PubQoS1-16        231313             11030 ns/op            1072 B/op         24 allocs/op
+</pre>
+
 <a name="references"></a>
 ## References <a class="link" href="#references">§</a>
 
