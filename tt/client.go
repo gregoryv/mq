@@ -136,7 +136,7 @@ func (c *Client) Disconnect(ctx context.Context, p *mq.Disconnect) error {
 func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
-		p.SetPacketID(id)
+		p.SetPacketID(id) // MQTT-2.2.1-3
 	}
 	return c.out(p)
 }
@@ -145,7 +145,15 @@ func (c *Client) Pub(ctx context.Context, p *mq.Publish) error {
 // goroutines. Configure receiver using SetReceiver.
 func (c *Client) Sub(ctx context.Context, p *mq.Subscribe) error {
 	id := c.pool.Next(ctx)
-	p.SetPacketID(id)
+	p.SetPacketID(id) // MQTT-2.2.1-3
+	return c.out(p)
+}
+
+// Unsub sends the packet and is safe for concurrent use by multiple
+// goroutines. Configure receiver using SetReceiver.
+func (c *Client) Unsub(ctx context.Context, p *mq.Unsubscribe) error {
+	id := c.pool.Next(ctx)
+	p.SetPacketID(id) // MQTT-2.2.1-3
 	return c.out(p)
 }
 
