@@ -9,5 +9,5 @@ h1:first-child { margin-top: 0; }
 pre {background-color: #f2f2f2; padding: 8px 13px; overflow: auto}
 pre em { font-style: normal; background-color: #e2e2e2; }
 .link { display: none; }
-h1:hover .link, h2:hover .link { display: inline; }
+.anchored:hover .link, h1:hover .link, h2:hover .link { display: inline; }
 img[src="logo.svg"] { width: 400px; }

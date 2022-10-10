@@ -8,12 +8,16 @@ of [github.com/gregoryv/mq](https://github.com/gregoryv/mq), an
 alternative MQTT v5 implementation in Go. Development started on Aug
 3, 2022 and is still ongoing.
 
+<a name="toc"></a>
+<span class="anchored">Table of contents <a class="link" href="#toc">§</a></span>
 <nav>
 	<ul>
 		<li><a href="#background">Background</a></li>
 		<li><a href="#goal">Goal</a></li>
 		<li><a href="#approach">Approach</a></li>
+		<li><a href="#thespec">The specification</a></li>
 		<li><a href="#design">Design</a></li>
+		<li><a href="#performance">Performance</a></li>
 		<li><a href="#references">References</a></li>
 	</ul>
 </nav>
@@ -66,29 +70,43 @@ possible ones in the paho module.
 <a name="approach"></a>
 ## Approach <a class="link" href="#approach">§</a>
 
-How do you go about starting to implement a specification of a
-protocol? One way would be to start writing the client and then add on
-what you need as you go along. I've never been a fan of such top down
-development, hard to do test driven developent(TDD) in that scenario.
+How to implement a protocol specification, such as the [mqtt-v5]? With a top-down
+approach , writing the client first and then add on what's needed as
+you go along. I've never been a fan of such top down development, felt
+that it always resulted in more refactoring and hard to do test driven
+developent(TDD).
 
 First thing is to actually read the specification and get a feel for
 it. The requirements are spread out within the document which gives
-them context and they follow RFC2119 for phrasing which is nice.
+them context and they follow RFC2119 for phrasing, which is nice.
 
 As I read on, navigation became a bit of a hassle. Having to jump up
 and down to the table of contents and then into a specific section was
-cumbersome with that many sections. This became even more disturbing
-once development started. To remedy that I saved a local copy and
-added anchors with proper names where needed, ie. #connect to directly
-jump to the Connect packet section.
+cumbersome with that many sections. This issue became even more
+prominent once development started. To remedy that, I saved a local
+copy and added anchors with proper names where needed, ie. #connect to
+directly jump to the Connect packet section. This enabled me to save
+some readable bookmarks.
 
 <a name="design"></a>
 ## Design <a class="link" href="#design">§</a>
 
-Package naming ...
+### Package name
+
+The module started out as <code>mqtt</code>, obvious choice which initially worked fine.
+Focusing on implementing the control packets.
+
+<pre>
+mqtt
+mqtt/x
+mqtt/proto
+
+mq/x
+mq/tt
+</pre>
 
 <a name="performance"></a>
-## Initial benchmarks and optimization <a class="link" href="#performance">§</a>
+## Performance <a class="link" href="#performance">§</a>
 
 <pre>
 goos: linux
@@ -170,15 +188,6 @@ BenchmarkPublish/their          479336       2846 ns/op     4064 B/op      41 al
 
 Not a huge difference, but still in the right direction.
 
-
-<h2>Package naming</h2>
-
-mqtt
-mqtt/x
-mqtt/proto
-
-mq/x
-mq/tt
 
 
 ## benchmark tt.Client
