@@ -24,7 +24,8 @@ func Example_runClient() {
 	// configure
 	c.IOSet(conn)
 	c.LogLevelSet(tt.LogLevelNone)
-	c.ReceiverSet(func(p mq.Packet) error {
+	s := c.Settings()
+	s.ReceiverSet(func(p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
 			// connected, maybe subscribe to topics now

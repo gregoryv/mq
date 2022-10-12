@@ -41,6 +41,8 @@ type Client struct {
 	info  *log.Logger
 	debug *log.Logger
 
+	running bool // set by func Run
+
 	m    sync.Mutex
 	wire io.ReadWriter
 
@@ -52,13 +54,17 @@ type Client struct {
 	out      mq.Handler // first outgoing handler
 }
 
+func (c *Client) Settings() Settings {
+	s := setRead{c}
+	if c.running {
+		return &s
+	}
+	return &setWrite{s}
+}
+
 // IOSet sets the read writer used for serializing packets from and to.
 // Should be set before calling Run
 func (c *Client) IOSet(v io.ReadWriter) { c.wire = v }
-
-// ReceiverSet configures receiver for any incoming mq.Publish
-// packets. The client handles PacketID reuse.
-func (c *Client) ReceiverSet(v mq.Handler) { c.receiver = v }
 
 // Receiver returns receiver setting.
 func (c *Client) Receiver() mq.Handler { return c.receiver }
@@ -81,11 +87,11 @@ func (c *Client) LogLevelSet(v LogLevel) {
 
 func (c *Client) Start(ctx context.Context) {
 	go c.Run(ctx)
-	// wait for the run loo to be ready
+	// wait for the run loop to be ready
 	for {
 		<-time.After(time.Millisecond)
-		if c.out != nil {
-			time.After(5 * time.Millisecond)
+		if c.running {
+			<-time.After(5 * time.Millisecond)
 			return
 		}
 	}
@@ -98,11 +104,13 @@ func (c *Client) Run(ctx context.Context) error {
 	incoming := stack(c.instack, c.receiver)
 	c.out = stack(c.outstack, c.send)
 
+	defer func() { c.running = false }()
 	for {
+		c.running = true
 		p, err := c.nextPacket()
 		if err != nil {
 			c.debug.Print(err)
-			c.debug.Print("no more packets will be handled")
+			c.debug.Print("client stopped")
 			return err
 		}
 		if p != nil {
