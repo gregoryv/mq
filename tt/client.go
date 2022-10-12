@@ -53,16 +53,6 @@ type Client struct {
 	out      mq.Handler // first outgoing handler, set by func Run
 }
 
-// Settings returns this clients settings. If the client is running
-// settings are read only.
-func (c *Client) Settings() Settings {
-	s := setRead{c}
-	if c.running {
-		return &s
-	}
-	return &setWrite{s}
-}
-
 func (c *Client) Start(ctx context.Context) {
 	go c.Run(ctx)
 	// wait for the run loop to be ready
@@ -141,6 +131,16 @@ func (c *Client) Unsub(ctx context.Context, p *mq.Unsubscribe) error {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id) // MQTT-2.2.1-3
 	return c.out(p)
+}
+
+// Settings returns this clients settings. If the client is running
+// settings are read only.
+func (c *Client) Settings() Settings {
+	s := setRead{c}
+	if c.running {
+		return &s
+	}
+	return &setWrite{s}
 }
 
 func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
