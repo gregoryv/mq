@@ -10,19 +10,18 @@ import (
 )
 
 func init() {
+	// configure logger settings before creating clients
 	log.SetFlags(log.Lshortfile)
 }
 
 func Example_runClient() {
-
 	c := tt.NewClient()
-	ctx, _ := context.WithCancel(context.Background())
-
-	// create network connection
-	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
 	// configure
 	s := c.Settings()
+
+	// create network connection
+	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	s.IOSet(conn)
 	s.LogLevelSet(tt.LogLevelNone)
 	s.ReceiverSet(func(p mq.Packet) error {
@@ -34,12 +33,11 @@ func Example_runClient() {
 	})
 
 	// start handling packet flow
+	ctx, _ := context.WithCancel(context.Background())
 	c.Start(ctx)
 
 	// connect
 	p := mq.NewConnect()
 	p.SetClientID("example")
 	_ = c.Connect(ctx, &p)
-
-	// output:
 }
