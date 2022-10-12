@@ -28,11 +28,11 @@ type Client interface {
 	Sub(context.Context, *Subscribe) error
 }
 
-// Receiver is called on incoming packets. Initially designed for the
-// client side.
-type Receiver func(Packet) error
+// Handlers are used for both incoming and outgoing processing of
+// packets.
+type Handler func(Packet) error
 
-type Middleware func(next Receiver) Receiver
+type Middleware func(next Handler) Handler
 
 // Packet and ControlPacket can be used interchangebly.
 type Packet = ControlPacket

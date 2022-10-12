@@ -144,7 +144,7 @@ type Interceptor struct {
 	c chan mq.Packet
 }
 
-func (r *Interceptor) intercept(next mq.Receiver) mq.Receiver {
+func (r *Interceptor) intercept(next mq.Handler) mq.Handler {
 	return func(p mq.Packet) error {
 		select {
 		case r.c <- p: // if anyone is interested

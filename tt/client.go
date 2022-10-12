@@ -46,10 +46,10 @@ type Client struct {
 
 	// sequence of receivers for incoming packets
 	instack  []mq.Middleware
-	receiver mq.Receiver // final
+	receiver mq.Handler // final
 
 	outstack []mq.Middleware
-	out      mq.Receiver // first outgoing handler
+	out      mq.Handler // first outgoing handler
 }
 
 // IOSet sets the read writer used for serializing packets from and to.
@@ -58,10 +58,10 @@ func (c *Client) IOSet(v io.ReadWriter) { c.wire = v }
 
 // ReceiverSet configures receiver for any incoming mq.Publish
 // packets. The client handles PacketID reuse.
-func (c *Client) ReceiverSet(v mq.Receiver) { c.receiver = v }
+func (c *Client) ReceiverSet(v mq.Handler) { c.receiver = v }
 
 // Receiver returns receiver setting.
-func (c *Client) Receiver() mq.Receiver { return c.receiver }
+func (c *Client) Receiver() mq.Handler { return c.receiver }
 
 func (c *Client) LogLevelSet(v LogLevel) {
 	switch v {
@@ -111,7 +111,7 @@ func (c *Client) Run(ctx context.Context) error {
 	}
 }
 
-func stack(v []mq.Middleware, last mq.Receiver) mq.Receiver {
+func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 	if len(v) == 0 {
 		return last
 	}
@@ -157,7 +157,7 @@ func (c *Client) Unsub(ctx context.Context, p *mq.Unsubscribe) error {
 	return c.out(p)
 }
 
-func (c *Client) handleAckPacket(next mq.Receiver) mq.Receiver {
+func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
 	return func(p mq.Packet) error {
 		// reuse packet ids and handle acks
 		switch p := p.(type) {
@@ -199,7 +199,7 @@ func (c *Client) send(p mq.Packet) error {
 	return err
 }
 
-func (c *Client) logIncoming(next mq.Receiver) mq.Receiver {
+func (c *Client) logIncoming(next mq.Handler) mq.Handler {
 	return func(p mq.Packet) error {
 		c.debug.Print(p, " <- wire")
 		var buf bytes.Buffer
@@ -209,7 +209,7 @@ func (c *Client) logIncoming(next mq.Receiver) mq.Receiver {
 	}
 }
 
-func (c *Client) logOutgoing(next mq.Receiver) mq.Receiver {
+func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
 	return func(p mq.Packet) error {
 		if err := next(p); err != nil {
 			c.info.Print("wire <- ", p, err)
