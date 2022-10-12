@@ -77,6 +77,8 @@ func (c *Client) Run(ctx context.Context) error {
 		c.running = true
 		p, err := c.nextPacket()
 		if err != nil {
+			// todo handle closed wire properly so clients may have
+			// the feature of reconnect
 			c.debug.Print(err)
 			c.debug.Print("client stopped")
 			return err
