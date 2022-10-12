@@ -17,7 +17,7 @@ var _ mq.Client = &Client{}
 func TestThingClient(t *testing.T) {
 	c := NewClient()
 	conn, server := Dial()
-	c.IOSet(conn)
+	c.Settings().IOSet(conn)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -158,8 +158,9 @@ func ignore(_ mq.ControlPacket) error { return nil }
 
 func newClient(t *testing.T) *Client {
 	c := NewClient()
-	c.IOSet(dialBroker(t))
-	c.LogLevelSet(LogLevelNone)
+	s := c.Settings()
+	s.IOSet(dialBroker(t))
+	s.LogLevelSet(LogLevelNone)
 	return c
 }
 

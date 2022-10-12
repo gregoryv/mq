@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"sync"
 	"time"
@@ -32,7 +31,7 @@ func NewClient() *Client {
 	c.outstack = []mq.Middleware{
 		c.logOutgoing,
 	}
-	c.LogLevelSet(LogLevelNone)
+	c.Settings().LogLevelSet(LogLevelNone)
 	return c
 }
 
@@ -54,6 +53,8 @@ type Client struct {
 	out      mq.Handler // first outgoing handler
 }
 
+// Settings returns this clients settings. If the client is running
+// settings are read only.
 func (c *Client) Settings() Settings {
 	s := setRead{c}
 	if c.running {
@@ -62,28 +63,8 @@ func (c *Client) Settings() Settings {
 	return &setWrite{s}
 }
 
-// IOSet sets the read writer used for serializing packets from and to.
-// Should be set before calling Run
-func (c *Client) IOSet(v io.ReadWriter) { c.wire = v }
-
 // Receiver returns receiver setting.
 func (c *Client) Receiver() mq.Handler { return c.receiver }
-
-func (c *Client) LogLevelSet(v LogLevel) {
-	switch v {
-	case LogLevelDebug:
-		c.info.SetOutput(log.Writer())
-		c.debug.SetOutput(log.Writer())
-
-	case LogLevelInfo:
-		c.info.SetOutput(log.Writer())
-		c.debug.SetOutput(ioutil.Discard)
-
-	case LogLevelNone:
-		c.info.SetOutput(ioutil.Discard)
-		c.debug.SetOutput(ioutil.Discard)
-	}
-}
 
 func (c *Client) Start(ctx context.Context) {
 	go c.Run(ctx)

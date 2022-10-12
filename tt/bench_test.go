@@ -10,7 +10,7 @@ import (
 func BenchmarkClient_PubQoS0(b *testing.B) {
 	c := NewClient()
 	conn, _ := Dial()
-	c.IOSet(conn)
+	c.Settings().IOSet(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	defer cancel()
@@ -30,7 +30,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 func BenchmarkClient_PubQoS1(b *testing.B) {
 	c := NewClient()
 	conn, server := Dial()
-	c.IOSet(conn)
+	c.Settings().IOSet(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	defer cancel()

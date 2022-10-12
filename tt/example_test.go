@@ -22,9 +22,9 @@ func Example_runClient() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
 	// configure
-	c.IOSet(conn)
-	c.LogLevelSet(tt.LogLevelNone)
 	s := c.Settings()
+	s.IOSet(conn)
+	s.LogLevelSet(tt.LogLevelNone)
 	s.ReceiverSet(func(p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
