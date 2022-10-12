@@ -50,7 +50,7 @@ type Client struct {
 	receiver mq.Handler // final
 
 	outstack []mq.Middleware
-	out      mq.Handler // first outgoing handler
+	out      mq.Handler // first outgoing handler, set by func Run
 }
 
 // Settings returns this clients settings. If the client is running
@@ -62,9 +62,6 @@ func (c *Client) Settings() Settings {
 	}
 	return &setWrite{s}
 }
-
-// Receiver returns receiver setting.
-func (c *Client) Receiver() mq.Handler { return c.receiver }
 
 func (c *Client) Start(ctx context.Context) {
 	go c.Run(ctx)

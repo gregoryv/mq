@@ -112,10 +112,6 @@ func TestClient_Receiver(t *testing.T) {
 	c := newClient(t)
 	ctx, incoming := runIntercepted(t, c)
 
-	v := c.Receiver()
-	if v == nil {
-		t.Fatal("missing initial receiver")
-	}
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Connect(ctx, &p)
