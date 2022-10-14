@@ -53,7 +53,7 @@ type Client struct {
 	out      mq.Handler // first outgoing handler, set by func Run
 }
 
-func (c *Client) Start(ctx Context) {
+func (c *Client) Start(ctx context.Context) {
 	go c.Run(ctx)
 	// wait for the run loop to be ready
 	for {
@@ -68,7 +68,7 @@ func (c *Client) Start(ctx Context) {
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
-func (c *Client) Run(ctx Context) error {
+func (c *Client) Run(ctx context.Context) error {
 	incoming := stack(c.instack, c.receiver)
 	c.out = stack(c.outstack, c.send)
 
@@ -98,7 +98,7 @@ func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 
 // Send the packet and is safe for concurrent use by multiple
 // goroutines.
-func (c *Client) Send(ctx Context, p mq.Packet) error {
+func (c *Client) Send(ctx context.Context, p mq.Packet) error {
 	switch p := p.(type) {
 	case *mq.Connect:
 		c.connect(p)
@@ -120,19 +120,19 @@ func (c *Client) connect(p *mq.Connect) {
 	c.setLogPrefix(cid)
 }
 
-func (c *Client) pub(ctx Context, p *mq.Publish) {
+func (c *Client) pub(ctx context.Context, p *mq.Publish) {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
 		p.SetPacketID(id) // MQTT-2.2.1-3
 	}
 }
 
-func (c *Client) sub(ctx Context, p *mq.Subscribe) {
+func (c *Client) sub(ctx context.Context, p *mq.Subscribe) {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id) // MQTT-2.2.1-3
 }
 
-func (c *Client) unsub(ctx Context, p *mq.Unsubscribe) {
+func (c *Client) unsub(ctx context.Context, p *mq.Unsubscribe) {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id) // MQTT-2.2.1-3
 }
@@ -148,7 +148,7 @@ func (c *Client) Settings() Settings {
 }
 
 func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
-	return func(ctx Context, p mq.Packet) error {
+	return func(ctx context.Context, p mq.Packet) error {
 		// reuse packet ids and handle acks
 		switch p := p.(type) {
 		case *mq.Publish:
@@ -179,7 +179,7 @@ func (c *Client) nextPacket() (mq.Packet, error) {
 }
 
 // send packet to the underlying connection.
-func (c *Client) send(_ Context, p mq.Packet) error {
+func (c *Client) send(_ context.Context, p mq.Packet) error {
 	if c.wire == nil {
 		return ErrNoConnection
 	}
@@ -190,7 +190,7 @@ func (c *Client) send(_ Context, p mq.Packet) error {
 }
 
 func (c *Client) logIncoming(next mq.Handler) mq.Handler {
-	return func(ctx Context, p mq.Packet) error {
+	return func(ctx context.Context, p mq.Packet) error {
 		c.debug.Print(p, " <- wire")
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
@@ -200,7 +200,7 @@ func (c *Client) logIncoming(next mq.Handler) mq.Handler {
 }
 
 func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
-	return func(ctx Context, p mq.Packet) error {
+	return func(ctx context.Context, p mq.Packet) error {
 		if err := next(ctx, p); err != nil {
 			c.info.Print("wire <- ", p, err)
 			return err
@@ -218,7 +218,10 @@ func (c *Client) setLogPrefix(cid string) {
 	c.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
 
-func unsetReceiver(_ Context, _ mq.Packet) error { return ErrUnsetReceiver }
-func notRunning(_ Context, _ mq.Packet) error    { return ErrNotRunning }
+func unsetReceiver(_ context.Context, _ mq.Packet) error {
+	return ErrUnsetReceiver
+}
 
-type Context = context.Context
+func notRunning(_ context.Context, _ mq.Packet) error {
+	return ErrNotRunning
+}

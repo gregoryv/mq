@@ -141,7 +141,7 @@ type Interceptor struct {
 }
 
 func (r *Interceptor) intercept(next mq.Handler) mq.Handler {
-	return func(ctx Context, p mq.Packet) error {
+	return func(ctx context.Context, p mq.Packet) error {
 		select {
 		case r.c <- p: // if anyone is interested
 		case <-time.After(10 * time.Millisecond):
