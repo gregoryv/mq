@@ -9,8 +9,8 @@ import (
 )
 
 type Settings interface {
-	// ReceiverSet configures receiver for any incoming mq.Publish
-	// packets. The client handles PacketID reuse.
+	// ReceiverSet configures final handler of the incoming
+	// stack. Usually some sort of router to the application logic.
 	ReceiverSet(mq.Handler) error
 
 	LogLevelSet(v LogLevel) error
