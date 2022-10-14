@@ -145,15 +145,16 @@ const (
 var _LEN []byte
 
 // Filter option, used in Subscribe
-type Fop byte
+type FilterOption byte
+type Opt = FilterOption
 
 const (
-	FopQoS1    Fop = 1
-	FopQoS2    Fop = 2
-	FopQoS3    Fop = 3 // malformed
-	FopNL      Fop = 1 << 2
-	FopRAP     Fop = 1 << 3
-	FopRetain1 Fop = 1 << 4
-	FopRetain2 Fop = 2 << 4
-	FopRetain3 Fop = 3 << 4 // malformed
+	OptQoS1    Opt = 1
+	OptQoS2    Opt = 2
+	OptQoS3    Opt = 3 // malformed
+	OptNL      Opt = 1 << 2
+	OptRAP     Opt = 1 << 3
+	OptRetain1 Opt = 1 << 4
+	OptRetain2 Opt = 2 << 4
+	OptRetain3 Opt = 3 << 4 // malformed
 )

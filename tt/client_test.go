@@ -61,7 +61,7 @@ func TestAppClient(t *testing.T) {
 	}
 	{ // subscribe
 		p := mq.NewSubscribe()
-		p.AddFilter("a/b", mq.FopQoS1)
+		p.AddFilter("a/b", mq.OptQoS1)
 		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.SubAck)
 	}

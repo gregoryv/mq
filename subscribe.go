@@ -48,7 +48,7 @@ func (p *Subscribe) AddUserProperty(prop property) {
 	p.userProp = append(p.userProp, prop)
 }
 
-func (p *Subscribe) AddFilter(filter string, options Fop) {
+func (p *Subscribe) AddFilter(filter string, options Opt) {
 	p.filters = append(p.filters, TopicFilter{
 		filter:  wstring(filter),
 		options: Bits(options),
@@ -130,7 +130,7 @@ func (p *Subscribe) propertyMap() map[Ident]wireType {
 
 // ----------------------------------------
 
-func NewTopicFilter(filter string, options Fop) TopicFilter {
+func NewTopicFilter(filter string, options Opt) TopicFilter {
 	return TopicFilter{
 		filter:  wstring(filter),
 		options: Bits(options),
@@ -160,30 +160,30 @@ func (c TopicFilter) String() string {
 	}
 
 	// QoS
-	mark(7, byte(FopQoS1), '1')
-	mark(6, byte(FopQoS2), '2')
-	if c.options.Has(byte(FopQoS3)) {
+	mark(7, byte(OptQoS1), '1')
+	mark(6, byte(OptQoS2), '2')
+	if c.options.Has(byte(OptQoS3)) {
 		flags[7] = '!'
 		flags[6] = '!'
 	}
-	if c.options.Has(byte(FopNL)) {
+	if c.options.Has(byte(OptNL)) {
 		flags[5] = 'n'
 	}
-	if c.options.Has(byte(FopRAP)) {
+	if c.options.Has(byte(OptRAP)) {
 		flags[4] = 'p'
 	}
 	// Retain
 	flags[3] = '0'
 	flags[2] = 'r'
-	if c.options.Has(byte(FopRetain1)) {
+	if c.options.Has(byte(OptRetain1)) {
 		flags[3] = '1'
 		flags[2] = 'r'
 	}
-	if c.options.Has(byte(FopRetain2)) {
+	if c.options.Has(byte(OptRetain2)) {
 		flags[3] = '2'
 		flags[2] = 'r'
 	}
-	if c.options.Has(byte(FopRetain3)) {
+	if c.options.Has(byte(OptRetain3)) {
 		flags[3] = '!'
 		flags[2] = '!'
 	}

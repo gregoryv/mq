@@ -17,8 +17,8 @@ func TestSubscribe(t *testing.T) {
 		t.Error("expect note on missing filters")
 	}
 
-	s.AddFilter("a/b/c", FopQoS2|FopNL|FopRAP)
-	s.AddFilter("d/e", FopQoS1)
+	s.AddFilter("a/b/c", OptQoS2|OptNL|OptRAP)
+	s.AddFilter("d/e", OptQoS1)
 
 	if v := s.String(); !strings.Contains(v, "SUBSCRIBE --1-") {
 		t.Errorf("%q expect to contain %q", v, "SUBSCRIBE --1-")
@@ -33,19 +33,19 @@ func TestTopicFilter(t *testing.T) {
 		exp string
 	}{
 		{
-			f:   NewTopicFilter("a/b", FopQoS3),
+			f:   NewTopicFilter("a/b", OptQoS3),
 			exp: "a/b --r0--!!",
 		},
 		{
-			f:   NewTopicFilter("a/b", FopQoS1|FopRetain1),
+			f:   NewTopicFilter("a/b", OptQoS1|OptRetain1),
 			exp: "a/b --r1---1",
 		},
 		{
-			f:   NewTopicFilter("a/b", FopQoS2|FopRetain2),
+			f:   NewTopicFilter("a/b", OptQoS2|OptRetain2),
 			exp: "a/b --r2--2-",
 		},
 		{
-			f:   NewTopicFilter("a/b", FopQoS2|FopRetain3),
+			f:   NewTopicFilter("a/b", OptQoS2|OptRetain3),
 			exp: "a/b --!!--2-",
 		},
 	}
