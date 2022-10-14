@@ -100,47 +100,41 @@ func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 // goroutines.
 func (c *Client) Send(ctx context.Context, p mq.Packet) error {
 	switch p := p.(type) {
+	case *mq.Connect:
+		c.connect(p)
+
 	case *mq.Publish:
-		return c.pub(ctx, p)
+		c.pub(ctx, p)
 
 	case *mq.Subscribe:
-		return c.sub(ctx, p)
+		c.sub(ctx, p)
 
 	case *mq.Unsubscribe:
-		return c.unsub(ctx, p)
-
-	case *mq.Connect:
-		return c.connect(ctx, p)
-
-	default:
-		return c.out(p)
+		c.unsub(ctx, p)
 	}
+	return c.out(p) // todo context
 }
 
-func (c *Client) connect(ctx context.Context, p *mq.Connect) error {
+func (c *Client) connect(p *mq.Connect) {
 	cid := p.ClientIDShort()
 	c.setLogPrefix(cid)
-	return c.out(p)
 }
 
-func (c *Client) pub(ctx context.Context, p *mq.Publish) error {
+func (c *Client) pub(ctx context.Context, p *mq.Publish) {
 	if p.QoS() > 0 {
 		id := c.pool.Next(ctx)
 		p.SetPacketID(id) // MQTT-2.2.1-3
 	}
-	return c.out(p)
 }
 
-func (c *Client) sub(ctx context.Context, p *mq.Subscribe) error {
+func (c *Client) sub(ctx context.Context, p *mq.Subscribe) {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id) // MQTT-2.2.1-3
-	return c.out(p)
 }
 
-func (c *Client) unsub(ctx context.Context, p *mq.Unsubscribe) error {
+func (c *Client) unsub(ctx context.Context, p *mq.Unsubscribe) {
 	id := c.pool.Next(ctx)
 	p.SetPacketID(id) // MQTT-2.2.1-3
-	return c.out(p)
 }
 
 // Settings returns this clients settings. If the client is running
