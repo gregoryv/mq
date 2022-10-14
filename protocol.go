@@ -14,18 +14,7 @@ Client implementations are responsible for
   - Add packet ID's and acknowledge packets
 */
 type Client interface {
-	Connect(context.Context, *Connect) error
-	Disconnect(context.Context, *Disconnect) error
-
-	// Pub writes the given control packet on the wire, fails if could
-	// not be written. The call does not wait for a PubAck, see
-	// Receiver.
-	Pub(context.Context, *Publish) error
-
-	// Sub writes the given control packet on the wire, fails if could
-	// not be written. The call does not wait for a SubAck, see
-	// Receiver.
-	Sub(context.Context, *Subscribe) error
+	Send(context.Context, Packet) error
 }
 
 // Handlers are used for both incoming and outgoing processing of
