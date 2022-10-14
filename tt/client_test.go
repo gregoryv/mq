@@ -22,7 +22,7 @@ func TestThingClient(t *testing.T) {
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		_ = c.Connect(ctx, &p)
+		_ = c.Send(ctx, &p)
 
 		ack := mq.NewConnAck()
 		ack.WriteTo(server)
@@ -34,7 +34,7 @@ func TestThingClient(t *testing.T) {
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		_ = c.Pub(ctx, &p)
+		_ = c.Send(ctx, &p)
 
 		ack := mq.NewPubAck()
 		ack.SetPacketID(p.PacketID())
@@ -43,7 +43,7 @@ func TestThingClient(t *testing.T) {
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		if err := c.Disconnect(ctx, &p); err != nil {
+		if err := c.Send(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -56,13 +56,13 @@ func TestAppClient(t *testing.T) {
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		_ = c.Connect(ctx, &p)
+		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.ConnAck)
 	}
 	{ // subscribe
 		p := mq.NewSubscribe()
 		p.AddFilter("a/b", mq.FopQoS1)
-		_ = c.Sub(ctx, &p)
+		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.SubAck)
 	}
 	{ // publish application message
@@ -70,7 +70,7 @@ func TestAppClient(t *testing.T) {
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		_ = c.Pub(ctx, &p)
+		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
 		_ = (<-incoming).(*mq.Publish)
 
@@ -93,7 +93,7 @@ func TestClient_badConnect(t *testing.T) {
 	c.wire.(io.Closer).Close() // close before we write connect packet
 
 	p := mq.NewConnect()
-	if err := c.Connect(ctx, &p); err == nil {
+	if err := c.Send(ctx, &p); err == nil {
 		t.Fatal("expect error")
 	}
 }
@@ -104,7 +104,7 @@ func TestClient_Connect_shortClientID(t *testing.T) {
 
 	p := mq.NewConnect()
 	p.SetClientID("short")
-	_ = c.Connect(ctx, &p)
+	_ = c.Send(ctx, &p)
 	_ = (<-incoming).(*mq.ConnAck)
 }
 
@@ -114,7 +114,7 @@ func TestClient_Receiver(t *testing.T) {
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		_ = c.Connect(ctx, &p)
+		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.ConnAck)
 	}
 }

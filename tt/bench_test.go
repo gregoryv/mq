@@ -21,7 +21,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 
-		if err := c.Pub(ctx, &p); err != nil {
+		if err := c.Send(ctx, &p); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -41,7 +41,7 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 
-		if err := c.Pub(ctx, &p); err != nil {
+		if err := c.Send(ctx, &p); err != nil {
 			b.Fatal(err)
 		}
 		// response from server
