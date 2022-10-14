@@ -1,12 +1,10 @@
-mq - package providing an implementation of the MQTT v5 protocol
+mq - package implements
+[mqtt-v5.0](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html) control
+packets
 
-This project prioritizes
+<img src="./etc/logo.svg" />
 
-1. Correctness
-2. Performance
-3. Ease of use
+For a low level client implementation refer to [tt](https://github.com/gregoryv/mq/tree/main/tt)
 
-and in that order. Naming concepts follow the [v5.0 MQTT specification](
-https://docs.oasis-open.org/mq/mq/v5.0/mq-v5.0.html)
-as much as possible.
+Naming concepts follow the specification as much as possible.
 
