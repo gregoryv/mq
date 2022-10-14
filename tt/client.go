@@ -161,7 +161,7 @@ func (c *Client) Settings() Settings {
 	if c.running {
 		return &s
 	}
-	return &setWrite{s}
+	return &writeSettings{s}
 }
 
 func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {

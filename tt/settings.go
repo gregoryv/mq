@@ -20,16 +20,16 @@ type Settings interface {
 	IOSet(io.ReadWriter) error
 }
 
-type setWrite struct {
+type writeSettings struct {
 	setRead
 }
 
-func (s *setWrite) ReceiverSet(v mq.Handler) error {
+func (s *writeSettings) ReceiverSet(v mq.Handler) error {
 	s.receiver = v
 	return nil
 }
 
-func (s *setWrite) LogLevelSet(v LogLevel) error {
+func (s *writeSettings) LogLevelSet(v LogLevel) error {
 	switch v {
 	case LogLevelDebug:
 		s.info.SetOutput(log.Writer())
@@ -46,10 +46,12 @@ func (s *setWrite) LogLevelSet(v LogLevel) error {
 	return nil
 }
 
-func (s *setWrite) IOSet(v io.ReadWriter) error {
+func (s *writeSettings) IOSet(v io.ReadWriter) error {
 	s.wire = v
 	return nil
 }
+
+// ----------------------------------------
 
 type setRead struct {
 	*Client
