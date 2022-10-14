@@ -21,7 +21,7 @@ type Settings interface {
 }
 
 type writeSettings struct {
-	setRead
+	readSettings
 }
 
 func (s *writeSettings) ReceiverSet(v mq.Handler) error {
@@ -53,10 +53,10 @@ func (s *writeSettings) IOSet(v io.ReadWriter) error {
 
 // ----------------------------------------
 
-type setRead struct {
+type readSettings struct {
 	*Client
 }
 
-func (s *setRead) ReceiverSet(_ mq.Handler) error { return ErrReadOnly }
-func (s *setRead) LogLevelSet(_ LogLevel) error   { return ErrReadOnly }
-func (s *setRead) IOSet(_ io.ReadWriter) error    { return ErrReadOnly }
+func (s *readSettings) ReceiverSet(_ mq.Handler) error { return ErrReadOnly }
+func (s *readSettings) LogLevelSet(_ LogLevel) error   { return ErrReadOnly }
+func (s *readSettings) IOSet(_ io.ReadWriter) error    { return ErrReadOnly }

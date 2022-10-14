@@ -157,7 +157,7 @@ func (c *Client) Unsub(ctx context.Context, p *mq.Unsubscribe) error {
 // Settings returns this clients settings. If the client is running
 // settings are read only.
 func (c *Client) Settings() Settings {
-	s := setRead{c}
+	s := readSettings{c}
 	if c.running {
 		return &s
 	}
