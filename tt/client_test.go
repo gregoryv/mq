@@ -77,7 +77,7 @@ func TestAppClient(t *testing.T) {
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		_ = c.Disconnect(ctx, &p)
+		_ = c.Send(ctx, &p)
 	}
 }
 
