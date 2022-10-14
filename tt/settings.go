@@ -1,7 +1,6 @@
 package tt
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -59,5 +58,3 @@ type setRead struct {
 func (s *setRead) ReceiverSet(_ mq.Handler) error { return ErrReadOnly }
 func (s *setRead) LogLevelSet(_ LogLevel) error   { return ErrReadOnly }
 func (s *setRead) IOSet(_ io.ReadWriter) error    { return ErrReadOnly }
-
-var ErrReadOnly = fmt.Errorf("read only")

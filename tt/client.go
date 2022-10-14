@@ -215,9 +215,3 @@ func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
 func (c *Client) setLogPrefix(cid string) {
 	c.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
-
-var (
-	ErrNoConnection  = fmt.Errorf("no connection")
-	ErrUnsetReceiver = fmt.Errorf("unset receiver")
-	ErrNotRunning    = fmt.Errorf("not running")
-)
