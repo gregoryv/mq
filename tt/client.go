@@ -22,7 +22,7 @@ func NewClient() *Client {
 
 		// this receiver should be replaced by the application layer
 		receiver: func(_ mq.Packet) error { return ErrUnsetReceiver },
-		out:      func(p mq.Packet) error { panic(p.String()) },
+		out:      func(p mq.Packet) error { return ErrNotRunning },
 	}
 	c.instack = []mq.Middleware{
 		c.logIncoming,
@@ -219,4 +219,5 @@ func (c *Client) setLogPrefix(cid string) {
 var (
 	ErrNoConnection  = fmt.Errorf("no connection")
 	ErrUnsetReceiver = fmt.Errorf("unset receiver")
+	ErrNotRunning    = fmt.Errorf("not running")
 )
