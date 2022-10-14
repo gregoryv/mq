@@ -19,7 +19,7 @@ type Client interface {
 
 // Handlers are used for both incoming and outgoing processing of
 // packets.
-type Handler func(Packet) error
+type Handler func(context.Context, Packet) error
 
 type Middleware func(next Handler) Handler
 

@@ -24,7 +24,7 @@ func Example_runClient() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	s.IOSet(conn)
 	s.LogLevelSet(tt.LogLevelNone)
-	s.ReceiverSet(func(p mq.Packet) error {
+	s.ReceiverSet(func(_ context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
 			// connected, maybe subscribe to topics now

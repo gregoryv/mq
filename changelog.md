@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add context to type Handler
 - Rename type Fop to FilterOption with alias Opt
 - Simpler mq.Client interface with one Send method
 - tt.Client uses stack of middlewares
