@@ -36,8 +36,14 @@ func Example_runClient() {
 	ctx, _ := context.WithCancel(context.Background())
 	c.Start(ctx)
 
-	// connect
-	p := mq.NewConnect()
-	p.SetClientID("example")
-	_ = c.Connect(ctx, &p)
+	{ // connect
+		p := mq.NewConnect()
+		p.SetClientID("example")
+		_ = c.Send(ctx, &p)
+	}
+	{ // subscribe
+		p := mq.NewSubscribe()
+		p.AddFilter("a/b", mq.FopQoS1)
+		_ = c.Send(ctx, &p)
+	}
 }

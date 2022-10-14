@@ -96,6 +96,25 @@ func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 	return v[0](stack(v[1:], last))
 }
 
+func (c *Client) Send(ctx context.Context, p mq.Packet) error {
+	switch p := p.(type) {
+	case *mq.Publish:
+		return c.Pub(ctx, p)
+
+	case *mq.Subscribe:
+		return c.Sub(ctx, p)
+
+	case *mq.Unsubscribe:
+		return c.Unsub(ctx, p)
+
+	case *mq.Connect:
+		return c.Connect(ctx, p)
+
+	default:
+		return c.out(p)
+	}
+}
+
 // Connect sends the packet. In the future this would be a good place
 // to implement support for different auth methods.
 func (c *Client) Connect(ctx context.Context, p *mq.Connect) error {
