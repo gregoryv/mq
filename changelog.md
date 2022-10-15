@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add type mq.PubHandler
 - Remove Context alias
 
 ## [0.16.0] 2022-10-14

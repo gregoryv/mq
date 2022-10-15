@@ -21,6 +21,9 @@ type Client interface {
 // packets.
 type Handler func(context.Context, Packet) error
 
+// PubHandler is specific to publish packets
+type PubHandler func(context.Context, *Publish) error
+
 type Middleware func(next Handler) Handler
 
 // Packet and ControlPacket can be used interchangebly.
