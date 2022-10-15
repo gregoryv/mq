@@ -2,6 +2,7 @@ package tt_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/gregoryv/mq"
@@ -14,16 +15,13 @@ func init() {
 }
 
 func Example_runClient() {
-
-	// connect to a server, replace with eg.
-	// net.Dial("tcp", "127.0.0.1:1883")
+	// replace with eg.
+	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	// configure client
-	c := tt.NewClient()
+	c := tt.NewClient() // configure client
 	s := c.Settings()
 	s.IOSet(conn)
-	s.LogLevelSet(tt.LogLevelNone)
 
 	router := tt.NewRouter()
 	router.Add("#", func(_ context.Context, p *mq.Publish) error {
@@ -32,10 +30,12 @@ func Example_runClient() {
 	})
 
 	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
-		switch p.(type) {
+		switch p := p.(type) {
 		case *mq.ConnAck:
 			// connected, maybe subscribe to topics now
+			fmt.Println(p.TopicAliasMax())
 			return nil
+
 		case *mq.Publish:
 			return router.Route(ctx, p)
 		}
