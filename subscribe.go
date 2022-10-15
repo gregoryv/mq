@@ -20,7 +20,7 @@ type Subscribe struct {
 }
 
 func (p *Subscribe) String() string {
-	return fmt.Sprintf("%s p%v, %s, %v bytes",
+	return fmt.Sprintf("%s p%v, %s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		p.filterString(),
