@@ -78,6 +78,15 @@ func (r *Route) Match(name string) ([]string, bool) {
 	return words, true
 }
 
+// Subscribe returns a no local subscribe packet for this route
+func (r *Route) Subscribe() *mq.Subscribe {
+	p := mq.NewSubscribe()
+	p.AddFilter(r.filter, mq.OptNL)
+	return &p
+}
+
+func (r *Route) Filter() string { return r.filter }
+
 func word(name string, i int) string {
 	width := strings.Index(name[i:], "/")
 	if width > 0 {

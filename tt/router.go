@@ -46,6 +46,10 @@ func (r *Router) AddRoutes(routes ...*Route) error {
 	return fmt.Errorf("AddRoute: todo")
 }
 
+func (r *Router) Routes() []*Route {
+	return r.routes
+}
+
 // ----------------------------------------
 
 func plural(v int, word string) string {
@@ -55,6 +59,7 @@ func plural(v int, word string) string {
 	return fmt.Sprintf("%v %s", v, word)
 }
 
+// Pub creates a new publish packet with the given values
 func Pub(qos uint8, topicName, payload string) *mq.Publish {
 	p := mq.NewPublish()
 	p.SetQoS(qos)

@@ -2,8 +2,8 @@ package tt_test
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"sync"
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
@@ -25,18 +25,27 @@ func Example_runClient() {
 
 	router := tt.NewRouter()
 	router.Add("#", func(_ context.Context, p *mq.Publish) error {
-		// handle the package
+		// handle packet...
 		return nil
 	})
+
+	var subscribes sync.WaitGroup
 
 	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.ConnAck:
-			// connected, maybe subscribe to topics now
-			fmt.Println(p.TopicAliasMax())
-			return nil
+
+			// here we choose to subscribe each route separately
+			for _, r := range router.Routes() {
+				_ = c.Send(ctx, r.Subscribe())
+				subscribes.Add(1)
+			}
+
+		case *mq.SubAck:
+			subscribes.Done()
 
 		case *mq.Publish:
+
 			return router.Route(ctx, p)
 		}
 		return nil
@@ -49,11 +58,6 @@ func Example_runClient() {
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID("example")
-		_ = c.Send(ctx, &p)
-	}
-	{ // subscribe
-		p := mq.NewSubscribe()
-		p.AddFilter("a/b", mq.OptQoS1)
 		_ = c.Send(ctx, &p)
 	}
 }
