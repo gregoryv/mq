@@ -10,11 +10,8 @@ import (
 
 func ExampleRouter() {
 	routes := []*tt.Route{
-		tt.NewRoute("gopher/pink", func(ctx context.Context, p mq.Packet) error {
-			switch p := p.(type) {
-			case *mq.Publish:
-				fmt.Println(p.TopicName(), string(p.Payload()))
-			}
+		tt.NewRoute("gopher/pink", func(_ context.Context, p *mq.Publish) error {
+			fmt.Println(p)
 			return nil
 		}),
 	}
@@ -26,8 +23,6 @@ func ExampleRouter() {
 
 	fmt.Print(r)
 	//output:
-	// gopher/pink hi
+	// PUBLISH ---- p0 20 bytes
 	// 1 route
 }
-
-// ----------------------------------------

@@ -6,7 +6,7 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewRoute(filter string, handlers ...mq.Handler) *Route {
+func NewRoute(filter string, handlers ...mq.PubHandler) *Route {
 	r := &Route{
 		filter:   filter,
 		filters:  strings.Split(filter, "/"),
@@ -27,7 +27,7 @@ type Route struct {
 	hasMulti  bool
 	hasSingle bool
 
-	handlers []mq.Handler
+	handlers []mq.PubHandler
 }
 
 func (r *Route) String() string {

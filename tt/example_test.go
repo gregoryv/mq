@@ -26,7 +26,7 @@ func Example_runClient() {
 	s.LogLevelSet(tt.LogLevelNone)
 
 	router := tt.NewRouter()
-	router.Add("#", func(_ context.Context, p mq.Packet) error {
+	router.Add("#", func(_ context.Context, p *mq.Publish) error {
 		// handle the package
 		return nil
 	})
