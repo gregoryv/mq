@@ -28,12 +28,17 @@ func (r *Router) Route(ctx context.Context, p mq.Packet) error {
 		for _, r := range r.routes {
 			if _, ok := r.Match(p.TopicName()); ok {
 				for _, h := range r.handlers {
-					h(ctx, p)
+					_ = h(ctx, p) // todo how to handle errors
 				}
 			}
 		}
 	}
 	return ctx.Err()
+}
+
+func (r *Router) Add(filter string, handlers ...mq.Handler) error {
+	r.routes = append(r.routes, NewRoute(filter, handlers...))
+	return nil
 }
 
 func (r *Router) AddRoutes(routes ...*Route) error {

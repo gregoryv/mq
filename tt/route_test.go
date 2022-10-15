@@ -43,6 +43,7 @@ func TestRoute(t *testing.T) {
 		}
 	}
 
+	// check String
 	if v := NewRoute("sport/#").String(); v != "sport/#" {
 		t.Error("Route.String missing filter", v)
 	}

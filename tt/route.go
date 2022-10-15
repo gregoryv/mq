@@ -34,6 +34,7 @@ func (r *Route) String() string {
 	return r.filter
 }
 
+// Match topic name and return any wildcard words.
 func (r *Route) Match(name string) ([]string, bool) {
 	// special case always
 	if r.always {
