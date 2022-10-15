@@ -6,7 +6,7 @@ import (
 
 func TestRoute(t *testing.T) {
 	// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901241
-	names := []string{
+	spec := []string{
 		"sport/tennis/player1",
 		"sport/tennis/player1/ranking",
 		"sport/tennis/player1/score/wimbledon",
@@ -14,28 +14,31 @@ func TestRoute(t *testing.T) {
 
 	cases := []struct {
 		expMatch bool
+		names    []string
 		*Route
 		expWords []string
 	}{
-		{true, NewRoute("sport/tennis/player1/#"), nil},
-		{true, NewRoute("sport/#"), nil},
-		{true, NewRoute("#"), nil},
-		{true, NewRoute("+"), []string{"sport"}},
-		{true, NewRoute("+/tennis/#"), []string{"sport"}},
-		{false, NewRoute("tennis/player1/#"), nil},
-		{false, NewRoute("sport/tennis#"), nil},
+		{true, spec, NewRoute("sport/tennis/player1/#"), nil},
+		{true, spec, NewRoute("sport/#"), nil},
+		{true, spec, NewRoute("#"), nil},
+		{true, spec, NewRoute("+/tennis/#"), []string{"sport"}},
+
+		{true, []string{"a/b/c"}, NewRoute("a/+/+"), []string{"b", "c"}},
+		{true, []string{"a/b/c"}, NewRoute("a/+/c"), []string{"b"}},
+
+		{false, spec, NewRoute("+"), nil},
+		{false, spec, NewRoute("tennis/player1/#"), nil},
+		{false, spec, NewRoute("sport/tennis#"), nil},
 	}
 
 	for _, c := range cases {
-		for _, name := range names {
+		for _, name := range c.names {
 			words, match := c.Route.Match(name)
-			if match != c.expMatch {
-				t.Error(c.expMatch, c.Route, "got", match)
-			}
 
-			if !equal(words, c.expWords) {
-				t.Log(name)
-				t.Error(c.Route, words)
+			if !equal(words, c.expWords) || match != c.expMatch {
+				t.Errorf("%s %s exp:%v got:%v %q",
+					name, c.Route, c.expMatch, match, words,
+				)
 			}
 		}
 	}

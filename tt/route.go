@@ -1,32 +1,32 @@
 package tt
 
 import (
-	"regexp"
 	"strings"
 
 	"github.com/gregoryv/mq"
 )
 
 func NewRoute(filter string, handlers ...mq.Handler) *Route {
-	r := Route{filter: filter, handlers: handlers}
-	if i := strings.Index(filter, "/#"); i > 0 {
-		r.prefix = filter[:i]
+	r := &Route{
+		filter:   filter,
+		filters:  strings.Split(filter, "/"),
+		always:   filter == "#",
+		handlers: handlers,
 	}
-	if strings.Contains(filter, "+") {
-		f := filter
-		if r.prefix != "" {
-			f = r.prefix
-		}
-		f = strings.ReplaceAll(f, "+", `(\w+)`)
-		r.rx = regexp.MustCompile(f)
+	if !r.always {
+		r.hasMulti = strings.HasSuffix(filter, "/#")
+		r.hasSingle = strings.Contains(filter, "+")
 	}
-	return &r
+	return r
 }
 
 type Route struct {
-	filter   string
-	prefix   string
-	rx       *regexp.Regexp
+	filter    string
+	filters   []string
+	always    bool
+	hasMulti  bool
+	hasSingle bool
+
 	handlers []mq.Handler
 }
 
@@ -35,25 +35,53 @@ func (r *Route) String() string {
 }
 
 func (r *Route) Match(name string) ([]string, bool) {
-	switch {
-	case r.filter == "#":
-		return nil, true
-
-	case r.prefix != "": // filter contains a #
-
-		if r.rx != nil { // and prefix contains a +
-			words := r.rx.FindAllStringSubmatch(name, -1)
-			return words[0][1:], len(words) > 0
-		}
-		return nil, strings.HasPrefix(name, r.prefix)
-
-	case r.rx != nil:
-		words := r.rx.FindAllStringSubmatch(name, -1)
-		return words[0][1:], len(words) > 0
-
-	case name == r.filter:
+	// special case always
+	if r.always {
 		return nil, true
 	}
+	// without wildcards
+	if !r.hasMulti && !r.hasSingle {
+		return nil, name == r.filter
+	}
 
-	return nil, false
+	// + matches are saved for easy access by handlers
+	var words []string
+
+	var j int // index in name
+	for _, f := range r.filters {
+		switch f {
+		case "#":
+			if r.hasMulti {
+				return words, true
+			}
+			// todo maybe warn on bad filter, eg. a/#/b
+
+		case "+":
+			w := word(name, j)
+			words = append(words, w)
+			j += len(w) + 1
+
+		case name[j : j+len(f)]: // word match
+			j += len(f) + 1
+
+		default:
+			return nil, false
+		}
+	}
+
+	// if name not consumed by filter
+	if j < len(name) {
+		return nil, false
+	}
+
+	return words, true
+}
+
+func word(name string, i int) string {
+	width := strings.Index(name[i:], "/")
+	if width > 0 {
+		return name[i : i+width]
+	}
+	return name[i:]
+
 }
