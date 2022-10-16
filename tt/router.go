@@ -3,7 +3,6 @@ package tt
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/gregoryv/mq"
 )
@@ -11,15 +10,11 @@ import (
 // ----------------------------------------
 
 func NewRouter() *Router {
-	return &Router{
-		info: log.New(log.Writer(), "", log.Flags()),
-	}
+	return &Router{}
 }
 
 type Router struct {
 	routes []*Route
-
-	info *log.Logger
 }
 
 func (r *Router) String() string {
@@ -31,7 +26,6 @@ func (r *Router) Route(ctx context.Context, p *mq.Publish) error {
 	for _, route := range r.routes {
 		if _, ok := route.Match(p.TopicName()); ok {
 			for _, h := range route.handlers {
-				r.info.Println("handling", p, h)
 				_ = h(ctx, p) // todo how to handle errors
 			}
 		}
