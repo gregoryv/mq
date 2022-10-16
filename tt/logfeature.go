@@ -75,7 +75,7 @@ func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) logOutgoing(next mq.Handler) mq.Handler {
+func (f *LogFeature) LogOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("ut ", p)
 		return next(ctx, p)

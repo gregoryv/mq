@@ -156,7 +156,6 @@ func newClient(t *testing.T) *Client {
 	c := NewBasicClient()
 	s := c.Settings()
 	s.IOSet(dialBroker(t))
-	s.LogLevelSet(LogLevelNone)
 	return c
 }
 

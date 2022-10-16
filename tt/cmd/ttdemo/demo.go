@@ -14,10 +14,27 @@ import (
 func main() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
-	c := tt.NewBasicClient() // configure client
+	c := tt.NewClient() // configure client
+
+	fpool := tt.NewPoolFeature(100)
+	flog := tt.NewLogFeature()
+	flog.LogLevelSet(tt.LogLevelDebug)
+
 	s := c.Settings()
+	s.InStackSet([]mq.Middleware{
+		flog.LogIncoming,
+		flog.DumpPacket,
+		fpool.ReusePacketID,
+		flog.PrefixLoggers,
+	})
+	s.OutStackSet([]mq.Middleware{
+		flog.PrefixLoggers,
+		fpool.SetPacketID,
+		flog.LogOutgoing, // keep loggers last
+		flog.DumpPacket,
+	})
+
 	s.IOSet(conn)
-	s.LogLevelSet(tt.LogLevelDebug)
 
 	complete := make(chan struct{})
 

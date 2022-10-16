@@ -14,9 +14,9 @@ import (
 func NewBasicClient() *Client {
 	fpool := NewPoolFeature(MaxDefaultConcurrentID)
 	flog := NewLogFeature()
+	flog.LogLevelSet(LogLevelNone)
 
 	c := NewClient()
-	c.flog = flog // todo should not be needed but Settings requires it
 	s := c.Settings()
 	s.InStackSet([]mq.Middleware{
 		flog.LogIncoming,
@@ -27,7 +27,7 @@ func NewBasicClient() *Client {
 	s.OutStackSet([]mq.Middleware{
 		flog.PrefixLoggers,
 		fpool.SetPacketID,
-		flog.logOutgoing, // keep loggers last
+		flog.LogOutgoing,
 		flog.DumpPacket,
 	})
 	return c
@@ -42,8 +42,6 @@ func NewClient() *Client {
 }
 
 type Client struct {
-	flog *LogFeature
-
 	running bool // set by func Run
 
 	m    sync.Mutex
