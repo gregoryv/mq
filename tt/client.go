@@ -9,17 +9,13 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-// NewClient returns a client with MaxDefaultConcurrentID and disabled logging
-func NewClient() *Client {
+// NewBasicClient returns a client with MaxDefaultConcurrentID and disabled logging
+func NewBasicClient() *Client {
 	pool := newPool(MaxDefaultConcurrentID)
 	flog := NewLogFeature()
 
-	c := &Client{
-		flog: flog,
-		// receiver should be replaced by the application layer
-		receiver: unsetReceiver,
-		out:      notRunning,
-	}
+	c := NewClient()
+	c.flog = flog // todo should not be needed but Settings requires it
 	c.instack = []mq.Middleware{
 		flog.logIncoming, // keep first
 		flog.dumpPacket,
@@ -33,6 +29,14 @@ func NewClient() *Client {
 		flog.dumpPacket,  //
 	}
 	return c
+}
+
+func NewClient() *Client {
+	return &Client{
+		// receiver should be replaced by the application layer
+		receiver: unsetReceiver,
+		out:      notRunning,
+	}
 }
 
 type Client struct {

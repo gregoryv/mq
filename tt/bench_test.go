@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
-	c := NewClient()
+	c := NewBasicClient()
 	conn, _ := Dial()
 	c.Settings().IOSet(conn)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -28,7 +28,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 }
 
 func BenchmarkClient_PubQoS1(b *testing.B) {
-	c := NewClient()
+	c := NewBasicClient()
 	conn, server := Dial()
 	c.Settings().IOSet(conn)
 	ctx, cancel := context.WithCancel(context.Background())

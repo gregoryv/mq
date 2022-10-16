@@ -14,7 +14,7 @@ import (
 func main() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
-	c := tt.NewClient() // configure client
+	c := tt.NewBasicClient() // configure client
 	s := c.Settings()
 	s.IOSet(conn)
 	s.LogLevelSet(tt.LogLevelDebug)

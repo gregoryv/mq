@@ -15,7 +15,7 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	c := NewClient()
+	c := NewBasicClient()
 	conn, server := Dial()
 	c.Settings().IOSet(conn)
 	ctx, incoming := runIntercepted(t, c)
@@ -153,7 +153,7 @@ func (r *Interceptor) intercept(next mq.Handler) mq.Handler {
 func ignore(_ mq.ControlPacket) error { return nil }
 
 func newClient(t *testing.T) *Client {
-	c := NewClient()
+	c := NewBasicClient()
 	s := c.Settings()
 	s.IOSet(dialBroker(t))
 	s.LogLevelSet(LogLevelNone)
