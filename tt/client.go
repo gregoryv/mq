@@ -15,8 +15,9 @@ import (
 
 // NewClient returns a client with MaxDefaultConcurrentID and disabled logging
 func NewClient() *Client {
+	pool := newPool(MaxDefaultConcurrentID)
+
 	c := &Client{
-		pool:  newPool(MaxDefaultConcurrentID),
 		info:  log.New(log.Writer(), "", log.Flags()),
 		debug: log.New(log.Writer(), "", log.Flags()),
 
@@ -26,11 +27,11 @@ func NewClient() *Client {
 	}
 	c.instack = []mq.Middleware{
 		c.logIncoming, // keep first
-		c.pool.reusePacketID,
+		pool.reusePacketID,
 		c.prefixLoggersOnConnAck,
 	}
 	c.outstack = []mq.Middleware{
-		c.pool.setPacketID,
+		pool.setPacketID,
 		c.logOutgoing, // keep last
 	}
 	c.Settings().LogLevelSet(LogLevelNone)
@@ -38,7 +39,6 @@ func NewClient() *Client {
 }
 
 type Client struct {
-	pool  *pool // of packet IDs
 	info  *log.Logger
 	debug *log.Logger
 
