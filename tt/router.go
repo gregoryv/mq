@@ -3,6 +3,7 @@ package tt
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/gregoryv/mq"
 )
@@ -10,26 +11,28 @@ import (
 // ----------------------------------------
 
 func NewRouter() *Router {
-	return &Router{}
+	return &Router{
+		info: log.New(log.Writer(), "", log.Flags()),
+	}
 }
 
 type Router struct {
 	routes []*Route
+
+	info *log.Logger
 }
 
 func (r *Router) String() string {
 	return plural(len(r.routes), "route")
 }
 
-func (r *Router) Route(ctx context.Context, p mq.Packet) error {
-	switch p := p.(type) {
-	case *mq.Publish:
-		// todo naive implementation looping over each route
-		for _, r := range r.routes {
-			if _, ok := r.Match(p.TopicName()); ok {
-				for _, h := range r.handlers {
-					_ = h(ctx, p) // todo how to handle errors
-				}
+func (r *Router) Route(ctx context.Context, p *mq.Publish) error {
+	// todo naive implementation looping over each route
+	for _, route := range r.routes {
+		if _, ok := route.Match(p.TopicName()); ok {
+			for _, h := range route.handlers {
+				r.info.Println("handling", p, h)
+				_ = h(ctx, p) // todo how to handle errors
 			}
 		}
 	}
@@ -43,7 +46,7 @@ func (r *Router) Add(filter string, handlers ...mq.PubHandler) error {
 
 func (r *Router) AddRoutes(routes ...*Route) error {
 	r.routes = routes
-	return fmt.Errorf("AddRoute: todo")
+	return nil
 }
 
 func (r *Router) Routes() []*Route {
