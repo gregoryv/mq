@@ -14,7 +14,7 @@ import (
 // NewBasicClient returns a client with MaxDefaultConcurrentID and
 // disabled logging
 func NewBasicClient() *Client {
-	fpool := idpool.NewIDPool(10)
+	fpool := idpool.New(10)
 	fl := flog.New()
 
 	c := NewClient()

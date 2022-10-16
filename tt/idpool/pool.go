@@ -1,3 +1,4 @@
+// Package idpool provides packet id use and reuse
 package idpool
 
 import (
@@ -11,7 +12,7 @@ import (
 var MaxDefaultConcurrentID uint16 = 100
 
 // NewPool returns a IDPool of reusable id's from 1..max, 0 is not used
-func NewIDPool(max uint16) *IDPool {
+func New(max uint16) *IDPool {
 	ids := make(chan uint16, max)
 	for i := uint16(1); i <= max; i++ {
 		ids <- i

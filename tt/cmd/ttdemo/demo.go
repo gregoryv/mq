@@ -18,7 +18,7 @@ func main() {
 
 	c := tt.NewClient() // configure client
 
-	fpool := idpool.NewIDPool(100)
+	fpool := idpool.New(100)
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelDebug)
 

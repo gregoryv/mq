@@ -6,7 +6,7 @@ import (
 )
 
 func Test_IDPool(t *testing.T) {
-	p := NewIDPool(3) // 1 .. 3
+	p := New(3) // 1 .. 3
 
 	ctx := context.Background()
 	p.Next(ctx) // 1
