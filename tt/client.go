@@ -1,12 +1,8 @@
 package tt
 
 import (
-	"bytes"
 	"context"
-	"encoding/hex"
-	"fmt"
 	"io"
-	"log"
 	"sync"
 	"time"
 
@@ -16,35 +12,31 @@ import (
 // NewClient returns a client with MaxDefaultConcurrentID and disabled logging
 func NewClient() *Client {
 	pool := newPool(MaxDefaultConcurrentID)
+	flog := NewLogFeature()
 
 	c := &Client{
-		info:  log.New(log.Writer(), "", log.Flags()),
-		debug: log.New(log.Writer(), "", log.Flags()),
-
+		flog: flog,
 		// receiver should be replaced by the application layer
 		receiver: unsetReceiver,
 		out:      notRunning,
 	}
 	c.instack = []mq.Middleware{
-		c.logIncoming, // keep first
-		c.dumpPacket,
+		flog.logIncoming, // keep first
+		flog.dumpPacket,
 		pool.reusePacketID,
-		c.prefixLoggers,
+		flog.prefixLoggers,
 	}
 	c.outstack = []mq.Middleware{
-		c.prefixLoggers,
+		flog.prefixLoggers,
 		pool.setPacketID,
-		c.logOutgoing, // keep loggers last
-		c.dumpPacket,  //
+		flog.logOutgoing, // keep loggers last
+		flog.dumpPacket,  //
 	}
-	c.Settings().LogLevelSet(LogLevelNone)
 	return c
 }
 
 type Client struct {
-	logLevel LogLevel
-	info     *log.Logger
-	debug    *log.Logger
+	flog *LogFeature
 
 	running bool // set by func Run
 
@@ -132,51 +124,6 @@ func (c *Client) send(_ context.Context, p mq.Packet) error {
 	_, err := p.WriteTo(c.wire)
 	c.m.Unlock()
 	return err
-}
-
-func (c *Client) prefixLoggers(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		switch p := p.(type) {
-		case *mq.Connect:
-			c.setLogPrefix(p.ClientIDShort())
-
-		case *mq.ConnAck:
-			if p.AssignedClientID() != "" {
-				c.setLogPrefix(p.AssignedClientID())
-			}
-		}
-		return next(ctx, p)
-	}
-}
-
-func (c *Client) logIncoming(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		c.info.Print("in ", p)
-		return next(ctx, p)
-	}
-}
-
-func (c *Client) dumpPacket(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		if c.logLevel == LogLevelDebug {
-			var buf bytes.Buffer
-			p.WriteTo(&buf)
-			c.debug.Print(hex.Dump(buf.Bytes()), "\n")
-		}
-		return next(ctx, p)
-	}
-}
-
-func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		c.info.Print("ut ", p)
-		return next(ctx, p)
-	}
-}
-
-func (c *Client) setLogPrefix(cid string) {
-	c.info.SetPrefix(fmt.Sprintf("%s ", cid))
-	c.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
 
 func unsetReceiver(_ context.Context, _ mq.Packet) error {

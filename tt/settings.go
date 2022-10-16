@@ -2,8 +2,6 @@ package tt
 
 import (
 	"io"
-	"io/ioutil"
-	"log"
 
 	"github.com/gregoryv/mq"
 )
@@ -30,21 +28,9 @@ func (s *writeSettings) ReceiverSet(v mq.Handler) error {
 }
 
 func (s *writeSettings) LogLevelSet(v LogLevel) error {
-	switch v {
-	case LogLevelDebug:
-		s.info.SetOutput(log.Writer())
-		s.debug.SetOutput(log.Writer())
-
-	case LogLevelInfo:
-		s.info.SetOutput(log.Writer())
-		s.debug.SetOutput(ioutil.Discard)
-
-	case LogLevelNone:
-		s.info.SetOutput(ioutil.Discard)
-		s.debug.SetOutput(ioutil.Discard)
-	}
-	s.Client.logLevel = v
+	s.flog.LogLevelSet(v)
 	return nil
+
 }
 
 func (s *writeSettings) IOSet(v io.ReadWriter) error {
