@@ -9,6 +9,7 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
+	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/stack"
 )
 
@@ -18,21 +19,21 @@ func main() {
 	c := tt.NewClient() // configure client
 
 	fpool := stack.NewIDPool(100)
-	flog := tt.NewLogFeature()
-	flog.LogLevelSet(tt.LogLevelDebug)
+	fl := flog.NewLogFeature()
+	fl.LogLevelSet(flog.LogLevelDebug)
 
 	s := c.Settings()
 	s.InStackSet([]mq.Middleware{
-		flog.LogIncoming,
-		flog.DumpPacket,
+		fl.LogIncoming,
+		fl.DumpPacket,
 		fpool.ReusePacketID,
-		flog.PrefixLoggers,
+		fl.PrefixLoggers,
 	})
 	s.OutStackSet([]mq.Middleware{
-		flog.PrefixLoggers,
+		fl.PrefixLoggers,
 		fpool.SetPacketID,
-		flog.LogOutgoing, // keep loggers last
-		flog.DumpPacket,
+		fl.LogOutgoing, // keep loggers last
+		fl.DumpPacket,
 	})
 
 	s.IOSet(conn)

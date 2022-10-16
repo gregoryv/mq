@@ -1,4 +1,4 @@
-package tt
+package flog
 
 type LogLevel int
 

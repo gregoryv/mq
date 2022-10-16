@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/stack"
 )
 
@@ -14,22 +15,22 @@ import (
 // disabled logging
 func NewBasicClient() *Client {
 	fpool := stack.NewIDPool(10)
-	flog := NewLogFeature()
-	flog.LogLevelSet(LogLevelNone)
+	fl := flog.NewLogFeature()
+	fl.LogLevelSet(flog.LogLevelNone)
 
 	c := NewClient()
 	s := c.Settings()
 	s.InStackSet([]mq.Middleware{
-		flog.LogIncoming,
-		flog.DumpPacket,
+		fl.LogIncoming,
+		fl.DumpPacket,
 		fpool.ReusePacketID,
-		flog.PrefixLoggers,
+		fl.PrefixLoggers,
 	})
 	s.OutStackSet([]mq.Middleware{
-		flog.PrefixLoggers,
+		fl.PrefixLoggers,
 		fpool.SetPacketID,
-		flog.LogOutgoing,
-		flog.DumpPacket,
+		fl.LogOutgoing,
+		fl.DumpPacket,
 	})
 	return c
 }
