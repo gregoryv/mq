@@ -1,7 +1,6 @@
 package tt
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 )
@@ -12,20 +11,12 @@ func Dial() (*Conn, io.Writer) {
 	r, w := io.Pipe()
 	c := &Conn{
 		Reader: r,
-		Writer: ioutil.Discard, // ignore incoming packets
+		Writer: ioutil.Discard, // ignore outgoing packets
 	}
 	return c, w
 }
 
 type Conn struct {
-	io.Reader // from server
-	io.Writer // to server
-}
-
-func (c *Conn) Read(p []byte) (int, error) {
-	n, err := c.Reader.Read(p)
-	if errors.Is(io.EOF, err) {
-		return n, nil
-	}
-	return n, err
+	io.Reader // incoming from server
+	io.Writer // outgoing to server
 }
