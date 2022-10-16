@@ -33,18 +33,9 @@ func (r *Router) Route(ctx context.Context, p *mq.Publish) error {
 	return ctx.Err()
 }
 
-func (r *Router) Add(filter string, handlers ...mq.PubHandler) error {
-	r.routes = append(r.routes, NewRoute(filter, handlers...))
-	return nil
-}
-
 func (r *Router) AddRoutes(routes ...*Route) error {
 	r.routes = routes
 	return nil
-}
-
-func (r *Router) Routes() []*Route {
-	return r.routes
 }
 
 // ----------------------------------------
