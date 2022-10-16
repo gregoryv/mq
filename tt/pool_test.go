@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func Test_Pool(t *testing.T) {
-	p := NewPool(3) // 1 .. 3
+func Test_PoolFeature(t *testing.T) {
+	p := NewPoolFeature(3) // 1 .. 3
 
 	ctx := context.Background()
 	p.Next(ctx) // 1

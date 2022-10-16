@@ -9,9 +9,10 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-// NewBasicClient returns a client with MaxDefaultConcurrentID and disabled logging
+// NewBasicClient returns a client with MaxDefaultConcurrentID and
+// disabled logging
 func NewBasicClient() *Client {
-	fpool := NewPool(MaxDefaultConcurrentID)
+	fpool := NewPoolFeature(MaxDefaultConcurrentID)
 	flog := NewLogFeature()
 
 	c := NewClient()
