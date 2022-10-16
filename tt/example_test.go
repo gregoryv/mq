@@ -23,11 +23,15 @@ func Example_runClient() {
 	s := c.Settings()
 	s.IOSet(conn)
 
+	routes := []*tt.Route{
+		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+			// handle packet...
+			return nil
+		}),
+		tt.NewRoute("a/b"),
+	}
 	router := tt.NewRouter()
-	router.Add("#", func(_ context.Context, p *mq.Publish) error {
-		// handle packet...
-		return nil
-	})
+	router.AddRoutes(routes...)
 
 	var subscribes sync.WaitGroup
 
@@ -36,7 +40,7 @@ func Example_runClient() {
 		case *mq.ConnAck:
 
 			// here we choose to subscribe each route separately
-			for _, r := range router.Routes() {
+			for _, r := range routes {
 				_ = c.Send(ctx, r.Subscribe())
 				subscribes.Add(1)
 			}
