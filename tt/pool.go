@@ -58,3 +58,22 @@ func (o *pool) reusePacketID(next mq.Handler) mq.Handler {
 		return next(ctx, p)
 	}
 }
+
+// setPacketID on outgoing packets, refs MQTT-2.2.1-3
+func (o *pool) setPacketID(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		switch p := p.(type) {
+		case *mq.Publish:
+			if p.QoS() > 0 {
+				p.SetPacketID(o.Next(ctx))
+			}
+
+		case *mq.Subscribe:
+			p.SetPacketID(o.Next(ctx))
+
+		case *mq.Unsubscribe:
+			p.SetPacketID(o.Next(ctx))
+		}
+		return next(ctx, p)
+	}
+}

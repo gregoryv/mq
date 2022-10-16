@@ -25,11 +25,13 @@ func NewClient() *Client {
 		out:      notRunning,
 	}
 	c.instack = []mq.Middleware{
-		c.logIncoming,
+		c.logIncoming, // keep first
 		c.pool.reusePacketID,
+		c.prefixLoggersOnConnAck,
 	}
 	c.outstack = []mq.Middleware{
-		c.logOutgoing,
+		c.pool.setPacketID,
+		c.logOutgoing, // keep last
 	}
 	c.Settings().LogLevelSet(LogLevelNone)
 	return c
@@ -96,45 +98,14 @@ func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 	return v[0](stack(v[1:], last))
 }
 
-// Send the packet and is safe for concurrent use by multiple
-// goroutines.
+// Send the packet through the outgoing stack of handlers
 func (c *Client) Send(ctx context.Context, p mq.Packet) error {
 	switch p := p.(type) {
 	case *mq.Connect:
-		c.connect(p)
-
-	case *mq.Publish:
-		c.pub(ctx, p)
-
-	case *mq.Subscribe:
-		c.sub(ctx, p)
-
-	case *mq.Unsubscribe:
-		c.unsub(ctx, p)
+		cid := p.ClientIDShort()
+		c.setLogPrefix(cid)
 	}
 	return c.out(ctx, p)
-}
-
-func (c *Client) connect(p *mq.Connect) {
-	cid := p.ClientIDShort()
-	c.setLogPrefix(cid)
-}
-
-func (c *Client) pub(ctx context.Context, p *mq.Publish) {
-	if p.QoS() > 0 {
-		id := c.pool.Next(ctx)
-		p.SetPacketID(id) // MQTT-2.2.1-3
-	}
-}
-
-func (c *Client) sub(ctx context.Context, p *mq.Subscribe) {
-	id := c.pool.Next(ctx)
-	p.SetPacketID(id) // MQTT-2.2.1-3
-}
-
-func (c *Client) unsub(ctx context.Context, p *mq.Unsubscribe) {
-	id := c.pool.Next(ctx)
-	p.SetPacketID(id) // MQTT-2.2.1-3
 }
 
 // Settings returns this clients settings. If the client is running
@@ -147,10 +118,8 @@ func (c *Client) Settings() Settings {
 	return &writeSettings{s}
 }
 
-func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
-
+func (c *Client) prefixLoggersOnConnAck(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-
 		if p, ok := p.(*mq.ConnAck); ok {
 			c.setLogPrefix(p.AssignedClientID())
 			if p.ReasonCode() != mq.Success {
