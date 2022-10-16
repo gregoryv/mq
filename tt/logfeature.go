@@ -42,7 +42,7 @@ func (f *LogFeature) LogLevelSet(v LogLevel) {
 	f.logLevel = v
 }
 
-func (f *LogFeature) prefixLoggers(next mq.Handler) mq.Handler {
+func (f *LogFeature) PrefixLoggers(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.Connect:
