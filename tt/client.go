@@ -153,16 +153,14 @@ func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
 
 		// reuse packet ids
 		if p, ok := p.(mq.HasPacketID); ok {
+			// todo handle dropped acks as that packet is lost. Maybe
+			// a timeout for expected acks to arrive?
 			if p.PacketID() > 0 {
 				c.pool.Reuse(p.PacketID())
 			}
 		}
 
-		switch p := p.(type) {
-		case *mq.Publish:
-		case *mq.PubAck:
-		case *mq.SubAck:
-		case *mq.ConnAck:
+		if p, ok := p.(*mq.ConnAck); ok {
 			c.setLogPrefix(p.AssignedClientID())
 			if p.ReasonCode() != mq.Success {
 				c.debug.Print("reason", p.ReasonString())
