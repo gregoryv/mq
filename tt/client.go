@@ -24,7 +24,7 @@ func NewBasicClient() *Client {
 	}
 	c.outstack = []mq.Middleware{
 		flog.PrefixLoggers,
-		fpool.setPacketID,
+		fpool.SetPacketID,
 		flog.logOutgoing, // keep loggers last
 		flog.DumpPacket,
 	}

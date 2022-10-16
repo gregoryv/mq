@@ -59,8 +59,8 @@ func (o *Pool) ReusePacketID(next mq.Handler) mq.Handler {
 	}
 }
 
-// setPacketID on outgoing packets, refs MQTT-2.2.1-3
-func (o *Pool) setPacketID(next mq.Handler) mq.Handler {
+// SetPacketID on outgoing packets, refs MQTT-2.2.1-3
+func (o *Pool) SetPacketID(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.Publish:
