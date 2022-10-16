@@ -26,19 +26,23 @@ func main() {
 
 	complete := make(chan struct{})
 
+	routes := []*tt.Route{
+		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+			close(complete)
+			return nil
+		}),
+	}
 	router := tt.NewRouter()
-	router.Add("#", func(_ context.Context, p *mq.Publish) error {
-		complete <- struct{}{}
-		return nil
-	})
+	router.AddRoutes(routes...)
 
 	var subscribes sync.WaitGroup
-	subscribes.Add(len(router.Routes()))
+	subscribes.Add(len(routes))
+
 	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.ConnAck:
 			// here we choose to subscribe each route separately
-			for _, r := range router.Routes() {
+			for _, r := range routes {
 				{
 					p := mq.NewSubscribe()
 					p.AddFilter(r.Filter(), 0)
@@ -52,18 +56,13 @@ func main() {
 			subscribes.Done()
 
 		case *mq.Publish:
-			{
-				ack := mq.NewPubAck()
-				ack.SetPacketID(p.PacketID())
-				_ = c.Send(ctx, &ack)
-			}
 			return router.Route(ctx, p)
 		}
 		return nil
 	})
 
 	// start handling packet flow
-	ctx, _ := context.WithTimeout(context.Background(), time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	c.Start(ctx)
 
 	{ // connect
@@ -75,10 +74,9 @@ func main() {
 	subscribes.Wait()
 	{ // publish
 		p := mq.NewPublish()
-		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		_ = c.Send(ctx, &p)
+		go c.Send(ctx, &p)
 	}
 
 	select {
