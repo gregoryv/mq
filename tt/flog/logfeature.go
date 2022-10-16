@@ -13,29 +13,29 @@ import (
 
 func NewLogFeature() *LogFeature {
 	return &LogFeature{
-		logLevel: LogLevelNone,
+		logLevel: LevelNone,
 		info:     log.New(log.Writer(), "", log.Flags()),
 		debug:    log.New(log.Writer(), "", log.Flags()),
 	}
 }
 
 type LogFeature struct {
-	logLevel LogLevel
+	logLevel Level
 	info     *log.Logger
 	debug    *log.Logger
 }
 
-func (f *LogFeature) LogLevelSet(v LogLevel) {
+func (f *LogFeature) LogLevelSet(v Level) {
 	switch v {
-	case LogLevelDebug:
+	case LevelDebug:
 		f.info.SetOutput(log.Writer())
 		f.debug.SetOutput(log.Writer())
 
-	case LogLevelInfo:
+	case LevelInfo:
 		f.info.SetOutput(log.Writer())
 		f.debug.SetOutput(ioutil.Discard)
 
-	case LogLevelNone:
+	case LevelNone:
 		f.info.SetOutput(ioutil.Discard)
 		f.debug.SetOutput(ioutil.Discard)
 	}
@@ -66,7 +66,7 @@ func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
 
 func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		if f.logLevel == LogLevelDebug {
+		if f.logLevel == LevelDebug {
 			var buf bytes.Buffer
 			p.WriteTo(&buf)
 			f.debug.Print(hex.Dump(buf.Bytes()), "\n")

@@ -20,7 +20,7 @@ func main() {
 
 	fpool := stack.NewIDPool(100)
 	fl := flog.NewLogFeature()
-	fl.LogLevelSet(flog.LogLevelDebug)
+	fl.LogLevelSet(flog.LevelDebug)
 
 	s := c.Settings()
 	s.InStackSet([]mq.Middleware{

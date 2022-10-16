@@ -1,9 +1,9 @@
 package flog
 
-type LogLevel int
+type Level int
 
 const (
-	LogLevelDebug LogLevel = iota
-	LogLevelInfo
-	LogLevelNone
+	LevelDebug Level = iota
+	LevelInfo
+	LevelNone
 )

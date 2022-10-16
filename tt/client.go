@@ -16,7 +16,6 @@ import (
 func NewBasicClient() *Client {
 	fpool := stack.NewIDPool(10)
 	fl := flog.NewLogFeature()
-	fl.LogLevelSet(flog.LogLevelNone)
 
 	c := NewClient()
 	s := c.Settings()
