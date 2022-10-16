@@ -29,9 +29,10 @@ func NewClient() *Client {
 		c.logIncoming, // keep first
 		c.dumpPacket,
 		pool.reusePacketID,
-		c.prefixLoggersOnConnAck,
+		c.prefixLoggers,
 	}
 	c.outstack = []mq.Middleware{
+		c.prefixLoggers,
 		pool.setPacketID,
 		c.logOutgoing, // keep loggers last
 		c.dumpPacket,  //
@@ -84,7 +85,6 @@ func (c *Client) Run(ctx context.Context) error {
 		if err != nil {
 			// todo handle closed wire properly so clients may have
 			// the feature of reconnect
-			c.info.Print(err, "client stopped")
 			return err
 		}
 		if p != nil {
@@ -102,11 +102,6 @@ func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
 
 // Send the packet through the outgoing stack of handlers
 func (c *Client) Send(ctx context.Context, p mq.Packet) error {
-	switch p := p.(type) {
-	case *mq.Connect:
-		cid := p.ClientIDShort()
-		c.setLogPrefix(cid)
-	}
 	return c.out(ctx, p)
 }
 
@@ -139,9 +134,13 @@ func (c *Client) send(_ context.Context, p mq.Packet) error {
 	return err
 }
 
-func (c *Client) prefixLoggersOnConnAck(next mq.Handler) mq.Handler {
+func (c *Client) prefixLoggers(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		if p, ok := p.(*mq.ConnAck); ok {
+		switch p := p.(type) {
+		case *mq.Connect:
+			c.setLogPrefix(p.ClientIDShort())
+
+		case *mq.ConnAck:
 			if p.AssignedClientID() != "" {
 				c.setLogPrefix(p.AssignedClientID())
 			}
