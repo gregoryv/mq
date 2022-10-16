@@ -148,18 +148,20 @@ func (c *Client) Settings() Settings {
 }
 
 func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
+
 	return func(ctx context.Context, p mq.Packet) error {
-		// reuse packet ids and handle acks
+
+		// reuse packet ids
+		if p, ok := p.(mq.HasPacketID); ok {
+			if p.PacketID() > 0 {
+				c.pool.Reuse(p.PacketID())
+			}
+		}
+
 		switch p := p.(type) {
 		case *mq.Publish:
-			c.pool.Reuse(p.PacketID())
-
 		case *mq.PubAck:
-			c.pool.Reuse(p.PacketID())
-
 		case *mq.SubAck:
-			c.pool.Reuse(p.PacketID())
-
 		case *mq.ConnAck:
 			c.setLogPrefix(p.AssignedClientID())
 			if p.ReasonCode() != mq.Success {
