@@ -11,7 +11,7 @@ type Settings interface {
 	OutStackSet([]mq.Middleware) error
 
 	// ReceiverSet configures final handler of the incoming
-	// stack. Usually some sort of router to the application logic.
+	// idpool. Usually some sort of router to the application logic.
 	ReceiverSet(mq.Handler) error
 
 	// IOSet sets the read writer used for serializing packets from and to.

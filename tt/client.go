@@ -8,13 +8,13 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt/flog"
-	"github.com/gregoryv/mq/tt/stack"
+	"github.com/gregoryv/mq/tt/idpool"
 )
 
 // NewBasicClient returns a client with MaxDefaultConcurrentID and
 // disabled logging
 func NewBasicClient() *Client {
-	fpool := stack.NewIDPool(10)
+	fpool := idpool.NewIDPool(10)
 	fl := flog.New()
 
 	c := NewClient()
@@ -97,7 +97,7 @@ func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 	return v[0](chain(v[1:], last))
 }
 
-// Send the packet through the outgoing stack of handlers
+// Send the packet through the outgoing idpool of handlers
 func (c *Client) Send(ctx context.Context, p mq.Packet) error {
 	return c.out(ctx, p)
 }
