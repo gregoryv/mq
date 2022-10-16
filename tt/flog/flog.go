@@ -13,11 +13,12 @@ import (
 )
 
 func New() *LogFeature {
-	return &LogFeature{
-		logLevel: LevelNone,
-		info:     log.New(log.Writer(), "", log.Flags()),
-		debug:    log.New(log.Writer(), "", log.Flags()),
+	f := &LogFeature{
+		info:  log.New(log.Writer(), "", log.Flags()),
+		debug: log.New(log.Writer(), "", log.Flags()),
 	}
+	f.LogLevelSet(LevelNone)
+	return f
 }
 
 type LogFeature struct {
