@@ -1,12 +1,12 @@
-package tt
+package stack
 
 import (
 	"context"
 	"testing"
 )
 
-func Test_PoolFeature(t *testing.T) {
-	p := NewPoolFeature(3) // 1 .. 3
+func Test_IDPool(t *testing.T) {
+	p := NewIDPool(3) // 1 .. 3
 
 	ctx := context.Background()
 	p.Next(ctx) // 1

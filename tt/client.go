@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt/stack"
 )
 
 // NewBasicClient returns a client with MaxDefaultConcurrentID and
 // disabled logging
 func NewBasicClient() *Client {
-	fpool := NewPoolFeature(MaxDefaultConcurrentID)
+	fpool := stack.NewIDPool(10)
 	flog := NewLogFeature()
 	flog.LogLevelSet(LogLevelNone)
 
@@ -71,8 +72,8 @@ func (c *Client) Start(ctx context.Context) {
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
-	incoming := stack(c.instack, c.receiver)
-	c.out = stack(c.outstack, c.send)
+	incoming := chain(c.instack, c.receiver)
+	c.out = chain(c.outstack, c.send)
 
 	defer func() { c.running = false }()
 	for {
@@ -89,11 +90,11 @@ func (c *Client) Run(ctx context.Context) error {
 	}
 }
 
-func stack(v []mq.Middleware, last mq.Handler) mq.Handler {
+func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 	if len(v) == 0 {
 		return last
 	}
-	return v[0](stack(v[1:], last))
+	return v[0](chain(v[1:], last))
 }
 
 // Send the packet through the outgoing stack of handlers

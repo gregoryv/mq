@@ -9,6 +9,7 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
+	"github.com/gregoryv/mq/tt/stack"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 
 	c := tt.NewClient() // configure client
 
-	fpool := tt.NewPoolFeature(100)
+	fpool := stack.NewIDPool(100)
 	flog := tt.NewLogFeature()
 	flog.LogLevelSet(tt.LogLevelDebug)
 
