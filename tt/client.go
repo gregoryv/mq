@@ -11,7 +11,7 @@ import (
 
 // NewBasicClient returns a client with MaxDefaultConcurrentID and disabled logging
 func NewBasicClient() *Client {
-	pool := newPool(MaxDefaultConcurrentID)
+	fpool := NewPool(MaxDefaultConcurrentID)
 	flog := NewLogFeature()
 
 	c := NewClient()
@@ -19,12 +19,12 @@ func NewBasicClient() *Client {
 	c.instack = []mq.Middleware{
 		flog.logIncoming, // keep first
 		flog.dumpPacket,
-		pool.reusePacketID,
+		fpool.reusePacketID,
 		flog.prefixLoggers,
 	}
 	c.outstack = []mq.Middleware{
 		flog.prefixLoggers,
-		pool.setPacketID,
+		fpool.setPacketID,
 		flog.logOutgoing, // keep loggers last
 		flog.dumpPacket,  //
 	}
