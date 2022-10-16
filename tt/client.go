@@ -15,7 +15,7 @@ import (
 // disabled logging
 func NewBasicClient() *Client {
 	fpool := stack.NewIDPool(10)
-	fl := flog.NewLogFeature()
+	fl := flog.New()
 
 	c := NewClient()
 	s := c.Settings()

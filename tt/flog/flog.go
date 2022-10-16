@@ -1,3 +1,4 @@
+// Package flog provides packet logging feature
 package flog
 
 import (
@@ -11,7 +12,7 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewLogFeature() *LogFeature {
+func New() *LogFeature {
 	return &LogFeature{
 		logLevel: LevelNone,
 		info:     log.New(log.Writer(), "", log.Flags()),
