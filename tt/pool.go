@@ -46,7 +46,7 @@ func (p *Pool) Reuse(v uint16) {
 	p.Pool <- v
 }
 
-func (o *Pool) reusePacketID(next mq.Handler) mq.Handler {
+func (o *Pool) ReusePacketID(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(mq.HasPacketID); ok {
 			// todo handle dropped acks as that packet is lost. Maybe

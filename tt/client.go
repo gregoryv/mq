@@ -19,7 +19,7 @@ func NewBasicClient() *Client {
 	c.instack = []mq.Middleware{
 		flog.LogIncoming,
 		flog.DumpPacket,
-		fpool.reusePacketID,
+		fpool.ReusePacketID,
 		flog.prefixLoggers,
 	}
 	c.outstack = []mq.Middleware{
