@@ -176,6 +176,7 @@ func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
 }
 
 func (c *Client) setLogPrefix(cid string) {
+	c.info.SetPrefix(fmt.Sprintf("%s ", cid))	
 	c.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
 

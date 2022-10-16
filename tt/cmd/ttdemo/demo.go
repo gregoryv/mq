@@ -11,11 +11,6 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
-func init() {
-	// configure logger settings before creating clients
-	log.SetFlags(0)
-}
-
 func main() {
 	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
@@ -81,9 +76,9 @@ func main() {
 
 	select {
 	case <-complete:
-		log.Print("complete!")
+		log.Print("demo complete!")
 	case <-ctx.Done():
-		log.Print("failed!")
+		log.Print("demo failed!")
 	}
 
 }
