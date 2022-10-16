@@ -86,3 +86,13 @@ func (f *LogFeature) setLogPrefix(cid string) {
 	f.info.SetPrefix(fmt.Sprintf("%s ", cid))
 	f.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
+
+// ----------------------------------------
+
+type Level int
+
+const (
+	LevelNone Level = iota
+	LevelDebug
+	LevelInfo
+)
