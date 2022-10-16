@@ -57,7 +57,7 @@ func (f *LogFeature) prefixLoggers(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) logIncoming(next mq.Handler) mq.Handler {
+func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("in ", p)
 		return next(ctx, p)

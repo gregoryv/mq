@@ -17,7 +17,7 @@ func NewBasicClient() *Client {
 	c := NewClient()
 	c.flog = flog // todo should not be needed but Settings requires it
 	c.instack = []mq.Middleware{
-		flog.logIncoming, // keep first
+		flog.LogIncoming,
 		flog.dumpPacket,
 		fpool.reusePacketID,
 		flog.prefixLoggers,
