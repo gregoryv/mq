@@ -191,7 +191,7 @@ func (c *Client) send(_ context.Context, p mq.Packet) error {
 
 func (c *Client) logIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		c.debug.Print(p, " <- wire")
+		c.info.Print("in ", p)
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
 		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
@@ -202,11 +202,11 @@ func (c *Client) logIncoming(next mq.Handler) mq.Handler {
 func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if err := next(ctx, p); err != nil {
-			c.info.Print("wire <- ", p, err)
+			c.info.Print("ut ", p, err)
 			return err
 		}
 
-		c.info.Print("wire <- ", p)
+		c.info.Print("ut ", p)
 		var buf bytes.Buffer
 		p.WriteTo(&buf)
 		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
