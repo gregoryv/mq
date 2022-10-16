@@ -2,6 +2,8 @@ package tt
 
 import (
 	"context"
+
+	"github.com/gregoryv/mq"
 )
 
 // Max packet id one client will use starting with 1. This also
@@ -42,4 +44,17 @@ func (p *pool) Reuse(v uint16) {
 		return
 	}
 	p.pool <- v
+}
+
+func (o *pool) reusePacketID(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		if p, ok := p.(mq.HasPacketID); ok {
+			// todo handle dropped acks as that packet is lost. Maybe
+			// a timeout for expected acks to arrive?
+			if p.PacketID() > 0 {
+				o.Reuse(p.PacketID())
+			}
+		}
+		return next(ctx, p)
+	}
 }

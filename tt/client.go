@@ -26,7 +26,7 @@ func NewClient() *Client {
 	}
 	c.instack = []mq.Middleware{
 		c.logIncoming,
-		c.handleAckPacket,
+		c.pool.reusePacketID,
 	}
 	c.outstack = []mq.Middleware{
 		c.logOutgoing,
@@ -150,15 +150,6 @@ func (c *Client) Settings() Settings {
 func (c *Client) handleAckPacket(next mq.Handler) mq.Handler {
 
 	return func(ctx context.Context, p mq.Packet) error {
-
-		// reuse packet ids
-		if p, ok := p.(mq.HasPacketID); ok {
-			// todo handle dropped acks as that packet is lost. Maybe
-			// a timeout for expected acks to arrive?
-			if p.PacketID() > 0 {
-				c.pool.Reuse(p.PacketID())
-			}
-		}
 
 		if p, ok := p.(*mq.ConnAck); ok {
 			c.setLogPrefix(p.AssignedClientID())
