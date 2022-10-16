@@ -47,6 +47,8 @@ func (p *IDPool) Reuse(v uint16) {
 	p.IDPool <- v
 }
 
+// ReusePacketID checks if incoming packet has a packet ID, if so it's
+// returned to the pool before next handler is called.
 func (o *IDPool) ReusePacketID(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(mq.HasPacketID); ok {
