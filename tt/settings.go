@@ -7,6 +7,9 @@ import (
 )
 
 type Settings interface {
+	InStackSet([]mq.Middleware) error
+	OutStackSet([]mq.Middleware) error
+
 	// ReceiverSet configures final handler of the incoming
 	// stack. Usually some sort of router to the application logic.
 	ReceiverSet(mq.Handler) error
@@ -20,6 +23,16 @@ type Settings interface {
 
 type writeSettings struct {
 	readSettings
+}
+
+func (s *writeSettings) InStackSet(v []mq.Middleware) error {
+	s.instack = v
+	return nil
+}
+
+func (s *writeSettings) OutStackSet(v []mq.Middleware) error {
+	s.outstack = v
+	return nil
 }
 
 func (s *writeSettings) ReceiverSet(v mq.Handler) error {
@@ -42,6 +55,13 @@ func (s *writeSettings) IOSet(v io.ReadWriter) error {
 
 type readSettings struct {
 	*Client
+}
+
+func (s *readSettings) InStackSet(v []mq.Middleware) error {
+	return ErrReadOnly
+}
+func (s *readSettings) OutStackSet(v []mq.Middleware) error {
+	return ErrReadOnly
 }
 
 func (s *readSettings) ReceiverSet(_ mq.Handler) error { return ErrReadOnly }
