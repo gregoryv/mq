@@ -38,5 +38,8 @@ func (p *pool) Next(ctx context.Context) uint16 {
 
 // Reuse returns the given value to the pool
 func (p *pool) Reuse(v uint16) {
+	if v == 0 {
+		return
+	}
 	p.pool <- v
 }
