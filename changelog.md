@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add tt/cmd/ttdemo
 - Add types mq.PubHandler, tt.Router and tt.Route
 - Remove Context alias
 
