@@ -34,3 +34,7 @@ type ControlPacket interface {
 	encoding.BinaryUnmarshaler
 	fmt.Stringer
 }
+
+type HasPacketID interface {
+	PacketID() uint16
+}
