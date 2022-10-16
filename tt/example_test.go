@@ -3,7 +3,6 @@ package tt_test
 import (
 	"context"
 	"log"
-	"sync"
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
@@ -33,8 +32,6 @@ func Example_runClient() {
 	router := tt.NewRouter()
 	router.AddRoutes(routes...)
 
-	var subscribes sync.WaitGroup
-
 	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.ConnAck:
@@ -42,14 +39,9 @@ func Example_runClient() {
 			// here we choose to subscribe each route separately
 			for _, r := range routes {
 				_ = c.Send(ctx, r.Subscribe())
-				subscribes.Add(1)
 			}
 
-		case *mq.SubAck:
-			subscribes.Done()
-
 		case *mq.Publish:
-
 			return router.Route(ctx, p)
 		}
 		return nil
