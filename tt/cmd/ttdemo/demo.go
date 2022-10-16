@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gregoryv/cmdline"
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/flog"
@@ -15,13 +16,19 @@ import (
 )
 
 func main() {
-	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
+	var (
+		cli    = cmdline.NewBasicParser()
+		broker = cli.Option("-b --broker, $BROKER").String("127.0.0.1:1883")
+	)
+	cli.Parse()
+
+	conn, _ := net.Dial("tcp", broker)
 
 	c := tt.NewClient() // configure client
 
 	fpool := idpool.New(100)
 	fl := flog.New()
-	fl.LogLevelSet(flog.LevelDebug)
+	fl.LogLevelSet(flog.LevelInfo)
 
 	s := c.Settings()
 	s.InStackSet([]mq.Middleware{
