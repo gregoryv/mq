@@ -64,7 +64,7 @@ func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) dumpPacket(next mq.Handler) mq.Handler {
+func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if f.logLevel == LogLevelDebug {
 			var buf bytes.Buffer
