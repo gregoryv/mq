@@ -1,4 +1,4 @@
-package tt
+package mux
 
 import (
 	"testing"

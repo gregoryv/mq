@@ -11,6 +11,7 @@ import (
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
+	"github.com/gregoryv/mq/tt/mux"
 )
 
 func main() {
@@ -40,13 +41,13 @@ func main() {
 
 	complete := make(chan struct{})
 
-	routes := []*tt.Route{
-		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+	routes := []*mux.Route{
+		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			close(complete)
 			return nil
 		}),
 	}
-	router := tt.NewRouter()
+	router := mux.NewRouter()
 	router.AddRoutes(routes...)
 
 	var subscribes sync.WaitGroup

@@ -1,4 +1,5 @@
-package tt
+// Package mux provides routing features
+package mux
 
 import (
 	"context"
@@ -6,8 +7,6 @@ import (
 
 	"github.com/gregoryv/mq"
 )
-
-// ----------------------------------------
 
 func NewRouter() *Router {
 	return &Router{}
@@ -45,13 +44,4 @@ func plural(v int, word string) string {
 		word = word + "s"
 	}
 	return fmt.Sprintf("%v %s", v, word)
-}
-
-// Pub creates a new publish packet with the given values
-func Pub(qos uint8, topicName, payload string) *mq.Publish {
-	p := mq.NewPublish()
-	p.SetQoS(qos)
-	p.SetTopicName(topicName)
-	p.SetPayload([]byte(payload))
-	return &p
 }

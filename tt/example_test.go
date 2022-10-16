@@ -6,6 +6,7 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
+	"github.com/gregoryv/mq/tt/mux"
 )
 
 func init() {
@@ -22,14 +23,14 @@ func Example_runClient() {
 	s := c.Settings()
 	s.IOSet(conn)
 
-	routes := []*tt.Route{
-		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+	routes := []*mux.Route{
+		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			// handle packet...
 			return nil
 		}),
-		tt.NewRoute("a/b"),
+		mux.NewRoute("a/b"),
 	}
-	router := tt.NewRouter()
+	router := mux.NewRouter()
 	router.AddRoutes(routes...)
 
 	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
