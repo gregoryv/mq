@@ -27,20 +27,23 @@ func NewClient() *Client {
 	}
 	c.instack = []mq.Middleware{
 		c.logIncoming, // keep first
+		c.dumpPacket,
 		pool.reusePacketID,
 		c.prefixLoggersOnConnAck,
 	}
 	c.outstack = []mq.Middleware{
 		pool.setPacketID,
-		c.logOutgoing, // keep last
+		c.logOutgoing, // keep loggers last
+		c.dumpPacket,  //
 	}
 	c.Settings().LogLevelSet(LogLevelNone)
 	return c
 }
 
 type Client struct {
-	info  *log.Logger
-	debug *log.Logger
+	logLevel LogLevel
+	info     *log.Logger
+	debug    *log.Logger
 
 	running bool // set by func Run
 
@@ -81,8 +84,7 @@ func (c *Client) Run(ctx context.Context) error {
 		if err != nil {
 			// todo handle closed wire properly so clients may have
 			// the feature of reconnect
-			c.debug.Print(err)
-			c.debug.Print("client stopped")
+			c.info.Print(err, "client stopped")
 			return err
 		}
 		if p != nil {
@@ -118,18 +120,6 @@ func (c *Client) Settings() Settings {
 	return &writeSettings{s}
 }
 
-func (c *Client) prefixLoggersOnConnAck(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		if p, ok := p.(*mq.ConnAck); ok {
-			c.setLogPrefix(p.AssignedClientID())
-			if p.ReasonCode() != mq.Success {
-				c.debug.Print("reason", p.ReasonString())
-			}
-		}
-		return next(ctx, p)
-	}
-}
-
 func (c *Client) nextPacket() (mq.Packet, error) {
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
@@ -149,28 +139,39 @@ func (c *Client) send(_ context.Context, p mq.Packet) error {
 	return err
 }
 
+func (c *Client) prefixLoggersOnConnAck(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		if p, ok := p.(*mq.ConnAck); ok {
+			if p.AssignedClientID() != "" {
+				c.setLogPrefix(p.AssignedClientID())
+			}
+		}
+		return next(ctx, p)
+	}
+}
+
 func (c *Client) logIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		c.info.Print("in ", p)
-		var buf bytes.Buffer
-		p.WriteTo(&buf)
-		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
+		return next(ctx, p)
+	}
+}
+
+func (c *Client) dumpPacket(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		if c.logLevel == LogLevelDebug {
+			var buf bytes.Buffer
+			p.WriteTo(&buf)
+			c.debug.Print(hex.Dump(buf.Bytes()), "\n")
+		}
 		return next(ctx, p)
 	}
 }
 
 func (c *Client) logOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		if err := next(ctx, p); err != nil {
-			c.info.Print("ut ", p, err)
-			return err
-		}
-
 		c.info.Print("ut ", p)
-		var buf bytes.Buffer
-		p.WriteTo(&buf)
-		c.debug.Print("\n", hex.Dump(buf.Bytes()), "\n")
-		return nil
+		return next(ctx, p)
 	}
 }
 

@@ -22,7 +22,7 @@ func main() {
 	c := tt.NewClient() // configure client
 	s := c.Settings()
 	s.IOSet(conn)
-	s.LogLevelSet(tt.LogLevelInfo)
+	s.LogLevelSet(tt.LogLevelDebug)
 
 	complete := make(chan struct{})
 

@@ -43,6 +43,7 @@ func (s *writeSettings) LogLevelSet(v LogLevel) error {
 		s.info.SetOutput(ioutil.Discard)
 		s.debug.SetOutput(ioutil.Discard)
 	}
+	s.Client.logLevel = v
 	return nil
 }
 
