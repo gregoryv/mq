@@ -40,16 +40,18 @@ func NewBasicClient() *Client {
 func NewClient() *Client {
 	return &Client{
 		// receiver should be replaced by the application layer
-		receiver: unsetReceiver,
-		out:      notRunning,
+		receiver:    unsetReceiver,
+		out:         notRunning,
+		readTimeout: 100 * time.Millisecond,
 	}
 }
 
 type Client struct {
 	running bool // set by func Run
 
-	m    sync.Mutex
-	wire io.ReadWriter
+	m           sync.Mutex
+	wire        io.ReadWriter
+	readTimeout time.Duration
 
 	// sequence of receivers for incoming packets
 	instack  []mq.Middleware
@@ -120,7 +122,7 @@ func (c *Client) Settings() Settings {
 
 func (c *Client) nextPacket() (mq.Packet, error) {
 	if w, ok := c.wire.(net.Conn); ok {
-		w.SetReadDeadline(time.Now().Add(100 * time.Millisecond)) // todo make timeout configurable
+		w.SetReadDeadline(time.Now().Add(c.readTimeout)) // todo make timeout configurable
 	}
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
