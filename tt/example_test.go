@@ -13,7 +13,7 @@ func Example_runClient() {
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	c := tt.NewClient() // configure client
+	c := tt.NewBasicClient() // configure client
 	s := c.Settings()
 	s.IOSet(conn)
 

@@ -98,27 +98,6 @@ func TestClient_badConnect(t *testing.T) {
 	}
 }
 
-func TestClient_Connect_shortClientID(t *testing.T) {
-	c := newClient(t)
-	ctx, incoming := runIntercepted(t, c)
-
-	p := mq.NewConnect()
-	p.SetClientID("short")
-	_ = c.Send(ctx, &p)
-	_ = (<-incoming).(*mq.ConnAck)
-}
-
-func TestClient_Receiver(t *testing.T) {
-	c := newClient(t)
-	ctx, incoming := runIntercepted(t, c)
-
-	{ // connect mq tt
-		p := mq.NewConnect()
-		_ = c.Send(ctx, &p)
-		_ = (<-incoming).(*mq.ConnAck)
-	}
-}
-
 // ----------------------------------------
 
 func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
