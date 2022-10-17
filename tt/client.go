@@ -2,7 +2,10 @@ package tt
 
 import (
 	"context"
+	"errors"
 	"io"
+	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -79,13 +82,16 @@ func (c *Client) Run(ctx context.Context) error {
 	for {
 		c.running = true
 		p, err := c.nextPacket()
-		if err != nil {
+		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) {
 			// todo handle closed wire properly so clients may have
 			// the feature of reconnect
 			return err
 		}
 		if p != nil {
 			incoming(ctx, p)
+		}
+		if err := ctx.Err(); err != nil {
+			return err
 		}
 	}
 }
@@ -113,6 +119,9 @@ func (c *Client) Settings() Settings {
 }
 
 func (c *Client) nextPacket() (mq.Packet, error) {
+	if w, ok := c.wire.(net.Conn); ok {
+		w.SetReadDeadline(time.Now().Add(100 * time.Millisecond)) // todo make timeout configurable
+	}
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err

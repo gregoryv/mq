@@ -3,6 +3,7 @@ package tt
 import (
 	"context"
 	"net"
+	"sync"
 	"testing"
 	"time"
 
@@ -112,6 +113,23 @@ func TestClient_Settings(t *testing.T) {
 	if err := s.OutStackSet(nil); err == nil {
 		t.Error("could set OutStack after start")
 	}
+}
+
+func TestClient_RunRespectsContextCancel(t *testing.T) {
+	c := NewBasicClient()
+	s := c.Settings()
+	conn := dialBroker(t)
+	s.IOSet(conn)
+	var wg sync.WaitGroup
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
+
+	wg.Add(1)
+	go func() {
+		_ = c.Run(ctx)
+		wg.Done()
+	}()
+
+	wg.Wait()
 }
 
 // ----------------------------------------
