@@ -72,7 +72,6 @@ func TestAppClient(t *testing.T) {
 		_ = c.Send(ctx, &p)
 		_ = (<-incoming).(*mq.PubAck)
 		_ = (<-incoming).(*mq.Publish)
-
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
@@ -89,6 +88,29 @@ func TestClient_Send(t *testing.T) {
 	p := mq.NewConnect()
 	if err := c.Send(ctx, &p); err == nil {
 		t.Fatal("expect error")
+	}
+}
+
+func TestClient_Settings(t *testing.T) {
+	c := NewBasicClient()
+	s := c.Settings()
+	conn, _ := Dial()
+	s.IOSet(conn)
+	ctx := context.Background()
+	c.Start(ctx)
+
+	s = c.Settings()
+	if err := s.IOSet(nil); err == nil {
+		t.Error("could set IO after start")
+	}
+	if err := s.ReceiverSet(nil); err == nil {
+		t.Error("could set Receiver after start")
+	}
+	if err := s.InStackSet(nil); err == nil {
+		t.Error("could set InStack after start")
+	}
+	if err := s.OutStackSet(nil); err == nil {
+		t.Error("could set OutStack after start")
 	}
 }
 
