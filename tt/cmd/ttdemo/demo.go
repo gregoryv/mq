@@ -1,3 +1,16 @@
+/*
+Command ttdemo tries a series of mqtt-v5 packets towards a broker.
+
+  $ go run github.com/gregoryv/mq/tt/cmd/ttdemo
+  ttdemo ut CONNECT ---- -------- MQTT5 ttdemo 0s 21 bytes
+  ttdemo in CONNACK ---- --------  8 bytes
+  ttdemo ut SUBSCRIBE --1- p1, # --r0---- 9 bytes
+  ttdemo in SUBACK ---- p1 6 bytes
+  ttdemo ut PUBLISH ---- p0 16 bytes
+  ttdemo in PUBLISH ---- p0 16 bytes
+  demo complete!
+
+*/
 package main
 
 import (
@@ -22,7 +35,10 @@ func main() {
 	)
 	cli.Parse()
 
-	conn, _ := net.Dial("tcp", broker)
+	conn, err := net.Dial("tcp", broker)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	c := tt.NewClient() // configure client
 

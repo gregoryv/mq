@@ -1,4 +1,4 @@
-module ttdemo
+module github.com/gregoryv/mq/tt/cmd
 
 go 1.19
 
