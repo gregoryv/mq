@@ -2,24 +2,18 @@ package tt_test
 
 import (
 	"context"
-	"log"
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/mux"
 )
 
-func init() {
-	// configure logger settings before creating clients
-	log.SetFlags(log.Lshortfile)
-}
-
 func Example_runClient() {
 	// replace with eg.
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	c := tt.NewBasicClient() // configure client
+	c := tt.NewClient() // configure client
 	s := c.Settings()
 	s.IOSet(conn)
 
