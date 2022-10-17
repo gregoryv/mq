@@ -3,28 +3,75 @@ package idpool
 import (
 	"context"
 	"testing"
+	"time"
+
+	"github.com/gregoryv/mq"
 )
 
 func Test_IDPool(t *testing.T) {
-	p := New(3) // 1 .. 3
+	max := uint16(5)
+	pool := New(max) // 1 .. 5
 
 	ctx := context.Background()
-	p.Next(ctx) // 1
-	p.Next(ctx) // 2
-	p.Reuse(2)
-	if v := p.Next(ctx); v != 3 {
-		t.Error("unexpected next packet id", v)
+
+	// check that ids are reusable
+	used := make(chan uint16, max)
+	drain := func() {
+		for v := range used {
+			pool.Reuse(v)
+		}
+	}
+	for i := uint16(0); i < 2*max; i++ {
+		v := pool.Next(ctx)
+		used <- v
+		if i == max-1 {
+			// start returning midway
+			go drain()
+		}
+	}
+	go drain()
+
+	// check all packets that require id
+	packets := []mq.Packet{}
+	{
+		p := mq.NewPublish()
+		p.SetQoS(1) //
+		packets = append(packets, &p)
+	}
+	{
+		p := mq.NewSubscribe()
+		packets = append(packets, &p)
+	}
+	{
+		p := mq.NewUnsubscribe()
+		packets = append(packets, &p)
 	}
 
-	// check waiting for
-	p.Next(ctx) // 3
-	go p.Reuse(3)
-	if v := p.Next(ctx); v != 3 {
-		t.Error(v)
+	for _, p := range packets {
+		if err := pool.SetPacketID(noop)(ctx, p); err != nil {
+			t.Error(err)
+		}
+		if p, ok := p.(mq.HasPacketID); ok {
+			if p.PacketID() == 0 {
+				t.Error(p)
+			}
+		}
+		if err := pool.ReusePacketID(noop)(ctx, p); err != nil {
+			t.Error(err)
+		}
 	}
 
-	p.Reuse(1)
-	if v := p.Next(ctx); v != 1 {
-		t.Error("unexpected packet id", v)
+	// not return 0 value
+	pool.Reuse(0) // noop
+}
+
+func TestIDPool_NextTimeout(t *testing.T) {
+	pool := New(1) // 1 .. 5
+	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond)
+	pool.Next(ctx)
+	if v := pool.Next(ctx); v != 0 {
+		t.Error("expect 0 id when pool is cancelled", v)
 	}
 }
+
+func noop(_ context.Context, _ mq.Packet) error { return nil }

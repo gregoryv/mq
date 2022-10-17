@@ -7,44 +7,21 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-// Max packet id one client will use starting with 1. This also
-// dictates the maximum number of packets in flight.
-var MaxDefaultConcurrentID uint16 = 100
-
 // NewPool returns a IDPool of reusable id's from 1..max, 0 is not used
 func New(max uint16) *IDPool {
-	ids := make(chan uint16, max)
+	o := IDPool{
+		max:    max,
+		values: make(chan uint16, max),
+	}
 	for i := uint16(1); i <= max; i++ {
-		ids <- i
+		o.values <- i
 	}
-
-	return &IDPool{
-		IDPool: ids,
-	}
+	return &o
 }
 
 type IDPool struct {
-	IDPool chan uint16
-}
-
-// Next returns the next available ID, blocks until one is available
-// or context is canceled. Next is safe for concurrent use by multiple
-// goroutines.
-func (p *IDPool) Next(ctx context.Context) uint16 {
-	select {
-	case <-ctx.Done():
-		return 0
-	default:
-		return <-p.IDPool
-	}
-}
-
-// Reuse returns the given value to the pool
-func (p *IDPool) Reuse(v uint16) {
-	if v == 0 {
-		return
-	}
-	p.IDPool <- v
+	max    uint16
+	values chan uint16
 }
 
 // ReusePacketID checks if incoming packet has a packet ID, if so it's
@@ -60,6 +37,14 @@ func (o *IDPool) ReusePacketID(next mq.Handler) mq.Handler {
 		}
 		return next(ctx, p)
 	}
+}
+
+// Reuse returns the given value to the pool
+func (o *IDPool) Reuse(v uint16) {
+	if v == 0 || v > o.max {
+		return
+	}
+	o.values <- v
 }
 
 // SetPacketID on outgoing packets, refs MQTT-2.2.1-3
@@ -79,4 +64,16 @@ func (o *IDPool) SetPacketID(next mq.Handler) mq.Handler {
 		}
 		return next(ctx, p)
 	}
+}
+
+// Next returns the next available ID, blocks until one is available
+// or context is canceled. Next is safe for concurrent use by multiple
+// goroutines.
+func (o *IDPool) Next(ctx context.Context) uint16 {
+	select {
+	case <-ctx.Done():
+	case v := <-o.values:
+		return v
+	}
+	return 0
 }
