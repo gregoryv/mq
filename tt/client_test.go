@@ -135,35 +135,34 @@ func TestClient_RunRespectsContextCancel(t *testing.T) {
 // ----------------------------------------
 
 func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
-	r := NewInterceptor()
+	r := NewInterceptor(0)
 	c.instack = append([]mq.Middleware{r.intercept}, c.instack...) // prepend
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	t.Cleanup(cancel)
-	return ctx, r.c
+	return ctx, r.C
 }
 
-func NewInterceptor() *Interceptor {
+// todo move as own feature
+func NewInterceptor(max int) *Interceptor {
 	return &Interceptor{
-		c: make(chan mq.Packet, 0),
+		C: make(chan mq.Packet, max),
 	}
 }
 
 type Interceptor struct {
-	c chan mq.Packet
+	C chan mq.Packet
 }
 
 func (r *Interceptor) intercept(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		select {
-		case r.c <- p: // if anyone is interested
+		case r.C <- p: // if anyone is interested
 		case <-time.After(10 * time.Millisecond):
 		}
 		return next(ctx, p)
 	}
 }
-
-func ignore(_ mq.ControlPacket) error { return nil }
 
 func newClient(t *testing.T) *Client {
 	c := NewBasicClient()
