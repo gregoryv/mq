@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt/intercept"
 )
 
 var _ mq.Client = &Client{}
@@ -135,33 +136,12 @@ func TestClient_RunRespectsContextCancel(t *testing.T) {
 // ----------------------------------------
 
 func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
-	r := NewInterceptor(0)
-	c.instack = append([]mq.Middleware{r.intercept}, c.instack...) // prepend
+	r := intercept.New(0)
+	c.instack = append([]mq.Middleware{r.Intercept}, c.instack...) // prepend
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	t.Cleanup(cancel)
 	return ctx, r.C
-}
-
-// todo move as own feature
-func NewInterceptor(max int) *Interceptor {
-	return &Interceptor{
-		C: make(chan mq.Packet, max),
-	}
-}
-
-type Interceptor struct {
-	C chan mq.Packet
-}
-
-func (r *Interceptor) intercept(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		select {
-		case r.C <- p: // if anyone is interested
-		case <-time.After(10 * time.Millisecond):
-		}
-		return next(ctx, p)
-	}
 }
 
 func newClient(t *testing.T) *Client {
