@@ -1,5 +1,8 @@
 /*
-Command ttdemo tries a series of mqtt-v5 packets towards a broker.
+Command ttdemo tries a series of mqtt-v5 packets towards a broker, eg.
+https://hub.docker.com/_/eclipse-mosquitto/
+
+Run the broker and then
 
   $ go run github.com/gregoryv/mq/tt/cmd/ttdemo
   ttdemo ut CONNECT ---- -------- MQTT5 ttdemo 0s 21 bytes
@@ -8,13 +11,14 @@ Command ttdemo tries a series of mqtt-v5 packets towards a broker.
   ttdemo in SUBACK ---- p1 6 bytes
   ttdemo ut PUBLISH ---- p0 16 bytes
   ttdemo in PUBLISH ---- p0 16 bytes
-  demo complete!
+  Hello MQTT gopher friend!
 
 */
 package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -67,6 +71,7 @@ func main() {
 	routes := []*mux.Route{
 		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			close(complete)
+			fmt.Println(string(p.Payload()))
 			return nil
 		}),
 	}
@@ -113,15 +118,13 @@ func main() {
 	{ // publish
 		p := mq.NewPublish()
 		p.SetTopicName("a/b")
-		p.SetPayload([]byte("gopher"))
+		p.SetPayload([]byte("Hello MQTT gopher friend!"))
 		go c.Send(ctx, &p)
 	}
 
 	select {
 	case <-complete:
-		log.Print("demo complete!")
 	case <-ctx.Done():
 		log.Print("demo failed!")
 	}
-
 }
