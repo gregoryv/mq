@@ -2,7 +2,6 @@ package tt
 
 import (
 	"context"
-	"io"
 	"net"
 	"testing"
 	"time"
@@ -81,17 +80,12 @@ func TestAppClient(t *testing.T) {
 	}
 }
 
-func TestClient_badConnect(t *testing.T) {
-	c := newClient(t)
-	ctx, _ := runIntercepted(t, c)
-	go func() {
-		if err := c.Run(ctx); err == nil {
-			t.Error("Run should fail with error")
-		}
-	}()
+func TestClient_Send(t *testing.T) {
+	c := NewBasicClient()
+	s := c.Settings()
+	s.IOSet(&ClosedConn{})
 
-	c.wire.(io.Closer).Close() // close before we write connect packet
-
+	ctx := context.Background()
 	p := mq.NewConnect()
 	if err := c.Send(ctx, &p); err == nil {
 		t.Fatal("expect error")

@@ -20,3 +20,15 @@ type Conn struct {
 	io.Reader // incoming from server
 	io.Writer // outgoing to server
 }
+
+// ----------------------------------------
+
+type ClosedConn struct{}
+
+func (c *ClosedConn) Read(_ []byte) (int, error) {
+	return 0, io.EOF
+}
+
+func (c *ClosedConn) Write(_ []byte) (int, error) {
+	return 0, io.EOF
+}
