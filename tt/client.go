@@ -93,7 +93,9 @@ func (c *Client) Run(ctx context.Context) error {
 			return err
 		}
 		if p != nil {
-			incoming(ctx, p)
+			// ignore error here, it's up to the user to configure a
+			// stack where the first middleware handles any errors.
+			_ = incoming(ctx, p)
 		}
 		if err := ctx.Err(); err != nil {
 			return err
