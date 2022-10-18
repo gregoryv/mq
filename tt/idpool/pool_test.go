@@ -48,7 +48,7 @@ func Test_IDPool(t *testing.T) {
 	}
 
 	for _, p := range packets {
-		if err := pool.SetPacketID(noop)(ctx, p); err != nil {
+		if err := pool.SetPacketID(mq.NoopHandler)(ctx, p); err != nil {
 			t.Error(err)
 		}
 		if p, ok := p.(mq.HasPacketID); ok {
@@ -56,7 +56,7 @@ func Test_IDPool(t *testing.T) {
 				t.Error(p)
 			}
 		}
-		if err := pool.ReusePacketID(noop)(ctx, p); err != nil {
+		if err := pool.ReusePacketID(mq.NoopHandler)(ctx, p); err != nil {
 			t.Error(err)
 		}
 	}
@@ -73,5 +73,3 @@ func TestIDPool_NextTimeout(t *testing.T) {
 		t.Error("expect 0 id when pool is cancelled", v)
 	}
 }
-
-func noop(_ context.Context, _ mq.Packet) error { return nil }
