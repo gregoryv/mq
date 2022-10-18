@@ -44,6 +44,8 @@ func (f *LogFeature) LogLevelSet(v Level) {
 	f.logLevel = v
 }
 
+// PrefixLoggers uses the short client id from mq.Connect or
+// AssignedClientID from mq.ConnAck as prefix in the loggers.
 func (f *LogFeature) PrefixLoggers(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
@@ -59,10 +61,16 @@ func (f *LogFeature) PrefixLoggers(next mq.Handler) mq.Handler {
 	}
 }
 
+// LogIncoming logs incoming packets and errors from the stack on the
+// info level.
 func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("in ", p)
-		return next(ctx, p)
+		err := next(ctx, p)
+		if err != nil {
+			f.info.Print(err)
+		}
+		return err // return error just incase this middleware is not the first
 	}
 }
 
@@ -80,7 +88,11 @@ func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
 func (f *LogFeature) LogOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("ut ", p)
-		return next(ctx, p)
+		err := next(ctx, p)
+		if err != nil {
+			f.info.Print(err)
+		}
+		return err
 	}
 }
 
