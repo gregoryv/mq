@@ -154,8 +154,8 @@ func newClient(t *testing.T) *Client {
 func dialBroker(t *testing.T) net.Conn {
 	conn, err := net.Dial("tcp", "127.0.0.1:1883")
 	if err != nil {
-		t.Log("no broker, did you run docker-compose up?")
-		t.Fatal(err)
+		t.Skip(err)
+		return nil
 	}
 	t.Cleanup(func() { conn.Close() })
 	return conn
