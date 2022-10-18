@@ -83,6 +83,9 @@ func (c *Client) Run(ctx context.Context) error {
 	defer func() { c.running = false }()
 	for {
 		c.running = true
+		if w, ok := c.wire.(net.Conn); ok {
+			w.SetReadDeadline(time.Now().Add(c.readTimeout))
+		}
 		p, err := c.nextPacket()
 		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) {
 			// todo handle closed wire properly so clients may have
@@ -120,10 +123,8 @@ func (c *Client) Settings() Settings {
 	return &writeSettings{s}
 }
 
+// nextPacket reads from the configured IO with a timeout
 func (c *Client) nextPacket() (mq.Packet, error) {
-	if w, ok := c.wire.(net.Conn); ok {
-		w.SetReadDeadline(time.Now().Add(c.readTimeout)) // todo make timeout configurable
-	}
 	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err
@@ -131,7 +132,7 @@ func (c *Client) nextPacket() (mq.Packet, error) {
 	return p, nil
 }
 
-// send packet to the underlying connection.
+// send writes a packet to the underlying connection.
 func (c *Client) send(_ context.Context, p mq.Packet) error {
 	if c.wire == nil {
 		return ErrNoConnection
