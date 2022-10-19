@@ -5,6 +5,7 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
+	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/mux"
 )
 
@@ -14,8 +15,20 @@ func Example_runClient() {
 	conn, _ := tt.Dial()
 
 	c := tt.NewBasicClient() // configure client
-	s := c.Settings()
-	s.IOSet(conn)
+	c.IOSet(conn)
+
+	fl := flog.New()
+	fl.LogLevelSet(flog.LevelInfo)
+
+	c.InStackSet([]mq.Middleware{
+		fl.LogIncoming,
+		fl.DumpPacket,
+	})
+	c.OutStackSet([]mq.Middleware{
+		fl.PrefixLoggers,
+		fl.LogOutgoing,
+		fl.DumpPacket,
+	})
 
 	routes := []*mux.Route{
 		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
@@ -27,7 +40,7 @@ func Example_runClient() {
 	router := mux.NewRouter()
 	router.AddRoutes(routes...)
 
-	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
+	c.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.ConnAck:
 

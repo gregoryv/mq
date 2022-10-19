@@ -6,55 +6,34 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-type Settings interface {
-	InStackSet([]mq.Middleware) error
-	OutStackSet([]mq.Middleware) error
-
-	// ReceiverSet configures final handler of the incoming
-	// idpool. Usually some sort of router to the application logic.
-	ReceiverSet(mq.Handler) error
-
-	// IOSet sets the read writer used for serializing packets from and to.
-	// Should be set before calling Run
-	IOSet(io.ReadWriter) error
-}
-
-type writeSettings struct {
-	readSettings
-}
-
-func (s *writeSettings) InStackSet(v []mq.Middleware) error {
-	s.instack = v
+func (c *Client) InStackSet(v []mq.Middleware) error {
+	if c.running {
+		return ErrReadOnly
+	}
+	c.instack = v
 	return nil
 }
 
-func (s *writeSettings) OutStackSet(v []mq.Middleware) error {
-	s.outstack = v
+func (c *Client) OutStackSet(v []mq.Middleware) error {
+	if c.running {
+		return ErrReadOnly
+	}
+	c.outstack = v
 	return nil
 }
 
-func (s *writeSettings) ReceiverSet(v mq.Handler) error {
-	s.receiver = v
+func (c *Client) ReceiverSet(v mq.Handler) error {
+	if c.running {
+		return ErrReadOnly
+	}
+	c.receiver = v
 	return nil
 }
 
-func (s *writeSettings) IOSet(v io.ReadWriter) error {
-	s.wire = v
+func (c *Client) IOSet(v io.ReadWriter) error {
+	if c.running {
+		return ErrReadOnly
+	}
+	c.wire = v
 	return nil
 }
-
-// ----------------------------------------
-
-type readSettings struct {
-	*Client
-}
-
-func (s *readSettings) InStackSet(v []mq.Middleware) error {
-	return ErrReadOnly
-}
-func (s *readSettings) OutStackSet(v []mq.Middleware) error {
-	return ErrReadOnly
-}
-
-func (s *readSettings) ReceiverSet(_ mq.Handler) error { return ErrReadOnly }
-func (s *readSettings) IOSet(_ io.ReadWriter) error    { return ErrReadOnly }

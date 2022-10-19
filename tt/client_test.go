@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/intercept"
 )
 
@@ -19,7 +20,7 @@ var _ mq.Client = &Client{}
 func TestThingClient(t *testing.T) {
 	c := NewBasicClient()
 	conn, server := Dial()
-	c.Settings().IOSet(conn)
+	c.IOSet(conn)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -53,7 +54,7 @@ func TestThingClient(t *testing.T) {
 
 func TestClient_Send(t *testing.T) {
 	c := NewBasicClient()
-	s := c.Settings()
+	s := c
 	s.IOSet(&ClosedConn{})
 
 	ctx := context.Background()
@@ -65,13 +66,33 @@ func TestClient_Send(t *testing.T) {
 
 func TestClient_Settings(t *testing.T) {
 	c := NewBasicClient()
-	s := c.Settings()
+	s := c
 	conn, _ := Dial()
-	s.IOSet(conn)
+
+	// before start
+	s = c
+	if err := s.IOSet(conn); err != nil {
+		t.Error(err)
+	}
+	if err := s.ReceiverSet(nil); err != nil {
+		t.Error(err)
+	}
+	fl := flog.New()
+	fl.LogLevelSet(flog.LevelInfo)
+	in := []mq.Middleware{fl.LogIncoming}
+	if err := s.InStackSet(in); err != nil {
+		t.Error(err)
+	}
+
+	out := []mq.Middleware{fl.LogOutgoing}
+	if err := s.OutStackSet(out); err != nil {
+		t.Error(err)
+	}
+
 	ctx := context.Background()
 	c.Start(ctx)
 
-	s = c.Settings()
+	// after
 	if err := s.IOSet(nil); err == nil {
 		t.Error("could set IO after start")
 	}
@@ -88,7 +109,7 @@ func TestClient_Settings(t *testing.T) {
 
 func TestClient_RunRespectsContextCancel(t *testing.T) {
 	c := NewBasicClient()
-	s := c.Settings()
+	s := c
 	conn := dialBroker(t)
 	s.IOSet(conn)
 	var wg sync.WaitGroup
@@ -118,8 +139,7 @@ func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet)
 
 func newClient(t *testing.T) *Client {
 	c := NewBasicClient()
-	s := c.Settings()
-	s.IOSet(dialBroker(t))
+	c.IOSet(dialBroker(t))
 	return c
 }
 

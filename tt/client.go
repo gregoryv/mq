@@ -21,14 +21,13 @@ func NewBasicClient() *Client {
 	fl := flog.New()
 
 	c := NewClient()
-	s := c.Settings()
-	s.InStackSet([]mq.Middleware{
+	c.InStackSet([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,
 		fl.PrefixLoggers,
 	})
-	s.OutStackSet([]mq.Middleware{
+	c.OutStackSet([]mq.Middleware{
 		fl.PrefixLoggers,
 		fpool.SetPacketID,
 		fl.LogOutgoing,
@@ -113,16 +112,6 @@ func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 // Send the packet through the outgoing idpool of handlers
 func (c *Client) Send(ctx context.Context, p mq.Packet) error {
 	return c.out(ctx, p)
-}
-
-// Settings returns this clients settings. If the client is running
-// settings are read only.
-func (c *Client) Settings() Settings {
-	s := readSettings{c}
-	if c.running {
-		return &s
-	}
-	return &writeSettings{s}
 }
 
 // nextPacket reads from the configured IO with a timeout
