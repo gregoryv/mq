@@ -1,4 +1,4 @@
-package flog
+package tt
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 
 func ExampleLogFeature_LogIncoming() {
 	log.SetOutput(os.Stdout)
-	l := New()
+	l := NewLogger()
 	l.LogLevelSet(LevelInfo)
 
 	p := mq.NewPublish()
@@ -22,7 +22,7 @@ func ExampleLogFeature_LogIncoming() {
 
 func ExampleLogFeature_LogOutgoing() {
 	log.SetOutput(os.Stdout)
-	l := New()
+	l := NewLogger()
 	l.LogLevelSet(LevelInfo)
 
 	p := mq.NewPublish()
@@ -35,7 +35,7 @@ func ExampleLogFeature_LogOutgoing() {
 
 func ExampleLogFeature_DumpPacket() {
 	log.SetOutput(os.Stdout)
-	l := New()
+	l := NewLogger()
 	l.LogLevelSet(LevelDebug)
 
 	p := mq.NewPublish()
@@ -48,7 +48,7 @@ func ExampleLogFeature_DumpPacket() {
 
 func ExampleLogFeature_PrefixLoggers() {
 	log.SetOutput(os.Stdout)
-	l := New()
+	l := NewLogger()
 	l.LogLevelSet(1)
 
 	{

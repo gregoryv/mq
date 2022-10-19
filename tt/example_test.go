@@ -5,7 +5,6 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
-	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/mux"
 )
 
@@ -14,8 +13,8 @@ func Example_runClient() {
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	fl := flog.New()
-	fl.LogLevelSet(flog.LevelInfo)
+	fl := tt.NewLogger()
+	fl.LogLevelSet(tt.LevelInfo)
 
 	routes := []*mux.Route{
 		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {

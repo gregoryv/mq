@@ -28,7 +28,6 @@ import (
 	"github.com/gregoryv/cmdline"
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
-	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
 	"github.com/gregoryv/mq/tt/mux"
 	"github.com/gregoryv/mq/tt/tt"
@@ -49,8 +48,8 @@ func main() {
 
 	// setup outgoing queue
 	fpool := idpool.New(100)
-	fl := flog.New()
-	fl.LogLevelSet(flog.LevelInfo)
+	fl := tt.New()
+	fl.LogLevelSet(tt.LevelInfo)
 	out := tt.NewQueue(
 		[]mq.Middleware{
 			fl.PrefixLoggers,

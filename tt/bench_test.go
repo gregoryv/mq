@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
 )
 
@@ -56,7 +55,7 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 // disabled logging
 func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 	fpool := idpool.New(10)
-	fl := flog.New()
+	fl := NewLogger()
 
 	in = NewQueue([]mq.Middleware{
 		fl.LogIncoming,

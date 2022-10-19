@@ -1,5 +1,5 @@
-// Package flog provides packet logging feature
-package flog
+// Package tt provides packet logging feature
+package tt
 
 import (
 	"bytes"
@@ -12,8 +12,8 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func New() *LogFeature {
-	f := &LogFeature{
+func NewLogger() *Logger {
+	f := &Logger{
 		info:  log.New(log.Writer(), "", log.Flags()),
 		debug: log.New(log.Writer(), "", log.Flags()),
 	}
@@ -21,13 +21,13 @@ func New() *LogFeature {
 	return f
 }
 
-type LogFeature struct {
+type Logger struct {
 	logLevel Level
 	info     *log.Logger
 	debug    *log.Logger
 }
 
-func (f *LogFeature) LogLevelSet(v Level) {
+func (f *Logger) LogLevelSet(v Level) {
 	switch v {
 	case LevelDebug:
 		f.info.SetOutput(log.Writer())
@@ -46,7 +46,7 @@ func (f *LogFeature) LogLevelSet(v Level) {
 
 // PrefixLoggers uses the short client id from mq.Connect or
 // AssignedClientID from mq.ConnAck as prefix in the loggers.
-func (f *LogFeature) PrefixLoggers(next mq.Handler) mq.Handler {
+func (f *Logger) PrefixLoggers(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.Connect:
@@ -63,7 +63,7 @@ func (f *LogFeature) PrefixLoggers(next mq.Handler) mq.Handler {
 
 // LogIncoming logs incoming packets and errors from the stack on the
 // info level.
-func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
+func (f *Logger) LogIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("in ", p)
 		err := next(ctx, p)
@@ -74,7 +74,7 @@ func (f *LogFeature) LogIncoming(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
+func (f *Logger) DumpPacket(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if f.logLevel == LevelDebug {
 			var buf bytes.Buffer
@@ -85,7 +85,7 @@ func (f *LogFeature) DumpPacket(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) LogOutgoing(next mq.Handler) mq.Handler {
+func (f *Logger) LogOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.info.Print("ut ", p)
 		err := next(ctx, p)
@@ -96,7 +96,7 @@ func (f *LogFeature) LogOutgoing(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *LogFeature) setLogPrefix(cid string) {
+func (f *Logger) setLogPrefix(cid string) {
 	f.info.SetPrefix(fmt.Sprintf("%s ", cid))
 	f.debug.SetPrefix(fmt.Sprintf("%s ", cid))
 }
