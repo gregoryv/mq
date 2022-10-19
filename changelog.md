@@ -6,6 +6,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add tt/pakio with pakio.Sender and pakio.Receiver
+- Remove type Client
 - Remove type tt.Settings
 
 ## [0.17.0] 2022-10-17
