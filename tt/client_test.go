@@ -50,37 +50,6 @@ func TestThingClient(t *testing.T) {
 	}
 }
 
-func TestAppClient(t *testing.T) {
-	c := newClient(t)
-	//c.LogLevelSet(LogLevelDebug)
-	ctx, incoming := runIntercepted(t, c)
-
-	{ // connect mq tt
-		p := mq.NewConnect()
-		_ = c.Send(ctx, &p)
-		_ = (<-incoming).(*mq.ConnAck)
-	}
-	{ // subscribe
-		p := mq.NewSubscribe()
-		p.AddFilter("a/b", mq.OptQoS1)
-		_ = c.Send(ctx, &p)
-		_ = (<-incoming).(*mq.SubAck)
-	}
-	{ // publish application message
-		p := mq.NewPublish()
-		p.SetQoS(1)
-		p.SetTopicName("a/b")
-		p.SetPayload([]byte("gopher"))
-		_ = c.Send(ctx, &p)
-		_ = (<-incoming).(*mq.PubAck)
-		_ = (<-incoming).(*mq.Publish)
-	}
-	{ // disconnect nicely
-		p := mq.NewDisconnect()
-		_ = c.Send(ctx, &p)
-	}
-}
-
 func TestClient_Send(t *testing.T) {
 	c := NewBasicClient()
 	s := c.Settings()

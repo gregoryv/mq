@@ -75,5 +75,4 @@ func ExampleLogFeature_PrefixLoggers() {
 	// output:
 	// myclient ut PUBLISH ---- p0 13 bytes
 	// 123456789-123456789-123456789 in PUBLISH ---- p0 13 bytes
-
 }
