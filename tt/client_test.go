@@ -2,14 +2,10 @@ package tt
 
 import (
 	"context"
-	"errors"
 	"net"
-	"sync"
 	"testing"
-	"time"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/intercept"
 )
 
@@ -18,19 +14,21 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	conn, server := Dial()
-	c := NewBasicClient(conn)
-	ctx, incoming := runIntercepted(t, c)
+	in := NewQueue([]mq.Middleware{intercept.New(0).Intercept}, mq.NoopHandler)
+	out := NewQueue(nil, mq.NoopHandler)
+
+	c := NewClient(in, out)
+
+	ctx := context.Background()
 
 	{ // connect mq tt
 		p := mq.NewConnect()
 		_ = c.Send(ctx, &p)
 
 		ack := mq.NewConnAck()
-		ack.WriteTo(server)
-
-		_ = (<-incoming).(*mq.ConnAck)
+		c.Recv(ctx, &ack)
 	}
+
 	{ // publish application message
 		p := mq.NewPublish()
 		p.SetQoS(1)
@@ -40,8 +38,7 @@ func TestThingClient(t *testing.T) {
 
 		ack := mq.NewPubAck()
 		ack.SetPacketID(p.PacketID())
-		ack.WriteTo(server)
-		_ = (<-incoming).(*mq.PubAck)
+		c.Recv(ctx, &ack)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
@@ -61,67 +58,7 @@ func TestClient_Send(t *testing.T) {
 	}
 }
 
-func TestClient_Settings(t *testing.T) {
-	conn, _ := Dial()
-	c := NewBasicClient(conn)
-
-	// before start
-	if err := c.IOSet(conn); err != nil {
-		t.Error(err)
-	}
-	fl := flog.New()
-	fl.LogLevelSet(flog.LevelInfo)
-	if err := c.InSet(mq.NoopHandler); err != nil {
-		t.Error(err)
-	}
-
-	out := []mq.Middleware{fl.LogOutgoing}
-	if err := c.OutStackSet(out); err != nil {
-		t.Error(err)
-	}
-
-	ctx := context.Background()
-	c.Start(ctx)
-
-	// after
-	if err := c.IOSet(nil); err == nil {
-		t.Error("could set IO after start")
-	}
-	if err := c.InSet(nil); err == nil {
-		t.Error("could set InStack after start")
-	}
-	if err := c.OutStackSet(nil); err == nil {
-		t.Error("could set OutStack after start")
-	}
-}
-
-func TestClient_RunRespectsContextCancel(t *testing.T) {
-	conn := dialBroker(t)
-	c := NewBasicClient(conn)
-	var wg sync.WaitGroup
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
-
-	wg.Add(1)
-	go func() {
-		if err := c.Run(ctx); !errors.Is(err, context.DeadlineExceeded) {
-			t.Errorf("unexpected error: %T", err)
-		}
-		wg.Done()
-	}()
-
-	wg.Wait()
-}
-
 // ----------------------------------------
-
-func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
-	r := intercept.New(0)
-	c.incoming = r.Intercept(c.incoming)
-	ctx, cancel := context.WithCancel(context.Background())
-	c.Start(ctx)
-	t.Cleanup(cancel)
-	return ctx, r.C
-}
 
 func newClient(t *testing.T) *Client {
 	c := NewBasicClient(dialBroker(t))

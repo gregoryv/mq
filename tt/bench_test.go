@@ -8,13 +8,13 @@ import (
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
+	"github.com/gregoryv/mq/tt/pakio"
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
 	conn, _ := Dial()
 	c := NewBasicClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
-	c.Start(ctx)
 	defer cancel()
 
 	for i := 0; i < b.N; i++ {
@@ -34,7 +34,6 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 	c := NewBasicClient(conn)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	c.Start(ctx)
 	defer cancel()
 
 	for i := 0; i < b.N; i++ {
@@ -66,15 +65,18 @@ func NewBasicClient(v io.ReadWriter) *Client {
 		fl.PrefixLoggers,
 	}, mq.NoopHandler)
 
-	c := NewClient()
-	c.IOSet(v)
-	c.InSet(in)
+	receiver := pakio.NewReceiver(v, in)
+	go receiver.Run(context.Background())
 
-	c.OutStackSet([]mq.Middleware{
-		fl.PrefixLoggers,
-		fpool.SetPacketID,
-		fl.LogOutgoing,
-		fl.DumpPacket,
-	})
-	return c
+	out := NewQueue(
+		[]mq.Middleware{
+			fl.PrefixLoggers,
+			fpool.SetPacketID,
+			fl.LogOutgoing,
+			fl.DumpPacket,
+		},
+		pakio.NewSender(v).Send,
+	)
+
+	return NewClient(in, out)
 }

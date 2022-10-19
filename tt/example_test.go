@@ -15,8 +15,6 @@ func Example_runClient() {
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	c := tt.NewBasicClient(conn) // configure client
-
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)
 
@@ -29,6 +27,8 @@ func Example_runClient() {
 	}
 	router := mux.NewRouter()
 	router.AddRoutes(routes...)
+
+	var c *tt.Client
 
 	in := tt.NewQueue(
 		[]mq.Middleware{fl.LogIncoming, fl.DumpPacket},
@@ -47,15 +47,21 @@ func Example_runClient() {
 			return nil
 		},
 	)
-	c.InSet(in)
-	c.OutStackSet([]mq.Middleware{
-		fl.PrefixLoggers,
-		fl.LogOutgoing,
-		fl.DumpPacket,
-	})
+
+	out := tt.NewQueue(
+		[]mq.Middleware{
+			fl.PrefixLoggers,
+			fl.LogOutgoing,
+			fl.DumpPacket,
+		},
+		pakio.NewSender(conn).Send,
+	)
+
+	tmp := tt.NewClient(in, out)
+	*c = *tmp
 
 	// start handling packet flow
-	ctx, _ := context.WithCancel(context.Background())
+	ctx := context.Background()
 	receiver := pakio.NewReceiver(conn, in)
 	go receiver.Run(ctx)
 
