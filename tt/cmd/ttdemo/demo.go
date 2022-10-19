@@ -17,7 +17,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"sync"
@@ -107,7 +109,13 @@ func main() {
 	// start handling packet flow
 	ctx, _ := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	receiver := pakio.NewReceiver(conn, in)
-	go receiver.Run(ctx)
+
+	go func() {
+		err := receiver.Run(ctx)
+		if errors.Is(err, io.EOF) {
+			// client disconnected...
+		}
+	}()
 
 	{ // connect
 		p := mq.NewConnect()
