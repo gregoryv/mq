@@ -7,7 +7,6 @@ import (
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/mux"
-	"github.com/gregoryv/mq/tt/pakio"
 )
 
 func Example_runClient() {
@@ -34,7 +33,7 @@ func Example_runClient() {
 			fl.LogOutgoing,
 			fl.DumpPacket,
 		},
-		pakio.NewSender(conn).Send,
+		tt.NewSender(conn).Send,
 	)
 
 	in := tt.NewQueue(
@@ -57,7 +56,7 @@ func Example_runClient() {
 
 	// start handling packet flow
 	ctx := context.Background()
-	receiver := pakio.NewReceiver(conn, in)
+	receiver := tt.NewReceiver(conn, in)
 	go receiver.Run(ctx)
 
 	{ // connect

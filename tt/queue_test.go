@@ -2,7 +2,6 @@ package tt
 
 import (
 	"context"
-	"net"
 	"testing"
 
 	"github.com/gregoryv/mq"
@@ -42,16 +41,4 @@ func TestQueues(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-}
-
-// ----------------------------------------
-
-func dialBroker(t *testing.T) net.Conn {
-	conn, err := net.Dial("tcp", "127.0.0.1:1883")
-	if err != nil {
-		t.Skip(err)
-		return nil
-	}
-	t.Cleanup(func() { conn.Close() })
-	return conn
 }

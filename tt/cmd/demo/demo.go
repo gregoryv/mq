@@ -31,7 +31,7 @@ import (
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
 	"github.com/gregoryv/mq/tt/mux"
-	"github.com/gregoryv/mq/tt/pakio"
+	"github.com/gregoryv/mq/tt/tt"
 )
 
 func main() {
@@ -58,7 +58,7 @@ func main() {
 			fl.LogOutgoing, // keep loggers last
 			fl.DumpPacket,
 		},
-		pakio.NewSender(conn).Send,
+		tt.NewSender(conn).Send,
 	)
 
 	// define routing of mq.Publish packets
@@ -110,7 +110,7 @@ func main() {
 
 	// start handling packet flow
 	ctx, _ := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	receiver := pakio.NewReceiver(conn, in)
+	receiver := tt.NewReceiver(conn, in)
 
 	go func() {
 		err := receiver.Run(ctx)

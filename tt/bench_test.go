@@ -9,7 +9,6 @@ import (
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
-	"github.com/gregoryv/mq/tt/pakio"
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
@@ -66,7 +65,7 @@ func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 		fl.PrefixLoggers,
 	}, mq.NoopHandler)
 
-	receiver := pakio.NewReceiver(v, in)
+	receiver := NewReceiver(v, in)
 	go receiver.Run(context.Background())
 
 	out = NewQueue(
@@ -76,7 +75,7 @@ func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 			fl.LogOutgoing,
 			fl.DumpPacket,
 		},
-		pakio.NewSender(v).Send,
+		NewSender(v).Send,
 	)
 
 	return
