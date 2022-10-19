@@ -7,13 +7,7 @@ import (
 	"io"
 )
 
-/*
-Client implementations are responsible for
-
-  - Sync writes and reads of packets
-  - Add packet ID's and acknowledge packets
-*/
-type Client interface {
+type Queue interface {
 	Send(context.Context, Packet) error
 }
 

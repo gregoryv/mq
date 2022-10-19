@@ -19,10 +19,18 @@ func ExampleRouter() {
 	r.AddRoutes(routes...)
 
 	ctx := context.Background()
-	r.Route(ctx, mux.Pub(0, "gopher/pink", "hi"))
+	r.Route(ctx, Pub(0, "gopher/pink", "hi"))
 
 	fmt.Print(r)
 	//output:
 	// PUBLISH ---- p0 20 bytes
 	// 1 route
+}
+
+func Pub(qos uint8, topic, payload string) *mq.Publish {
+	p := mq.NewPublish()
+	p.SetQoS(qos)
+	p.SetTopicName(topic)
+	p.SetPayload([]byte(payload))
+	return &p
 }

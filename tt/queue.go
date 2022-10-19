@@ -14,30 +14,30 @@ import (
 	"github.com/gregoryv/mq/tt/idpool"
 )
 
-// NewBasicClient returns a client with MaxDefaultConcurrentID and
+// NewBasicClient returns a Queue with MaxDefaultConcurrentID and
 // disabled logging
-func NewBasicClient() *Client {
+func NewBasicClient() *Queue {
 	fpool := idpool.New(10)
 	fl := flog.New()
 
-	c := NewClient()
-	c.InStackSet([]mq.Middleware{
+	q := NewQueue()
+	q.InStackSet([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,
 		fl.PrefixLoggers,
 	})
-	c.OutStackSet([]mq.Middleware{
+	q.OutStackSet([]mq.Middleware{
 		fl.PrefixLoggers,
 		fpool.SetPacketID,
 		fl.LogOutgoing,
 		fl.DumpPacket,
 	})
-	return c
+	return q
 }
 
-func NewClient() *Client {
-	return &Client{
+func NewQueue() *Queue {
+	return &Queue{
 		// receiver should be replaced by the application layer
 		receiver:    unsetReceiver,
 		out:         notRunning,
@@ -45,7 +45,7 @@ func NewClient() *Client {
 	}
 }
 
-type Client struct {
+type Queue struct {
 	running bool // set by func Run
 
 	m           sync.Mutex
@@ -60,12 +60,12 @@ type Client struct {
 	out      mq.Handler // first outgoing handler, set by func Run
 }
 
-func (c *Client) Start(ctx context.Context) {
-	go c.Run(ctx)
+func (q *Queue) Start(ctx context.Context) {
+	go q.Run(ctx)
 	// wait for the run loop to be ready
 	for {
 		<-time.After(time.Millisecond)
-		if c.running {
+		if q.running {
 			<-time.After(5 * time.Millisecond)
 			return
 		}
@@ -75,17 +75,17 @@ func (c *Client) Start(ctx context.Context) {
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
-func (c *Client) Run(ctx context.Context) error {
-	incoming := chain(c.instack, c.receiver)
-	c.out = chain(c.outstack, c.send)
+func (q *Queue) Run(ctx context.Context) error {
+	incoming := chain(q.instack, q.receiver)
+	q.out = chain(q.outstack, q.send)
 
-	defer func() { c.running = false }()
+	defer func() { q.running = false }()
 	for {
-		c.running = true
-		if w, ok := c.wire.(net.Conn); ok {
-			w.SetReadDeadline(time.Now().Add(c.readTimeout))
+		q.running = true
+		if w, ok := q.wire.(net.Conn); ok {
+			w.SetReadDeadline(time.Now().Add(q.readTimeout))
 		}
-		p, err := c.nextPacket()
+		p, err := q.nextPacket()
 		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) {
 			// todo handle closed wire properly so clients may have
 			// the feature of reconnect
@@ -101,6 +101,37 @@ func (c *Client) Run(ctx context.Context) error {
 		}
 	}
 }
+func (q *Queue) InStackSet(v []mq.Middleware) error {
+	if q.running {
+		return ErrReadOnly
+	}
+	q.instack = v
+	return nil
+}
+
+func (q *Queue) OutStackSet(v []mq.Middleware) error {
+	if q.running {
+		return ErrReadOnly
+	}
+	q.outstack = v
+	return nil
+}
+
+func (q *Queue) ReceiverSet(v mq.Handler) error {
+	if q.running {
+		return ErrReadOnly
+	}
+	q.receiver = v
+	return nil
+}
+
+func (q *Queue) IOSet(v io.ReadWriter) error {
+	if q.running {
+		return ErrReadOnly
+	}
+	q.wire = v
+	return nil
+}
 
 func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 	if len(v) == 0 {
@@ -110,13 +141,13 @@ func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 }
 
 // Send the packet through the outgoing idpool of handlers
-func (c *Client) Send(ctx context.Context, p mq.Packet) error {
-	return c.out(ctx, p)
+func (q *Queue) Send(ctx context.Context, p mq.Packet) error {
+	return q.out(ctx, p)
 }
 
 // nextPacket reads from the configured IO with a timeout
-func (c *Client) nextPacket() (mq.Packet, error) {
-	p, err := mq.ReadPacket(c.wire)
+func (q *Queue) nextPacket() (mq.Packet, error) {
+	p, err := mq.ReadPacket(q.wire)
 	if err != nil {
 		return nil, err
 	}
@@ -124,13 +155,13 @@ func (c *Client) nextPacket() (mq.Packet, error) {
 }
 
 // send writes a packet to the underlying connection.
-func (c *Client) send(_ context.Context, p mq.Packet) error {
-	if c.wire == nil {
+func (q *Queue) send(_ context.Context, p mq.Packet) error {
+	if q.wire == nil {
 		return ErrNoConnection
 	}
-	c.m.Lock()
-	_, err := p.WriteTo(c.wire)
-	c.m.Unlock()
+	q.m.Lock()
+	_, err := p.WriteTo(q.wire)
+	q.m.Unlock()
 	return err
 }
 

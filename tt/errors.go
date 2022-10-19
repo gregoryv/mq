@@ -6,10 +6,10 @@ var (
 	// Client.IO is closed
 	ErrNoConnection = fmt.Errorf("no connection")
 
-	// Client has no receiver configured
+	// Queue has no receiver configured
 	ErrUnsetReceiver = fmt.Errorf("unset receiver")
 
-	// Client is not fully operational, ie. hasn't been started
+	// Queue is not fully operational, ie. hasn't been started
 	ErrNotRunning = fmt.Errorf("not running")
 
 	// Settings cannot be changed
