@@ -13,7 +13,7 @@ import (
 	"github.com/gregoryv/mq/tt/intercept"
 )
 
-var _ mq.Queue = &Queue{}
+var _ mq.Client = &Client{}
 
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
@@ -52,7 +52,7 @@ func TestThingClient(t *testing.T) {
 	}
 }
 
-func TestQueue_Send(t *testing.T) {
+func TestClient_Send(t *testing.T) {
 	c := NewBasicClient()
 	s := c
 	s.IOSet(&ClosedConn{})
@@ -64,7 +64,7 @@ func TestQueue_Send(t *testing.T) {
 	}
 }
 
-func TestQueue_Settings(t *testing.T) {
+func TestClient_Settings(t *testing.T) {
 	c := NewBasicClient()
 	s := c
 	conn, _ := Dial()
@@ -107,7 +107,7 @@ func TestQueue_Settings(t *testing.T) {
 	}
 }
 
-func TestQueue_RunRespectsContextCancel(t *testing.T) {
+func TestClient_RunRespectsContextCancel(t *testing.T) {
 	c := NewBasicClient()
 	s := c
 	conn := dialBroker(t)
@@ -128,7 +128,7 @@ func TestQueue_RunRespectsContextCancel(t *testing.T) {
 
 // ----------------------------------------
 
-func runIntercepted(t *testing.T, c *Queue) (context.Context, <-chan mq.Packet) {
+func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
 	r := intercept.New(0)
 	c.instack = append([]mq.Middleware{r.Intercept}, c.instack...) // prepend
 	ctx, cancel := context.WithCancel(context.Background())
@@ -137,7 +137,7 @@ func runIntercepted(t *testing.T, c *Queue) (context.Context, <-chan mq.Packet) 
 	return ctx, r.C
 }
 
-func newClient(t *testing.T) *Queue {
+func newClient(t *testing.T) *Client {
 	c := NewBasicClient()
 	c.IOSet(dialBroker(t))
 	return c

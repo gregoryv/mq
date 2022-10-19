@@ -43,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := tt.NewQueue() // configure client
+	c := tt.NewClient() // configure client
 
 	fpool := idpool.New(100)
 	fl := flog.New()

@@ -53,13 +53,13 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 	}
 }
 
-// NewBasicClient returns a Queue with MaxDefaultConcurrentID and
+// NewBasicClient returns a Client with MaxDefaultConcurrentID and
 // disabled logging
-func NewBasicClient() *Queue {
+func NewBasicClient() *Client {
 	fpool := idpool.New(10)
 	fl := flog.New()
 
-	q := NewQueue()
+	q := NewClient()
 	q.InStackSet([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,

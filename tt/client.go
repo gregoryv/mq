@@ -12,8 +12,8 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewQueue() *Queue {
-	return &Queue{
+func NewClient() *Client {
+	return &Client{
 		// receiver should be replaced by the application layer
 		receiver:    unsetReceiver,
 		out:         notRunning,
@@ -21,7 +21,7 @@ func NewQueue() *Queue {
 	}
 }
 
-type Queue struct {
+type Client struct {
 	running bool // set by func Run
 
 	m           sync.Mutex
@@ -37,12 +37,12 @@ type Queue struct {
 	out      mq.Handler // first outgoing handler, set by func Run
 }
 
-func (q *Queue) Start(ctx context.Context) {
-	go q.Run(ctx)
+func (c *Client) Start(ctx context.Context) {
+	go c.Run(ctx)
 	// wait for the run loop to be ready
 	for {
 		<-time.After(time.Millisecond)
-		if q.running {
+		if c.running {
 			<-time.After(5 * time.Millisecond)
 			return
 		}
@@ -50,29 +50,29 @@ func (q *Queue) Start(ctx context.Context) {
 }
 
 // Send the packet through the outgoing idpool of handlers
-func (q *Queue) Send(ctx context.Context, p mq.Packet) error {
-	return q.out(ctx, p)
+func (c *Client) Send(ctx context.Context, p mq.Packet) error {
+	return c.out(ctx, p)
 }
 
 // Send the packet through the outgoing idpool of handlers
-func (q *Queue) Recv(ctx context.Context, p mq.Packet) error {
-	return q.incoming(ctx, p)
+func (c *Client) Recv(ctx context.Context, p mq.Packet) error {
+	return c.incoming(ctx, p)
 }
 
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
-func (q *Queue) Run(ctx context.Context) error {
-	q.incoming = chain(q.instack, q.receiver)
-	q.out = chain(q.outstack, q.send)
+func (c *Client) Run(ctx context.Context) error {
+	c.incoming = chain(c.instack, c.receiver)
+	c.out = chain(c.outstack, c.send)
 
-	defer func() { q.running = false }()
+	defer func() { c.running = false }()
 	for {
-		q.running = true
-		if w, ok := q.wire.(net.Conn); ok {
-			w.SetReadDeadline(time.Now().Add(q.readTimeout))
+		c.running = true
+		if w, ok := c.wire.(net.Conn); ok {
+			w.SetReadDeadline(time.Now().Add(c.readTimeout))
 		}
-		p, err := q.nextPacket()
+		p, err := c.nextPacket()
 		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) {
 			// todo handle closed wire properly so clients may have
 			// the feature of reconnect
@@ -81,42 +81,42 @@ func (q *Queue) Run(ctx context.Context) error {
 		if p != nil {
 			// ignore error here, it's up to the user to configure a
 			// stack where the first middleware handles any errors.
-			_ = q.Recv(ctx, p)
+			_ = c.Recv(ctx, p)
 		}
 		if err := ctx.Err(); err != nil {
 			return err
 		}
 	}
 }
-func (q *Queue) InStackSet(v []mq.Middleware) error {
-	if q.running {
+func (c *Client) InStackSet(v []mq.Middleware) error {
+	if c.running {
 		return ErrReadOnly
 	}
-	q.instack = v
+	c.instack = v
 	return nil
 }
 
-func (q *Queue) OutStackSet(v []mq.Middleware) error {
-	if q.running {
+func (c *Client) OutStackSet(v []mq.Middleware) error {
+	if c.running {
 		return ErrReadOnly
 	}
-	q.outstack = v
+	c.outstack = v
 	return nil
 }
 
-func (q *Queue) ReceiverSet(v mq.Handler) error {
-	if q.running {
+func (c *Client) ReceiverSet(v mq.Handler) error {
+	if c.running {
 		return ErrReadOnly
 	}
-	q.receiver = v
+	c.receiver = v
 	return nil
 }
 
-func (q *Queue) IOSet(v io.ReadWriter) error {
-	if q.running {
+func (c *Client) IOSet(v io.ReadWriter) error {
+	if c.running {
 		return ErrReadOnly
 	}
-	q.wire = v
+	c.wire = v
 	return nil
 }
 
@@ -128,8 +128,8 @@ func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 }
 
 // nextPacket reads from the configured IO with a timeout
-func (q *Queue) nextPacket() (mq.Packet, error) {
-	p, err := mq.ReadPacket(q.wire)
+func (c *Client) nextPacket() (mq.Packet, error) {
+	p, err := mq.ReadPacket(c.wire)
 	if err != nil {
 		return nil, err
 	}
@@ -137,13 +137,13 @@ func (q *Queue) nextPacket() (mq.Packet, error) {
 }
 
 // send writes a packet to the underlying connection.
-func (q *Queue) send(_ context.Context, p mq.Packet) error {
-	if q.wire == nil {
+func (c *Client) send(_ context.Context, p mq.Packet) error {
+	if c.wire == nil {
 		return ErrNoConnection
 	}
-	q.m.Lock()
-	_, err := p.WriteTo(q.wire)
-	q.m.Unlock()
+	c.m.Lock()
+	_, err := p.WriteTo(c.wire)
+	c.m.Unlock()
 	return err
 }
 

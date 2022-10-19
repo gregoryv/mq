@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-type Queue interface {
+type Client interface {
 	Recv(context.Context, Packet) error
 	Send(context.Context, Packet) error
 }
