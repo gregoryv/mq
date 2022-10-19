@@ -32,15 +32,15 @@ func (o *IDPool) ReusePacketID(next mq.Handler) mq.Handler {
 			// todo handle dropped acks as that packet is lost. Maybe
 			// a timeout for expected acks to arrive?
 			if p.PacketID() > 0 {
-				o.Reuse(p.PacketID())
+				o.reuse(p.PacketID())
 			}
 		}
 		return next(ctx, p)
 	}
 }
 
-// Reuse returns the given value to the pool
-func (o *IDPool) Reuse(v uint16) {
+// reuse returns the given value to the pool
+func (o *IDPool) reuse(v uint16) {
 	if v == 0 || v > o.max {
 		return
 	}
@@ -53,23 +53,23 @@ func (o *IDPool) SetPacketID(next mq.Handler) mq.Handler {
 		switch p := p.(type) {
 		case *mq.Publish:
 			if p.QoS() > 0 {
-				p.SetPacketID(o.Next(ctx))
+				p.SetPacketID(o.next(ctx))
 			}
 
 		case *mq.Subscribe:
-			p.SetPacketID(o.Next(ctx))
+			p.SetPacketID(o.next(ctx))
 
 		case *mq.Unsubscribe:
-			p.SetPacketID(o.Next(ctx))
+			p.SetPacketID(o.next(ctx))
 		}
 		return next(ctx, p)
 	}
 }
 
-// Next returns the next available ID, blocks until one is available
-// or context is canceled. Next is safe for concurrent use by multiple
+// next returns the next available ID, blocks until one is available
+// or context is canceled. next is safe for concurrent use by multiple
 // goroutines.
-func (o *IDPool) Next(ctx context.Context) uint16 {
+func (o *IDPool) next(ctx context.Context) uint16 {
 	select {
 	case <-ctx.Done():
 	case v := <-o.values:

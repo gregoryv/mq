@@ -29,8 +29,6 @@ import (
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/tt"
-	"github.com/gregoryv/mq/tt/tt"
-	"github.com/gregoryv/mq/tt/tt"
 )
 
 func main() {

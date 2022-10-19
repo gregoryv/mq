@@ -18,11 +18,11 @@ func Test_IDPool(t *testing.T) {
 	used := make(chan uint16, max)
 	drain := func() {
 		for v := range used {
-			pool.Reuse(v)
+			pool.reuse(v)
 		}
 	}
 	for i := uint16(0); i < 2*max; i++ {
-		v := pool.Next(ctx)
+		v := pool.next(ctx)
 		used <- v
 		if i == max-1 {
 			// start returning midway
@@ -62,14 +62,14 @@ func Test_IDPool(t *testing.T) {
 	}
 
 	// not return 0 value
-	pool.Reuse(0) // noop
+	pool.reuse(0) // noop
 }
 
-func TestIDPool_NextTimeout(t *testing.T) {
+func TestIDPool_nextTimeout(t *testing.T) {
 	pool := NewIDPool(1) // 1 .. 5
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond)
-	pool.Next(ctx)
-	if v := pool.Next(ctx); v != 0 {
+	pool.next(ctx)
+	if v := pool.next(ctx); v != 0 {
 		t.Error("expect 0 id when pool is cancelled", v)
 	}
 }
