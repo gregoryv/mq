@@ -10,8 +10,13 @@ import (
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestQueues(t *testing.T) {
-	recv := NewQueue(nil, mq.NoopHandler)
-	send := NewQueue(nil, mq.NoopHandler)
+	mid := func(next mq.Handler) mq.Handler {
+		return func(ctx context.Context, p mq.Packet) error {
+			return next(ctx, p)
+		}
+	}
+	recv := NewQueue([]mq.Middleware{mid, mid}, mq.NoopHandler)
+	send := NewQueue([]mq.Middleware{mid}, mq.NoopHandler)
 
 	ctx := context.Background()
 
