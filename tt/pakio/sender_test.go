@@ -1,9 +1,23 @@
-package tt
+package pakio
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
+	"testing"
+
+	"github.com/gregoryv/mq"
 )
+
+func TestSender(t *testing.T) {
+	s := NewSender(&ClosedConn{})
+
+	ctx := context.Background()
+	p := mq.NewConnect()
+	if err := s.Send(ctx, &p); err == nil {
+		t.Fatal("expect error")
+	}
+}
 
 // Dial returns a test connection to a server and the server writer
 // used to send responses with.

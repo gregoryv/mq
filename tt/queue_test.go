@@ -11,7 +11,7 @@ import (
 
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
-func TestThingClient(t *testing.T) {
+func TestQueues(t *testing.T) {
 	recv := NewQueue([]mq.Middleware{intercept.New(0).Intercept}, mq.NoopHandler)
 	send := NewQueue(nil, mq.NoopHandler)
 
@@ -41,16 +41,6 @@ func TestThingClient(t *testing.T) {
 		if err := send(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
-	}
-}
-
-func TestClient_Send(t *testing.T) {
-	_, send := NewBasicClient(&ClosedConn{})
-
-	ctx := context.Background()
-	p := mq.NewConnect()
-	if err := send(ctx, &p); err == nil {
-		t.Fatal("expect error")
 	}
 }
 
