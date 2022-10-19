@@ -53,6 +53,7 @@ type Queue struct {
 	readTimeout time.Duration
 
 	// sequence of receivers for incoming packets
+	incoming mq.Handler // set by func Run
 	instack  []mq.Middleware
 	receiver mq.Handler // final
 
@@ -72,11 +73,21 @@ func (q *Queue) Start(ctx context.Context) {
 	}
 }
 
+// Send the packet through the outgoing idpool of handlers
+func (q *Queue) Send(ctx context.Context, p mq.Packet) error {
+	return q.out(ctx, p)
+}
+
+// Send the packet through the outgoing idpool of handlers
+func (q *Queue) Recv(ctx context.Context, p mq.Packet) error {
+	return q.incoming(ctx, p)
+}
+
 // Run begins handling incoming packets and must be called before
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
 func (q *Queue) Run(ctx context.Context) error {
-	incoming := chain(q.instack, q.receiver)
+	q.incoming = chain(q.instack, q.receiver)
 	q.out = chain(q.outstack, q.send)
 
 	defer func() { q.running = false }()
@@ -94,7 +105,7 @@ func (q *Queue) Run(ctx context.Context) error {
 		if p != nil {
 			// ignore error here, it's up to the user to configure a
 			// stack where the first middleware handles any errors.
-			_ = incoming(ctx, p)
+			_ = q.Recv(ctx, p)
 		}
 		if err := ctx.Err(); err != nil {
 			return err
@@ -138,11 +149,6 @@ func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
 		return last
 	}
 	return v[0](chain(v[1:], last))
-}
-
-// Send the packet through the outgoing idpool of handlers
-func (q *Queue) Send(ctx context.Context, p mq.Packet) error {
-	return q.out(ctx, p)
 }
 
 // nextPacket reads from the configured IO with a timeout

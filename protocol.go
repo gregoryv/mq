@@ -8,6 +8,7 @@ import (
 )
 
 type Queue interface {
+	Recv(context.Context, Packet) error
 	Send(context.Context, Packet) error
 }
 
