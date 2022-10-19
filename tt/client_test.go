@@ -2,6 +2,7 @@ package tt
 
 import (
 	"context"
+	"errors"
 	"net"
 	"sync"
 	"testing"
@@ -95,7 +96,9 @@ func TestClient_RunRespectsContextCancel(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		_ = c.Run(ctx)
+		if err := c.Run(ctx); !errors.Is(err, context.DeadlineExceeded) {
+			t.Errorf("unexpected error: %T", err)
+		}
 		wg.Done()
 	}()
 
