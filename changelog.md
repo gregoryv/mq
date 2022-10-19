@@ -4,8 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
-## [unreleased]
+## [0.18.0] 2022-10-19
 
+- Add tt/pakio with pakio.Sender and pakio.Receiver
+- Remove type Client
 - Remove type tt.Settings
 
 ## [0.17.0] 2022-10-17
