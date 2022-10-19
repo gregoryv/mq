@@ -1,13 +1,15 @@
 package tt
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/gregoryv/mq"
 )
 
-func ExampleLogFeature_LogIncoming() {
+func ExampleLogger_LogIncoming() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger()
 	l.LogLevelSet(LevelInfo)
@@ -20,7 +22,7 @@ func ExampleLogFeature_LogIncoming() {
 	// in PUBLISH ---- p0 13 bytes
 }
 
-func ExampleLogFeature_LogOutgoing() {
+func ExampleLogger_LogOutgoing() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger()
 	l.LogLevelSet(LevelInfo)
@@ -33,7 +35,7 @@ func ExampleLogFeature_LogOutgoing() {
 	// ut PUBLISH ---- p0 13 bytes
 }
 
-func ExampleLogFeature_DumpPacket() {
+func ExampleLogger_DumpPacket() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger()
 	l.LogLevelSet(LevelDebug)
@@ -46,7 +48,7 @@ func ExampleLogFeature_DumpPacket() {
 	// 00000000  30 0b 00 00 00 00 06 67  6f 70 68 65 72           |0......gopher|
 }
 
-func ExampleLogFeature_PrefixLoggers() {
+func ExampleLogger_PrefixLoggers() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger()
 	l.LogLevelSet(1)
@@ -75,4 +77,23 @@ func ExampleLogFeature_PrefixLoggers() {
 	// output:
 	// myclient ut PUBLISH ---- p0 13 bytes
 	// 123456789-123456789-123456789 in PUBLISH ---- p0 13 bytes
+}
+
+func ExampleLogger_errors() {
+	log.SetOutput(os.Stdout)
+	l := NewLogger()
+	l.LogLevelSet(LevelInfo)
+
+	p := mq.NewPublish()
+	p.SetPayload([]byte("gopher"))
+	broken := func(context.Context, mq.Packet) error {
+		return fmt.Errorf("broken")
+	}
+	l.LogIncoming(broken)(nil, &p)
+	l.LogOutgoing(broken)(nil, &p)
+	// output:
+	// in PUBLISH ---- p0 13 bytes
+	// broken
+	// ut PUBLISH ---- p0 13 bytes
+	// broken
 }
