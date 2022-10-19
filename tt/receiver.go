@@ -28,21 +28,23 @@ type Receiver struct {
 // Run begins reading incoming packets and forwards them to the
 // configured handler.
 func (r *Receiver) Run(ctx context.Context) error {
+loop:
 	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		if w, ok := r.wire.(net.Conn); ok {
 			w.SetReadDeadline(time.Now().Add(r.readTimeout))
 		}
 		p, err := mq.ReadPacket(r.wire)
-		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) {
+		if err != nil {
+			if errors.Is(err, os.ErrDeadlineExceeded) {
+				continue loop
+			}
 			return err
 		}
-		if p != nil {
-			// ignore error here, it's up to the user to configure a
-			// stack where the first middleware handles any errors.
-			_ = r.first(ctx, p)
-		}
-		if err := ctx.Err(); err != nil {
-			return err
-		}
+		// ignore error here, it's up to the user to configure a
+		// stack where the first middleware handles any errors.
+		_ = r.first(ctx, p)
 	}
 }

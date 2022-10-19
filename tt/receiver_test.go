@@ -12,6 +12,24 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+func TestReceiver(t *testing.T) {
+	conn, server := Dial()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	receiver := NewReceiver(conn, func(_ context.Context, _ mq.Packet) error {
+		wg.Done()
+		return nil
+	})
+
+	ctx := context.Background()
+	go receiver.Run(ctx)
+	p := mq.NewPublish()
+	p.WriteTo(server)
+
+	wg.Wait()
+}
+
 func TestReceiver_RunRespectsContextCancel(t *testing.T) {
 	conn := dialBroker(t)
 	receiver := NewReceiver(conn, mq.NoopHandler)
