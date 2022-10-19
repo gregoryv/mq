@@ -14,6 +14,10 @@ func ExampleRouter() {
 			fmt.Println(p)
 			return nil
 		}),
+		tt.NewRoute("gopher/blue", func(_ context.Context, p *mq.Publish) error {
+			fmt.Println(p)
+			return nil
+		}),
 	}
 	r := tt.NewRouter()
 	r.AddRoutes(routes...)
@@ -24,7 +28,7 @@ func ExampleRouter() {
 	fmt.Print(r)
 	//output:
 	// PUBLISH ---- p0 20 bytes
-	// 1 route
+	// 2 routes
 }
 
 func Pub(qos uint8, topic, payload string) *mq.Publish {
