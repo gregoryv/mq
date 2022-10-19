@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt/idpool"
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
@@ -54,7 +53,7 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 // NewBasicClient returns a Client with MaxDefaultConcurrentID and
 // disabled logging
 func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
-	fpool := idpool.New(10)
+	fpool := NewIDPool(10)
 	fl := NewLogger()
 
 	in = NewQueue([]mq.Middleware{

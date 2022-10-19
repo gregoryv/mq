@@ -1,5 +1,5 @@
-// Package idpool provides packet id use and reuse
-package idpool
+// Package tt provides packet id use and reuse
+package tt
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 )
 
 // NewPool returns a IDPool of reusable id's from 1..max, 0 is not used
-func New(max uint16) *IDPool {
+func NewIDPool(max uint16) *IDPool {
 	o := IDPool{
 		max:    max,
 		values: make(chan uint16, max),

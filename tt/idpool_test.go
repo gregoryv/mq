@@ -1,4 +1,4 @@
-package idpool
+package tt
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 
 func Test_IDPool(t *testing.T) {
 	max := uint16(5)
-	pool := New(max) // 1 .. 5
+	pool := NewIDPool(max) // 1 .. 5
 
 	ctx := context.Background()
 
@@ -66,7 +66,7 @@ func Test_IDPool(t *testing.T) {
 }
 
 func TestIDPool_NextTimeout(t *testing.T) {
-	pool := New(1) // 1 .. 5
+	pool := NewIDPool(1) // 1 .. 5
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond)
 	pool.Next(ctx)
 	if v := pool.Next(ctx); v != 0 {

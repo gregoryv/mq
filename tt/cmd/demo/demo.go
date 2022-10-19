@@ -28,7 +28,7 @@ import (
 	"github.com/gregoryv/cmdline"
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
-	"github.com/gregoryv/mq/tt/idpool"
+	"github.com/gregoryv/mq/tt/tt"
 	"github.com/gregoryv/mq/tt/tt"
 	"github.com/gregoryv/mq/tt/tt"
 )
@@ -47,7 +47,7 @@ func main() {
 	}
 
 	// setup outgoing queue
-	fpool := idpool.New(100)
+	fpool := tt.New(100)
 	fl := tt.New()
 	fl.LogLevelSet(tt.LevelInfo)
 	out := tt.NewQueue(
