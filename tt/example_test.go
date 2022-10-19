@@ -5,7 +5,6 @@ import (
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
-	"github.com/gregoryv/mq/tt/mux"
 )
 
 func Example_runClient() {
@@ -16,14 +15,14 @@ func Example_runClient() {
 	fl := tt.NewLogger()
 	fl.LogLevelSet(tt.LevelInfo)
 
-	routes := []*mux.Route{
-		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+	routes := []*tt.Route{
+		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			// handle packet...
 			return nil
 		}),
-		mux.NewRoute("a/b"),
+		tt.NewRoute("a/b"),
 	}
-	router := mux.NewRouter()
+	router := tt.NewRouter()
 	router.AddRoutes(routes...)
 
 	send := tt.NewQueue(

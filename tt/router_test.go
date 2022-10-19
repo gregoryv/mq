@@ -1,21 +1,21 @@
-package mux_test
+package tt_test
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt/mux"
+	"github.com/gregoryv/mq/tt"
 )
 
 func ExampleRouter() {
-	routes := []*mux.Route{
-		mux.NewRoute("gopher/pink", func(_ context.Context, p *mq.Publish) error {
+	routes := []*tt.Route{
+		tt.NewRoute("gopher/pink", func(_ context.Context, p *mq.Publish) error {
 			fmt.Println(p)
 			return nil
 		}),
 	}
-	r := mux.NewRouter()
+	r := tt.NewRouter()
 	r.AddRoutes(routes...)
 
 	ctx := context.Background()

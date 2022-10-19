@@ -1,5 +1,5 @@
-// Package mux provides routing features
-package mux
+// Package tt provides routing features
+package tt
 
 import (
 	"context"

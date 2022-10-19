@@ -29,7 +29,7 @@ import (
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 	"github.com/gregoryv/mq/tt/idpool"
-	"github.com/gregoryv/mq/tt/mux"
+	"github.com/gregoryv/mq/tt/tt"
 	"github.com/gregoryv/mq/tt/tt"
 )
 
@@ -62,14 +62,14 @@ func main() {
 
 	// define routing of mq.Publish packets
 	complete := make(chan struct{})
-	routes := []*mux.Route{
-		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+	routes := []*tt.Route{
+		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			close(complete)
 			fmt.Println(string(p.Payload()))
 			return nil
 		}),
 	}
-	router := mux.NewRouter()
+	router := tt.NewRouter()
 	router.AddRoutes(routes...)
 
 	// we'll wait for all subscriptions to be acknowledged
