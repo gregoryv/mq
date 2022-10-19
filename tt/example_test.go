@@ -14,8 +14,7 @@ func Example_runClient() {
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	c := tt.NewBasicClient() // configure client
-	c.IOSet(conn)
+	c := tt.NewBasicClient(conn) // configure client
 
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)

@@ -18,9 +18,8 @@ var _ mq.Client = &Client{}
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestThingClient(t *testing.T) {
-	c := NewBasicClient()
 	conn, server := Dial()
-	c.IOSet(conn)
+	c := NewBasicClient(conn)
 	ctx, incoming := runIntercepted(t, c)
 
 	{ // connect mq tt
@@ -53,9 +52,7 @@ func TestThingClient(t *testing.T) {
 }
 
 func TestClient_Send(t *testing.T) {
-	c := NewBasicClient()
-	s := c
-	s.IOSet(&ClosedConn{})
+	c := NewBasicClient(&ClosedConn{})
 
 	ctx := context.Background()
 	p := mq.NewConnect()
@@ -65,27 +62,25 @@ func TestClient_Send(t *testing.T) {
 }
 
 func TestClient_Settings(t *testing.T) {
-	c := NewBasicClient()
-	s := c
 	conn, _ := Dial()
+	c := NewBasicClient(conn)
 
 	// before start
-	s = c
-	if err := s.IOSet(conn); err != nil {
+	if err := c.IOSet(conn); err != nil {
 		t.Error(err)
 	}
-	if err := s.ReceiverSet(nil); err != nil {
+	if err := c.ReceiverSet(nil); err != nil {
 		t.Error(err)
 	}
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)
 	in := []mq.Middleware{fl.LogIncoming}
-	if err := s.InStackSet(in); err != nil {
+	if err := c.InStackSet(in); err != nil {
 		t.Error(err)
 	}
 
 	out := []mq.Middleware{fl.LogOutgoing}
-	if err := s.OutStackSet(out); err != nil {
+	if err := c.OutStackSet(out); err != nil {
 		t.Error(err)
 	}
 
@@ -93,25 +88,23 @@ func TestClient_Settings(t *testing.T) {
 	c.Start(ctx)
 
 	// after
-	if err := s.IOSet(nil); err == nil {
+	if err := c.IOSet(nil); err == nil {
 		t.Error("could set IO after start")
 	}
-	if err := s.ReceiverSet(nil); err == nil {
+	if err := c.ReceiverSet(nil); err == nil {
 		t.Error("could set Receiver after start")
 	}
-	if err := s.InStackSet(nil); err == nil {
+	if err := c.InStackSet(nil); err == nil {
 		t.Error("could set InStack after start")
 	}
-	if err := s.OutStackSet(nil); err == nil {
+	if err := c.OutStackSet(nil); err == nil {
 		t.Error("could set OutStack after start")
 	}
 }
 
 func TestClient_RunRespectsContextCancel(t *testing.T) {
-	c := NewBasicClient()
-	s := c
 	conn := dialBroker(t)
-	s.IOSet(conn)
+	c := NewBasicClient(conn)
 	var wg sync.WaitGroup
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
 
@@ -138,8 +131,7 @@ func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet)
 }
 
 func newClient(t *testing.T) *Client {
-	c := NewBasicClient()
-	c.IOSet(dialBroker(t))
+	c := NewBasicClient(dialBroker(t))
 	return c
 }
 

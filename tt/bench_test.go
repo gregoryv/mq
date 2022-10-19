@@ -2,6 +2,7 @@ package tt
 
 import (
 	"context"
+	"io"
 	"testing"
 
 	"github.com/gregoryv/mq"
@@ -10,9 +11,8 @@ import (
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
-	c := NewBasicClient()
 	conn, _ := Dial()
-	c.IOSet(conn)
+	c := NewBasicClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	defer cancel()
@@ -30,9 +30,9 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 }
 
 func BenchmarkClient_PubQoS1(b *testing.B) {
-	c := NewBasicClient()
 	conn, server := Dial()
-	c.IOSet(conn)
+	c := NewBasicClient(conn)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	defer cancel()
@@ -55,22 +55,23 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 
 // NewBasicClient returns a Client with MaxDefaultConcurrentID and
 // disabled logging
-func NewBasicClient() *Client {
+func NewBasicClient(v io.ReadWriter) *Client {
 	fpool := idpool.New(10)
 	fl := flog.New()
 
-	q := NewClient()
-	q.InStackSet([]mq.Middleware{
+	c := NewClient()
+	c.IOSet(v)
+	c.InStackSet([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,
 		fl.PrefixLoggers,
 	})
-	q.OutStackSet([]mq.Middleware{
+	c.OutStackSet([]mq.Middleware{
 		fl.PrefixLoggers,
 		fpool.SetPacketID,
 		fl.LogOutgoing,
 		fl.DumpPacket,
 	})
-	return q
+	return c
 }
