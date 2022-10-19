@@ -14,6 +14,7 @@ import (
 
 func NewClient() *Client {
 	return &Client{
+
 		// receiver should be replaced by the application layer
 		receiver:    unsetReceiver,
 		out:         notRunning,
@@ -63,8 +64,8 @@ func (c *Client) Recv(ctx context.Context, p mq.Packet) error {
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
-	c.incoming = chain(c.instack, c.receiver)
-	c.out = chain(c.outstack, c.send)
+	c.incoming = NewQueue(c.instack, c.receiver)
+	c.out = NewQueue(c.outstack, c.send)
 
 	defer func() { c.running = false }()
 	for {
@@ -120,11 +121,11 @@ func (c *Client) IOSet(v io.ReadWriter) error {
 	return nil
 }
 
-func chain(v []mq.Middleware, last mq.Handler) mq.Handler {
+func NewQueue(v []mq.Middleware, last mq.Handler) mq.Handler {
 	if len(v) == 0 {
 		return last
 	}
-	return v[0](chain(v[1:], last))
+	return v[0](NewQueue(v[1:], last))
 }
 
 // nextPacket reads from the configured IO with a timeout
