@@ -40,6 +40,13 @@ func TestRoute(t *testing.T) {
 					name, c.Route, c.expMatch, match, words,
 				)
 			}
+
+			if v := c.Route.Subscribe(); v == nil {
+				t.Error("no subscription")
+			}
+			if v := c.Route.Filter(); v == "" {
+				t.Error("no subscription")
+			}
 		}
 	}
 
