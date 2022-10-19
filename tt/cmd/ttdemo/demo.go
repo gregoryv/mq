@@ -50,7 +50,7 @@ func main() {
 	fl.LogLevelSet(flog.LevelInfo)
 
 	s := c.Settings()
-	s.InStackSet([]mq.Middleware{
+	s.InSet([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,

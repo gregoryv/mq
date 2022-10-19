@@ -59,14 +59,17 @@ func NewBasicClient(v io.ReadWriter) *Client {
 	fpool := idpool.New(10)
 	fl := flog.New()
 
-	c := NewClient()
-	c.IOSet(v)
-	c.InStackSet([]mq.Middleware{
+	in := NewQueue([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,
 		fl.PrefixLoggers,
-	})
+	}, mq.NoopHandler)
+
+	c := NewClient()
+	c.IOSet(v)
+	c.InSet(in)
+
 	c.OutStackSet([]mq.Middleware{
 		fl.PrefixLoggers,
 		fpool.SetPacketID,

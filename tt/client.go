@@ -16,7 +16,6 @@ func NewClient() *Client {
 	return &Client{
 
 		// receiver should be replaced by the application layer
-		receiver:    unsetReceiver,
 		out:         notRunning,
 		readTimeout: 100 * time.Millisecond,
 	}
@@ -30,9 +29,7 @@ type Client struct {
 	readTimeout time.Duration
 
 	// sequence of receivers for incoming packets
-	incoming mq.Handler // set by func Run
-	instack  []mq.Middleware
-	receiver mq.Handler // final
+	incoming mq.Handler
 
 	outstack []mq.Middleware
 	out      mq.Handler // first outgoing handler, set by func Run
@@ -64,7 +61,6 @@ func (c *Client) Recv(ctx context.Context, p mq.Packet) error {
 // trying to send packets. Run blocks until context is interrupted,
 // the wire has closed or there a malformed packet is encountered.
 func (c *Client) Run(ctx context.Context) error {
-	c.incoming = NewQueue(c.instack, c.receiver)
 	c.out = NewQueue(c.outstack, c.send)
 
 	defer func() { c.running = false }()
@@ -89,11 +85,11 @@ func (c *Client) Run(ctx context.Context) error {
 		}
 	}
 }
-func (c *Client) InStackSet(v []mq.Middleware) error {
+func (c *Client) InSet(v mq.Handler) error {
 	if c.running {
 		return ErrReadOnly
 	}
-	c.instack = v
+	c.incoming = v
 	return nil
 }
 
@@ -102,14 +98,6 @@ func (c *Client) OutStackSet(v []mq.Middleware) error {
 		return ErrReadOnly
 	}
 	c.outstack = v
-	return nil
-}
-
-func (c *Client) ReceiverSet(v mq.Handler) error {
-	if c.running {
-		return ErrReadOnly
-	}
-	c.receiver = v
 	return nil
 }
 

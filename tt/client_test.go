@@ -69,13 +69,9 @@ func TestClient_Settings(t *testing.T) {
 	if err := c.IOSet(conn); err != nil {
 		t.Error(err)
 	}
-	if err := c.ReceiverSet(nil); err != nil {
-		t.Error(err)
-	}
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)
-	in := []mq.Middleware{fl.LogIncoming}
-	if err := c.InStackSet(in); err != nil {
+	if err := c.InSet(mq.NoopHandler); err != nil {
 		t.Error(err)
 	}
 
@@ -91,10 +87,7 @@ func TestClient_Settings(t *testing.T) {
 	if err := c.IOSet(nil); err == nil {
 		t.Error("could set IO after start")
 	}
-	if err := c.ReceiverSet(nil); err == nil {
-		t.Error("could set Receiver after start")
-	}
-	if err := c.InStackSet(nil); err == nil {
+	if err := c.InSet(nil); err == nil {
 		t.Error("could set InStack after start")
 	}
 	if err := c.OutStackSet(nil); err == nil {
@@ -123,7 +116,7 @@ func TestClient_RunRespectsContextCancel(t *testing.T) {
 
 func runIntercepted(t *testing.T, c *Client) (context.Context, <-chan mq.Packet) {
 	r := intercept.New(0)
-	c.instack = append([]mq.Middleware{r.Intercept}, c.instack...) // prepend
+	c.incoming = r.Intercept(c.incoming)
 	ctx, cancel := context.WithCancel(context.Background())
 	c.Start(ctx)
 	t.Cleanup(cancel)
