@@ -28,7 +28,14 @@ func Example_runClient() {
 	router := mux.NewRouter()
 	router.AddRoutes(routes...)
 
-	var c *tt.Client
+	send := tt.NewQueue(
+		[]mq.Middleware{
+			fl.PrefixLoggers,
+			fl.LogOutgoing,
+			fl.DumpPacket,
+		},
+		pakio.NewSender(conn).Send,
+	)
 
 	in := tt.NewQueue(
 		[]mq.Middleware{fl.LogIncoming, fl.DumpPacket},
@@ -38,7 +45,7 @@ func Example_runClient() {
 
 				// here we choose to subscribe each route separately
 				for _, r := range routes {
-					_ = c.Send(ctx, r.Subscribe())
+					_ = send(ctx, r.Subscribe())
 				}
 
 			case *mq.Publish:
@@ -48,18 +55,6 @@ func Example_runClient() {
 		},
 	)
 
-	out := tt.NewQueue(
-		[]mq.Middleware{
-			fl.PrefixLoggers,
-			fl.LogOutgoing,
-			fl.DumpPacket,
-		},
-		pakio.NewSender(conn).Send,
-	)
-
-	tmp := tt.NewClient(in, out)
-	*c = *tmp
-
 	// start handling packet flow
 	ctx := context.Background()
 	receiver := pakio.NewReceiver(conn, in)
@@ -68,6 +63,6 @@ func Example_runClient() {
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID("example")
-		_ = c.Send(ctx, &p)
+		_ = send(ctx, &p)
 	}
 }

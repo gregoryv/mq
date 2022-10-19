@@ -13,7 +13,7 @@ import (
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
 	conn, _ := Dial()
-	c := NewBasicClient(conn)
+	_, send := NewBasicClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -23,7 +23,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 
-		if err := c.Send(ctx, &p); err != nil {
+		if err := send(ctx, &p); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -31,7 +31,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 
 func BenchmarkClient_PubQoS1(b *testing.B) {
 	conn, server := Dial()
-	c := NewBasicClient(conn)
+	_, send := NewBasicClient(conn)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -42,7 +42,7 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
 
-		if err := c.Send(ctx, &p); err != nil {
+		if err := send(ctx, &p); err != nil {
 			b.Fatal(err)
 		}
 		// response from server
@@ -54,11 +54,11 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 
 // NewBasicClient returns a Client with MaxDefaultConcurrentID and
 // disabled logging
-func NewBasicClient(v io.ReadWriter) *Client {
+func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 	fpool := idpool.New(10)
 	fl := flog.New()
 
-	in := NewQueue([]mq.Middleware{
+	in = NewQueue([]mq.Middleware{
 		fl.LogIncoming,
 		fl.DumpPacket,
 		fpool.ReusePacketID,
@@ -68,7 +68,7 @@ func NewBasicClient(v io.ReadWriter) *Client {
 	receiver := pakio.NewReceiver(v, in)
 	go receiver.Run(context.Background())
 
-	out := NewQueue(
+	out = NewQueue(
 		[]mq.Middleware{
 			fl.PrefixLoggers,
 			fpool.SetPacketID,
@@ -78,5 +78,5 @@ func NewBasicClient(v io.ReadWriter) *Client {
 		pakio.NewSender(v).Send,
 	)
 
-	return NewClient(in, out)
+	return
 }

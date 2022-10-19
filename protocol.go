@@ -7,11 +7,6 @@ import (
 	"io"
 )
 
-type Client interface {
-	Recv(context.Context, Packet) error
-	Send(context.Context, Packet) error
-}
-
 // Handlers are used for both incoming and outgoing processing of
 // packets.
 type Handler func(context.Context, Packet) error
