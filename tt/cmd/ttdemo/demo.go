@@ -29,6 +29,7 @@ import (
 	"github.com/gregoryv/mq/tt/flog"
 	"github.com/gregoryv/mq/tt/idpool"
 	"github.com/gregoryv/mq/tt/mux"
+	"github.com/gregoryv/mq/tt/pakio"
 )
 
 func main() {
@@ -43,27 +44,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := tt.NewClient() // configure client
-
 	fpool := idpool.New(100)
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)
-
-	s := c.Settings()
-	s.InSet([]mq.Middleware{
-		fl.LogIncoming,
-		fl.DumpPacket,
-		fpool.ReusePacketID,
-		fl.PrefixLoggers,
-	})
-	s.OutStackSet([]mq.Middleware{
-		fl.PrefixLoggers,
-		fpool.SetPacketID,
-		fl.LogOutgoing, // keep loggers last
-		fl.DumpPacket,
-	})
-
-	s.IOSet(conn)
 
 	complete := make(chan struct{})
 
@@ -80,37 +63,56 @@ func main() {
 	var subscribes sync.WaitGroup
 	subscribes.Add(len(routes))
 
-	s.ReceiverSet(func(ctx context.Context, p mq.Packet) error {
-		switch p := p.(type) {
-		case *mq.ConnAck:
-			// here we choose to subscribe each route separately
-			for _, r := range routes {
-				{
-					p := mq.NewSubscribe()
-					p.AddFilter(r.Filter(), 0)
-					if err := c.Send(ctx, &p); err != nil {
-						log.Fatal(err)
+	out := tt.NewQueue(
+		[]mq.Middleware{
+			fl.PrefixLoggers,
+			fpool.SetPacketID,
+			fl.LogOutgoing, // keep loggers last
+			fl.DumpPacket,
+		},
+		pakio.NewSender(conn).Send,
+	)
+
+	in := tt.NewQueue(
+		[]mq.Middleware{
+			fl.LogIncoming,
+			fl.DumpPacket,
+			fpool.ReusePacketID,
+			fl.PrefixLoggers,
+		},
+		func(ctx context.Context, p mq.Packet) error {
+			switch p := p.(type) {
+			case *mq.ConnAck:
+				// here we choose to subscribe each route separately
+				for _, r := range routes {
+					{
+						p := mq.NewSubscribe()
+						p.AddFilter(r.Filter(), 0)
+						if err := out(ctx, &p); err != nil {
+							log.Fatal(err)
+						}
 					}
 				}
+
+			case *mq.SubAck:
+				subscribes.Done()
+
+			case *mq.Publish:
+				return router.Route(ctx, p)
 			}
-
-		case *mq.SubAck:
-			subscribes.Done()
-
-		case *mq.Publish:
-			return router.Route(ctx, p)
-		}
-		return nil
-	})
+			return nil
+		},
+	)
 
 	// start handling packet flow
 	ctx, _ := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	c.Start(ctx)
+	receiver := pakio.NewReceiver(conn, in)
+	go receiver.Run(ctx)
 
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID("ttdemo")
-		_ = c.Send(ctx, &p)
+		_ = out(ctx, &p)
 	}
 
 	subscribes.Wait()
@@ -118,7 +120,7 @@ func main() {
 		p := mq.NewPublish()
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("Hello MQTT gopher friend!"))
-		go c.Send(ctx, &p)
+		go out(ctx, &p)
 	}
 
 	select {
