@@ -1,4 +1,3 @@
-// Package tt provides routing features
 package tt
 
 import (

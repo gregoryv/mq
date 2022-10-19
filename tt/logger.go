@@ -1,4 +1,3 @@
-// Package tt provides packet logging feature
 package tt
 
 import (
