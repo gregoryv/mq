@@ -1,10 +1,10 @@
 /*
-Command ttdemo tries a series of mqtt-v5 packets towards a broker, eg.
+Command demo tries a series of mqtt-v5 packets towards a broker, eg.
 https://hub.docker.com/_/eclipse-mosquitto/
 
 Run the broker and then
 
-	$ go run github.com/gregoryv/mq/tt/cmd/ttdemo
+	$ go run github.com/gregoryv/mq/tt/cmd/demo
 	ttdemo ut CONNECT ---- -------- MQTT5 ttdemo 0s 21 bytes
 	ttdemo in CONNACK ---- --------  8 bytes
 	ttdemo ut SUBSCRIBE --1- p1, # --r0---- 9 bytes
@@ -41,30 +41,16 @@ func main() {
 	)
 	cli.Parse()
 
+	// connect to server
 	conn, err := net.Dial("tcp", broker)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// setup outgoing queue
 	fpool := idpool.New(100)
 	fl := flog.New()
 	fl.LogLevelSet(flog.LevelInfo)
-
-	complete := make(chan struct{})
-
-	routes := []*mux.Route{
-		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
-			close(complete)
-			fmt.Println(string(p.Payload()))
-			return nil
-		}),
-	}
-	router := mux.NewRouter()
-	router.AddRoutes(routes...)
-
-	var subscribes sync.WaitGroup
-	subscribes.Add(len(routes))
-
 	out := tt.NewQueue(
 		[]mq.Middleware{
 			fl.PrefixLoggers,
@@ -75,6 +61,23 @@ func main() {
 		pakio.NewSender(conn).Send,
 	)
 
+	// define routing of mq.Publish packets
+	complete := make(chan struct{})
+	routes := []*mux.Route{
+		mux.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
+			close(complete)
+			fmt.Println(string(p.Payload()))
+			return nil
+		}),
+	}
+	router := mux.NewRouter()
+	router.AddRoutes(routes...)
+
+	// we'll wait for all subscriptions to be acknowledged
+	var subscribes sync.WaitGroup
+	subscribes.Add(len(routes))
+
+	// setup incoming queue
 	in := tt.NewQueue(
 		[]mq.Middleware{
 			fl.LogIncoming,
@@ -82,17 +85,16 @@ func main() {
 			fpool.ReusePacketID,
 			fl.PrefixLoggers,
 		},
+		// todo, this could be a tt feature
 		func(ctx context.Context, p mq.Packet) error {
 			switch p := p.(type) {
 			case *mq.ConnAck:
-				// here we choose to subscribe each route separately
+				// once connected we subscribe each route separately
 				for _, r := range routes {
-					{
-						p := mq.NewSubscribe()
-						p.AddFilter(r.Filter(), 0)
-						if err := out(ctx, &p); err != nil {
-							log.Fatal(err)
-						}
+					p := mq.NewSubscribe()
+					p.AddFilter(r.Filter(), 0)
+					if err := out(ctx, &p); err != nil {
+						log.Fatal(err)
 					}
 				}
 
@@ -122,8 +124,8 @@ func main() {
 		p.SetClientID("ttdemo")
 		_ = out(ctx, &p)
 	}
-
 	subscribes.Wait()
+
 	{ // publish
 		p := mq.NewPublish()
 		p.SetTopicName("a/b")
