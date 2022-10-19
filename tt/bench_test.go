@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt/flog"
+	"github.com/gregoryv/mq/tt/idpool"
 )
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
@@ -49,4 +51,26 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 		ack.SetPacketID(p.PacketID())
 		ack.WriteTo(server)
 	}
+}
+
+// NewBasicClient returns a Queue with MaxDefaultConcurrentID and
+// disabled logging
+func NewBasicClient() *Queue {
+	fpool := idpool.New(10)
+	fl := flog.New()
+
+	q := NewQueue()
+	q.InStackSet([]mq.Middleware{
+		fl.LogIncoming,
+		fl.DumpPacket,
+		fpool.ReusePacketID,
+		fl.PrefixLoggers,
+	})
+	q.OutStackSet([]mq.Middleware{
+		fl.PrefixLoggers,
+		fpool.SetPacketID,
+		fl.LogOutgoing,
+		fl.DumpPacket,
+	})
+	return q
 }

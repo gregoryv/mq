@@ -10,31 +10,7 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt/flog"
-	"github.com/gregoryv/mq/tt/idpool"
 )
-
-// NewBasicClient returns a Queue with MaxDefaultConcurrentID and
-// disabled logging
-func NewBasicClient() *Queue {
-	fpool := idpool.New(10)
-	fl := flog.New()
-
-	q := NewQueue()
-	q.InStackSet([]mq.Middleware{
-		fl.LogIncoming,
-		fl.DumpPacket,
-		fpool.ReusePacketID,
-		fl.PrefixLoggers,
-	})
-	q.OutStackSet([]mq.Middleware{
-		fl.PrefixLoggers,
-		fpool.SetPacketID,
-		fl.LogOutgoing,
-		fl.DumpPacket,
-	})
-	return q
-}
 
 func NewQueue() *Queue {
 	return &Queue{
