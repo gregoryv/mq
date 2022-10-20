@@ -66,7 +66,7 @@ func NewClient(v io.ReadWriter) (out mq.Handler, in mq.Handler) {
 
 	in = NewQueue(
 		NoopHandler,
-		pool.ReusePacketID,
+		pool.In,
 		logger.In,
 	)
 

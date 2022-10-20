@@ -85,7 +85,7 @@ func main() {
 		subscriber.SubscribeOnConnect,
 		waitForAllSubs,
 		logger.PrefixLoggers,
-		pool.ReusePacketID,
+		pool.In,
 		logger.DumpPacket,
 		logger.In,
 	)

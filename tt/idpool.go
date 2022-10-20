@@ -23,9 +23,9 @@ type IDPool struct {
 	values chan uint16
 }
 
-// ReusePacketID checks if incoming packet has a packet ID, if so it's
+// In checks if incoming packet has a packet ID, if so it's
 // returned to the pool before next handler is called.
-func (o *IDPool) ReusePacketID(next mq.Handler) mq.Handler {
+func (o *IDPool) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(mq.HasPacketID); ok {
 			// todo handle dropped acks as that packet is lost. Maybe

@@ -56,7 +56,7 @@ func Test_IDPool(t *testing.T) {
 				t.Error(p)
 			}
 		}
-		if err := pool.ReusePacketID(NoopHandler)(ctx, p); err != nil {
+		if err := pool.In(NoopHandler)(ctx, p); err != nil {
 			t.Error(err)
 		}
 	}
