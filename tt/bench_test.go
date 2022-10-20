@@ -11,7 +11,7 @@ import (
 
 func BenchmarkClient_PubQoS0(b *testing.B) {
 	conn, _ := Dial()
-	_, send := NewBasicClient(conn)
+	send, _ := NewClient(conn)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -29,7 +29,7 @@ func BenchmarkClient_PubQoS0(b *testing.B) {
 
 func BenchmarkClient_PubQoS1(b *testing.B) {
 	conn, server := Dial()
-	_, send := NewBasicClient(conn)
+	send, _ := NewClient(conn)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -50,8 +50,8 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 	}
 }
 
-// NewBasicClient returns a Client
-func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
+// NewClient returns a Client
+func NewClient(v io.ReadWriter) (out mq.Handler, in mq.Handler) {
 	var (
 		pool   = NewIDPool(10)
 		logger = NewLogger(LevelNone)
