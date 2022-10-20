@@ -63,7 +63,7 @@ func main() {
 		sender.Send, // last
 		logger.DumpPacket,
 		logger.Out,
-		pool.SetPacketID,
+		pool.Out,
 		logger.PrefixLoggers, //first
 	)
 	subscriber := tt.NewSubscriber(out, routes...)

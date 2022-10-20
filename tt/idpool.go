@@ -46,8 +46,8 @@ func (o *IDPool) reuse(v uint16) {
 	o.values <- v
 }
 
-// SetPacketID on outgoing packets, refs MQTT-2.2.1-3
-func (o *IDPool) SetPacketID(next mq.Handler) mq.Handler {
+// Out on outgoing packets, refs MQTT-2.2.1-3
+func (o *IDPool) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.Publish:
