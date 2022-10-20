@@ -28,7 +28,6 @@ import (
 	"github.com/gregoryv/cmdline"
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
-	"github.com/gregoryv/mq/tt/tt"
 )
 
 func main() {
@@ -45,17 +44,15 @@ func main() {
 	}
 
 	// setup outgoing queue
-	fpool := tt.New(100)
-	fl := tt.New()
+	fpool := tt.NewIDPool(100)
+	fl := tt.NewLogger()
 	fl.LogLevelSet(tt.LevelInfo)
 	out := tt.NewQueue(
-		[]mq.Middleware{
-			fl.PrefixLoggers,
-			fpool.SetPacketID,
-			fl.LogOutgoing, // keep loggers last
-			fl.DumpPacket,
-		},
-		tt.NewSender(conn).Send,
+		tt.NewSender(conn).Send, // last
+		fl.DumpPacket,
+		fl.LogOutgoing,
+		fpool.SetPacketID,
+		fl.PrefixLoggers, //first
 	)
 
 	// define routing of mq.Publish packets
@@ -76,13 +73,6 @@ func main() {
 
 	// setup incoming queue
 	in := tt.NewQueue(
-		[]mq.Middleware{
-			fl.LogIncoming,
-			fl.DumpPacket,
-			fpool.ReusePacketID,
-			fl.PrefixLoggers,
-		},
-		// todo, this could be a tt feature
 		func(ctx context.Context, p mq.Packet) error {
 			switch p := p.(type) {
 			case *mq.ConnAck:
@@ -103,6 +93,10 @@ func main() {
 			}
 			return nil
 		},
+		fl.PrefixLoggers,
+		fpool.ReusePacketID,
+		fl.DumpPacket,
+		fl.LogIncoming,
 	)
 
 	// start handling packet flow

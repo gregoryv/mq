@@ -18,12 +18,8 @@ github.com/gregoryv/gocyclo v0.0.0-20180305144948-0be7902fabdc/go.mod h1:x/QA8cT
 github.com/gregoryv/gocyclo v0.1.0/go.mod h1:e1PwkEyshvXjhPGP0RUXqlEXx09aBSSNj0wL8I/P/3I=
 github.com/gregoryv/gocyclo v0.1.1 h1:wRhY+jEiXtNqtxOSI1XfXmbRaRknzvVtO5QOSg5KVHo=
 github.com/gregoryv/gocyclo v0.1.1/go.mod h1:e1PwkEyshvXjhPGP0RUXqlEXx09aBSSNj0wL8I/P/3I=
-github.com/gregoryv/mq v0.16.1-0.20221016154929-20c6b90868cb h1:LIQm7EmEZI02NsSP0M+CjOpDj5iZPmx1/hsjTATiu+Q=
-github.com/gregoryv/mq v0.16.1-0.20221016154929-20c6b90868cb/go.mod h1:KIRDPZlzvdB7k7HkYRZmqYHsNUa0DD1R7OeIbY79ruY=
-github.com/gregoryv/mq v0.17.0 h1:tPlqf6fenEgEz1fAqocUz4c6ELaoxFaa65UmlrAjeXc=
-github.com/gregoryv/mq v0.17.0/go.mod h1:KIRDPZlzvdB7k7HkYRZmqYHsNUa0DD1R7OeIbY79ruY=
-github.com/gregoryv/mq v0.17.1-0.20221019184914-5ce31ac41dd0 h1:k2djZnhJKwOFeuheH84jm+NY6n/fdOP1r/8ttcCEt4Q=
-github.com/gregoryv/mq v0.17.1-0.20221019184914-5ce31ac41dd0/go.mod h1:KIRDPZlzvdB7k7HkYRZmqYHsNUa0DD1R7OeIbY79ruY=
+github.com/gregoryv/mq v0.17.1-0.20221020024812-c1a82266e1c2 h1:uIAU09mLRk39rO7+rQ4iX+uXIfSPANnOJe2t+niDhNo=
+github.com/gregoryv/mq v0.17.1-0.20221020024812-c1a82266e1c2/go.mod h1:KIRDPZlzvdB7k7HkYRZmqYHsNUa0DD1R7OeIbY79ruY=
 github.com/gregoryv/must v0.1.0/go.mod h1:1HQ/4FuSFr52clBKUWSaibQTnZRKnWtbBZRxC5cii1A=
 github.com/gregoryv/nexus v0.5.1 h1:Yd+BJXwgU1QmUV1pn1DYI71tF2u5Q4ge1lVLBGEEIDc=
 github.com/gregoryv/nexus v0.5.1/go.mod h1:DJ2Ia6WpPX26edFW6LCl+9nYyX2h6Ot/kyJ83J+SAL0=
