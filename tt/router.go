@@ -7,8 +7,8 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewRouter() *Router {
-	return &Router{}
+func NewRouter(v ...*Route) *Router {
+	return &Router{routes: v}
 }
 
 type Router struct {
@@ -31,11 +31,6 @@ func (r *Router) Route(ctx context.Context, p mq.Packet) error {
 		}
 	}
 	return ctx.Err()
-}
-
-func (r *Router) AddRoutes(routes ...*Route) error {
-	r.routes = routes
-	return nil
 }
 
 // ----------------------------------------

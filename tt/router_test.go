@@ -19,8 +19,7 @@ func ExampleRouter() {
 			return nil
 		}),
 	}
-	r := tt.NewRouter()
-	r.AddRoutes(routes...)
+	r := tt.NewRouter(routes...)
 
 	ctx := context.Background()
 	r.Route(ctx, Pub(0, "gopher/pink", "hi"))

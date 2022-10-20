@@ -19,9 +19,8 @@ func Example_Client() {
 		}),
 		tt.NewRoute("a/b"),
 	}
-	router := tt.NewRouter()
-	router.AddRoutes(routes...)
 
+	router := tt.NewRouter(routes...)
 	logger := tt.NewLogger(tt.LevelInfo)
 	sender := tt.NewSender(conn)
 	subscriber := tt.NewSubscriber(sender.Send, routes...)
