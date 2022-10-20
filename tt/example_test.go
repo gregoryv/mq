@@ -23,29 +23,25 @@ func Example_Client() {
 	router.AddRoutes(routes...)
 
 	logger := tt.NewLogger(tt.LevelInfo)
+	sender := tt.NewSender(conn)
+	subscriber := tt.NewSubscriber(sender.Send, routes...)
 
 	send := tt.NewQueue(
-		tt.NewSender(conn).Send,
+		sender.Send, // last
 		logger.DumpPacket,
 		logger.LogOutgoing,
-		logger.PrefixLoggers,
+		logger.PrefixLoggers, // first
 	)
 
 	in := tt.NewQueue(
 		func(ctx context.Context, p mq.Packet) error {
 			switch p := p.(type) {
-			case *mq.ConnAck:
-
-				// here we choose to subscribe each route separately
-				for _, r := range routes {
-					_ = send(ctx, r.Subscribe())
-				}
-
 			case *mq.Publish:
 				return router.Route(ctx, p)
 			}
 			return nil
 		},
+		subscriber.AutoSubscribe,
 		logger.DumpPacket,
 		logger.LogIncoming,
 	)

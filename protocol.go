@@ -30,3 +30,4 @@ type HasPacketID interface {
 }
 
 func NoopHandler(_ context.Context, _ Packet) error { return nil }
+func NoopPub(_ context.Context, _ *Publish) error { return nil }
