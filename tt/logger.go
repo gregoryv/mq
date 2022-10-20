@@ -36,18 +36,15 @@ type Logger struct {
 
 // PrefixLoggers uses the short client id from mq.Connect or
 // AssignedClientID from mq.ConnAck as prefix in the loggers.
-func (f *Logger) PrefixLoggers(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		switch p := p.(type) {
-		case *mq.Connect:
-			f.setLogPrefix(p.ClientIDShort())
+func (f *Logger) prefixLoggers(p mq.Packet) {
+	switch p := p.(type) {
+	case *mq.Connect:
+		f.setLogPrefix(p.ClientIDShort())
 
-		case *mq.ConnAck:
-			if p.AssignedClientID() != "" {
-				f.setLogPrefix(p.AssignedClientID())
-			}
+	case *mq.ConnAck:
+		if p.AssignedClientID() != "" {
+			f.setLogPrefix(p.AssignedClientID())
 		}
-		return next(ctx, p)
 	}
 }
 
@@ -55,6 +52,7 @@ func (f *Logger) PrefixLoggers(next mq.Handler) mq.Handler {
 // info level.
 func (f *Logger) LogIncoming(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
+		f.prefixLoggers(p)
 		f.info.Print("in ", p)
 		err := next(ctx, p)
 		if err != nil {
@@ -77,6 +75,7 @@ func (f *Logger) DumpPacket(next mq.Handler) mq.Handler {
 
 func (f *Logger) LogOutgoing(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
+		f.prefixLoggers(p)
 		f.info.Print("ut ", p)
 		err := next(ctx, p)
 		if err != nil {

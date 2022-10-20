@@ -49,24 +49,17 @@ func ExampleLogger_PrefixLoggers() {
 	{
 		p := mq.NewConnect()
 		p.SetClientID("myclient")
-		l.PrefixLoggers(NoopHandler)(nil, &p)
-	}
-	{
-		p := mq.Pub(0, "a/b", "gopher")
-		l.LogOutgoing(NoopHandler)(nil, p)
+		l.LogOutgoing(NoopHandler)(nil, &p)
 	}
 	{
 		p := mq.NewConnAck()
-		p.SetAssignedClientID("123456789-123456789-123456789")
-		l.PrefixLoggers(NoopHandler)(nil, &p)
+		p.SetAssignedClientID("1-12-123")
+		l.LogIncoming(NoopHandler)(nil, &p)
 	}
-	{
-		p := mq.Pub(0, "a/c", "gopher")
-		l.LogIncoming(NoopHandler)(nil, p)
-	}
+
 	// output:
-	// myclient ut PUBLISH ---- p0 a/b 16 bytes
-	// 123456789-123456789-123456789 in PUBLISH ---- p0 a/c 16 bytes
+	// myclient ut CONNECT ---- -------- MQTT5 myclient 0s 23 bytes
+	// 1-12-123 in CONNACK ---- -------- 1-12-123 16 bytes
 }
 
 func ExampleLogger_errors() {

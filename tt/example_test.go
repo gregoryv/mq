@@ -35,8 +35,7 @@ func Example_Client() {
 		ackwait.Use,
 
 		logger.DumpPacket,
-		logger.LogOutgoing,
-		logger.PrefixLoggers, // first
+		logger.LogOutgoing, // first
 	)
 
 	in := tt.NewQueue(
@@ -46,8 +45,7 @@ func Example_Client() {
 		subscriber.SubscribeOnConnect,
 
 		logger.DumpPacket,
-		logger.LogIncoming,
-		logger.PrefixLoggers, // first
+		logger.LogIncoming, // first
 	)
 
 	// start handling packet flow
