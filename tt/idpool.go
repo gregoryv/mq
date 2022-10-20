@@ -1,4 +1,3 @@
-// Package tt provides packet id use and reuse
 package tt
 
 import (
@@ -7,7 +6,7 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-// NewPool returns a IDPool of reusable id's from 1..max, 0 is not used
+// NewIDPool returns a IDPool of reusable id's from 1..max, 0 is not used
 func NewIDPool(max uint16) *IDPool {
 	o := IDPool{
 		max:    max,
