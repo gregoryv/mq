@@ -9,12 +9,12 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func ExampleLogger_LogIncoming() {
+func ExampleLogger_In() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger(LevelInfo)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.LogIncoming(NoopHandler)(nil, p)
+	l.In(NoopHandler)(nil, p)
 
 	// output:
 	// in PUBLISH ---- p0 a/b 16 bytes
@@ -54,7 +54,7 @@ func ExampleLogger_PrefixLoggers() {
 	{
 		p := mq.NewConnAck()
 		p.SetAssignedClientID("1-12-123")
-		l.LogIncoming(NoopHandler)(nil, &p)
+		l.In(NoopHandler)(nil, &p)
 	}
 
 	// output:
@@ -70,7 +70,7 @@ func ExampleLogger_errors() {
 	broken := func(context.Context, mq.Packet) error {
 		return fmt.Errorf("broken")
 	}
-	l.LogIncoming(broken)(nil, p)
+	l.In(broken)(nil, p)
 	l.LogOutgoing(broken)(nil, p)
 	// output:
 	// in PUBLISH ---- p0 a/b 16 bytes

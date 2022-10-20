@@ -45,7 +45,7 @@ func Example_Client() {
 		subscriber.SubscribeOnConnect,
 
 		logger.DumpPacket,
-		logger.LogIncoming, // first
+		logger.In,
 	)
 
 	// start handling packet flow

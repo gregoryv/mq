@@ -69,7 +69,7 @@ func NewClient(v io.ReadWriter) (out mq.Handler, in mq.Handler) {
 		NoopHandler,
 		pool.ReusePacketID,
 		logger.DumpPacket,
-		logger.LogIncoming,
+		logger.In,
 	)
 
 	receiver := NewReceiver(v, in)

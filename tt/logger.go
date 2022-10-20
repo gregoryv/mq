@@ -48,9 +48,9 @@ func (f *Logger) prefixLoggers(p mq.Packet) {
 	}
 }
 
-// LogIncoming logs incoming packets and errors from the stack on the
+// In logs incoming packets and errors from the stack on the
 // info level.
-func (f *Logger) LogIncoming(next mq.Handler) mq.Handler {
+func (f *Logger) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.prefixLoggers(p)
 		f.info.Print("in ", p)

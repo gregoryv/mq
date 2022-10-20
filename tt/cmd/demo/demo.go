@@ -87,7 +87,7 @@ func main() {
 		logger.PrefixLoggers,
 		pool.ReusePacketID,
 		logger.DumpPacket,
-		logger.LogIncoming,
+		logger.In,
 	)
 
 	// start handling packet flow
