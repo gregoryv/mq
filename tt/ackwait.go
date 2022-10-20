@@ -18,11 +18,9 @@ type AckWait struct {
 	count int
 }
 
-func (a *AckWait) CountSubAck(next mq.Handler) mq.Handler {
-	return a.ResetOnConnect(next)
-}
-
-func (a *AckWait) ResetOnConnect(next mq.Handler) mq.Handler {
+// Use resets on mq.Connect and counts mq.SubAck. Must be used in both
+// in and out queues.
+func (a *AckWait) Use(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.Connect:
@@ -37,6 +35,8 @@ func (a *AckWait) ResetOnConnect(next mq.Handler) mq.Handler {
 	}
 }
 
+// AllSubscribed returns channel which blocks until expected number of
+// mq.SubAck packets have been counted.
 func (a *AckWait) AllSubscribed(ctx context.Context) <-chan struct{} {
 	c := make(chan struct{})
 	go func() {
