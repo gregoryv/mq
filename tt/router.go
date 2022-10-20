@@ -19,7 +19,8 @@ func (r *Router) String() string {
 	return plural(len(r.routes), "route")
 }
 
-func (r *Router) Route(ctx context.Context, p mq.Packet) error {
+// In forwards routes mq.Publish packets by topic name.
+func (r *Router) In(ctx context.Context, p mq.Packet) error {
 	if p, ok := p.(*mq.Publish); ok {
 		// todo naive implementation looping over each route
 		for _, route := range r.routes {

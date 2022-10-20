@@ -40,7 +40,7 @@ func Example_Client() {
 	)
 
 	in := tt.NewQueue(
-		router.Route, // last
+		router.In, // last
 
 		ackwait.CountSubAck,
 		subscriber.SubscribeOnConnect,

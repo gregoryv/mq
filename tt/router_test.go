@@ -22,7 +22,7 @@ func ExampleRouter() {
 	r := tt.NewRouter(routes...)
 
 	ctx := context.Background()
-	r.Route(ctx, mq.Pub(0, "gopher/pink", "hi"))
+	r.In(ctx, mq.Pub(0, "gopher/pink", "hi"))
 
 	fmt.Print(r)
 	//output:

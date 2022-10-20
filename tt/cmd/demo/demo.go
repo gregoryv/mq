@@ -81,7 +81,7 @@ func main() {
 	}
 	// setup incoming queue
 	in := tt.NewQueue(
-		router.Route,
+		router.In,
 		subscriber.SubscribeOnConnect,
 		waitForAllSubs,
 		logger.PrefixLoggers,
