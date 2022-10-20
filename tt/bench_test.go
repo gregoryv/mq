@@ -59,7 +59,7 @@ func NewClient(v io.ReadWriter) (out mq.Handler, in mq.Handler) {
 	)
 
 	out = NewQueue(
-		sender.Send,
+		sender.Out,
 		logger.DumpPacket,
 		logger.LogOutgoing,
 		pool.SetPacketID,

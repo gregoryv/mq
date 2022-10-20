@@ -13,7 +13,7 @@ func TestSender(t *testing.T) {
 
 	ctx := context.Background()
 	p := mq.NewConnect()
-	if err := s.Send(ctx, &p); err == nil {
+	if err := s.Out(ctx, &p); err == nil {
 		t.Fatal("expect error")
 	}
 }

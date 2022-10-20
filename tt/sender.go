@@ -17,9 +17,9 @@ type Sender struct {
 	io.Writer
 }
 
-// Send writes the packet to the underlying writer. Safe for
+// Out writes the packet to the underlying writer. Safe for
 // concurrent calls.
-func (s *Sender) Send(ctx context.Context, p mq.Packet) error {
+func (s *Sender) Out(ctx context.Context, p mq.Packet) error {
 	s.Lock()
 	_, err := p.WriteTo(s.Writer)
 	s.Unlock()

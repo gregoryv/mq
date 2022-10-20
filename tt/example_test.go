@@ -25,12 +25,12 @@ func Example_Client() {
 		router     = tt.NewRouter(routes...)
 		logger     = tt.NewLogger(tt.LevelInfo)
 		sender     = tt.NewSender(conn)
-		subscriber = tt.NewSubscriber(sender.Send, routes...)
+		subscriber = tt.NewSubscriber(sender.Out, routes...)
 		ackwait    = tt.NewAckWait(len(routes))
 	)
 
 	send := tt.NewQueue(
-		sender.Send, // last
+		sender.Out, // last
 
 		ackwait.Use,
 
