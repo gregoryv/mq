@@ -35,7 +35,7 @@ func Example_Client() {
 		ackwait.Use,
 
 		logger.DumpPacket,
-		logger.LogOutgoing, // first
+		logger.Out,
 	)
 
 	in := tt.NewQueue(

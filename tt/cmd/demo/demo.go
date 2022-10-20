@@ -62,7 +62,7 @@ func main() {
 	out := tt.NewQueue(
 		sender.Send, // last
 		logger.DumpPacket,
-		logger.LogOutgoing,
+		logger.Out,
 		pool.SetPacketID,
 		logger.PrefixLoggers, //first
 	)

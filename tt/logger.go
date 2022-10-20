@@ -73,7 +73,7 @@ func (f *Logger) DumpPacket(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *Logger) LogOutgoing(next mq.Handler) mq.Handler {
+func (f *Logger) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		f.prefixLoggers(p)
 		f.info.Print("ut ", p)

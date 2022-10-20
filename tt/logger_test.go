@@ -20,12 +20,12 @@ func ExampleLogger_In() {
 	// in PUBLISH ---- p0 a/b 16 bytes
 }
 
-func ExampleLogger_LogOutgoing() {
+func ExampleLogger_Out() {
 	log.SetOutput(os.Stdout)
 	l := NewLogger(LevelInfo)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.LogOutgoing(NoopHandler)(nil, p)
+	l.Out(NoopHandler)(nil, p)
 
 	// output:
 	// ut PUBLISH ---- p0 a/b 16 bytes
@@ -49,7 +49,7 @@ func ExampleLogger_PrefixLoggers() {
 	{
 		p := mq.NewConnect()
 		p.SetClientID("myclient")
-		l.LogOutgoing(NoopHandler)(nil, &p)
+		l.Out(NoopHandler)(nil, &p)
 	}
 	{
 		p := mq.NewConnAck()
@@ -71,7 +71,7 @@ func ExampleLogger_errors() {
 		return fmt.Errorf("broken")
 	}
 	l.In(broken)(nil, p)
-	l.LogOutgoing(broken)(nil, p)
+	l.Out(broken)(nil, p)
 	// output:
 	// in PUBLISH ---- p0 a/b 16 bytes
 	// broken
