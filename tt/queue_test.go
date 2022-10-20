@@ -15,17 +15,17 @@ func TestQueues(t *testing.T) {
 			return next(ctx, p)
 		}
 	}
-	recv := NewQueue(NoopHandler, mid, mid)
-	send := NewQueue(NoopHandler, mid)
+	in := NewQueue(NoopHandler, mid, mid)
+	out := NewQueue(NoopHandler, mid)
 
 	ctx := context.Background()
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		_ = send(ctx, &p)
+		_ = out(ctx, &p)
 
 		ack := mq.NewConnAck()
-		recv(ctx, &ack)
+		in(ctx, &ack)
 	}
 
 	{ // publish application message
@@ -33,15 +33,15 @@ func TestQueues(t *testing.T) {
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		_ = send(ctx, &p)
+		_ = out(ctx, &p)
 
 		ack := mq.NewPubAck()
 		ack.SetPacketID(p.PacketID())
-		recv(ctx, &ack)
+		in(ctx, &ack)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		if err := send(ctx, &p); err != nil {
+		if err := out(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
 	}
