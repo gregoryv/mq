@@ -5,6 +5,14 @@ import (
 	"io"
 )
 
+func Pub(qos uint8, topic, payload string) *Publish {
+	p := NewPublish()
+	p.SetQoS(qos)
+	p.SetTopicName(topic)
+	p.SetPayload([]byte(payload))
+	return &p
+}
+
 func NewPublish() Publish {
 	return Publish{
 		fixed: Bits(PUBLISH),
@@ -29,9 +37,14 @@ type Publish struct {
 }
 
 func (p *Publish) String() string {
-	return fmt.Sprintf("%s p%v %v bytes",
+	topic := string(p.topicName)
+	if v := uint16(p.topicAlias); v > 0 {
+		topic = fmt.Sprintf("topic:%v", v)
+	}
+	return fmt.Sprintf("%s p%v %s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
+		topic,
 		p.width(),
 	)
 }

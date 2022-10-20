@@ -7,15 +7,12 @@ import (
 )
 
 func ExamplePublish() {
-	p := NewPublish()
+	p := Pub(2, "a/b/1", "gopher")
 	p.SetRetain(true)
-	p.SetQoS(2)
-	p.SetTopicName("a/b/1")
-	p.SetPayload([]byte("gopher"))
 
-	fmt.Print(p.String())
+	fmt.Print(p)
 	// output:
-	// PUBLISH -2-r p0 20 bytes
+	// PUBLISH -2-r p0 a/b/1 20 bytes
 }
 
 func TestPublish(t *testing.T) {

@@ -52,8 +52,7 @@ func main() {
 			return nil
 		}),
 	}
-	router := tt.NewRouter()
-	router.AddRoutes(routes...)
+	router := tt.NewRouter(routes...)
 
 	// setup outgoing queue
 	pool := tt.NewIDPool(100)
@@ -72,18 +71,19 @@ func main() {
 	// we'll wait for all subscriptions to be acknowledged
 	var subscribes sync.WaitGroup
 	subscribes.Add(len(routes))
-
+	waitForAllSubs := func(next mq.Handler) mq.Handler {
+		return func(ctx context.Context, p mq.Packet) error {
+			if _, ok := p.(*mq.SubAck); ok {
+				subscribes.Done()
+			}
+			return next(ctx, p)
+		}
+	}
 	// setup incoming queue
 	in := tt.NewQueue(
 		router.Route,
-		func(ctx context.Context, p mq.Packet) error {
-			if _, ok := p.(*mq.SubAck) {
-				subscribes.Done()
-			}
-			return nil
-		},
-		
 		subscriber.AutoSubscribe,
+		waitForAllSubs,
 		logger.PrefixLoggers,
 		pool.ReusePacketID,
 		logger.DumpPacket,
