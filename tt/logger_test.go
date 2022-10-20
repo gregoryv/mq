@@ -11,8 +11,7 @@ import (
 
 func ExampleLogger_LogIncoming() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger()
-	l.LogLevelSet(LevelInfo)
+	l := NewLogger(LevelInfo)
 
 	p := mq.NewPublish()
 	p.SetPayload([]byte("gopher"))
@@ -24,8 +23,7 @@ func ExampleLogger_LogIncoming() {
 
 func ExampleLogger_LogOutgoing() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger()
-	l.LogLevelSet(LevelInfo)
+	l := NewLogger(LevelInfo)
 
 	p := mq.NewPublish()
 	p.SetPayload([]byte("gopher"))
@@ -37,8 +35,7 @@ func ExampleLogger_LogOutgoing() {
 
 func ExampleLogger_DumpPacket() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger()
-	l.LogLevelSet(LevelDebug)
+	l := NewLogger(LevelDebug)
 
 	p := mq.NewPublish()
 	p.SetPayload([]byte("gopher"))
@@ -50,8 +47,8 @@ func ExampleLogger_DumpPacket() {
 
 func ExampleLogger_PrefixLoggers() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger()
-	l.LogLevelSet(1)
+	l := NewLogger(LevelInfo)
+	l.LogLevelSet(LevelDebug)
 
 	{
 		p := mq.NewConnect()
@@ -81,8 +78,7 @@ func ExampleLogger_PrefixLoggers() {
 
 func ExampleLogger_errors() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger()
-	l.LogLevelSet(LevelInfo)
+	l := NewLogger(LevelInfo)
 
 	p := mq.NewPublish()
 	p.SetPayload([]byte("gopher"))

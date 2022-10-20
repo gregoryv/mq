@@ -53,26 +53,27 @@ func BenchmarkClient_PubQoS1(b *testing.B) {
 // NewBasicClient returns a Client with MaxDefaultConcurrentID and
 // disabled logging
 func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
-	fpool := NewIDPool(10)
-	fl := NewLogger()
+	pool := NewIDPool(10)
+	logger := NewLogger(LevelInfo)
+	sender := NewSender(v)
 
-	in = NewQueue(
-		mq.NoopHandler,
-		fl.PrefixLoggers,
-		fpool.ReusePacketID,
-		fl.DumpPacket,
-		fl.LogIncoming,
+	out = NewQueue(
+		sender.Send,
+		logger.DumpPacket,
+		logger.LogOutgoing,
+		pool.SetPacketID,
+		logger.PrefixLoggers,
 	)
 
 	receiver := NewReceiver(v, in)
 	go receiver.Run(context.Background())
 
-	out = NewQueue(
-		NewSender(v).Send,
-		fl.DumpPacket,
-		fl.LogOutgoing,
-		fpool.SetPacketID,
-		fl.PrefixLoggers,
+	in = NewQueue(
+		mq.NoopHandler,
+		logger.PrefixLoggers,
+		pool.ReusePacketID,
+		logger.DumpPacket,
+		logger.LogIncoming,
 	)
 
 	return

@@ -44,15 +44,16 @@ func main() {
 	}
 
 	// setup outgoing queue
-	fpool := tt.NewIDPool(100)
-	fl := tt.NewLogger()
-	fl.LogLevelSet(tt.LevelInfo)
+	pool := tt.NewIDPool(100)
+	logger := tt.NewLogger(tt.LevelInfo)
+	sender := tt.NewSender(conn)
+
 	out := tt.NewQueue(
-		tt.NewSender(conn).Send, // last
-		fl.DumpPacket,
-		fl.LogOutgoing,
-		fpool.SetPacketID,
-		fl.PrefixLoggers, //first
+		sender.Send, // last
+		logger.DumpPacket,
+		logger.LogOutgoing,
+		pool.SetPacketID,
+		logger.PrefixLoggers, //first
 	)
 
 	// define routing of mq.Publish packets
@@ -93,10 +94,10 @@ func main() {
 			}
 			return nil
 		},
-		fl.PrefixLoggers,
-		fpool.ReusePacketID,
-		fl.DumpPacket,
-		fl.LogIncoming,
+		logger.PrefixLoggers,
+		pool.ReusePacketID,
+		logger.DumpPacket,
+		logger.LogIncoming,
 	)
 
 	// start handling packet flow

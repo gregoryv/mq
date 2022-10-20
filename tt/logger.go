@@ -11,12 +11,12 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewLogger() *Logger {
+func NewLogger(v Level) *Logger {
 	f := &Logger{
 		info:  log.New(log.Writer(), "", log.Flags()),
 		debug: log.New(log.Writer(), "", log.Flags()),
 	}
-	f.LogLevelSet(LevelNone)
+	f.LogLevelSet(v)
 	return f
 }
 

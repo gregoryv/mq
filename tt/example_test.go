@@ -12,9 +12,6 @@ func Example_Client() {
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, _ := tt.Dial()
 
-	fl := tt.NewLogger()
-	fl.LogLevelSet(tt.LevelInfo)
-
 	routes := []*tt.Route{
 		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
 			// handle packet...
@@ -25,11 +22,13 @@ func Example_Client() {
 	router := tt.NewRouter()
 	router.AddRoutes(routes...)
 
+	logger := tt.NewLogger(tt.LevelInfo)
+
 	send := tt.NewQueue(
 		tt.NewSender(conn).Send,
-		fl.DumpPacket,
-		fl.LogOutgoing,
-		fl.PrefixLoggers,
+		logger.DumpPacket,
+		logger.LogOutgoing,
+		logger.PrefixLoggers,
 	)
 
 	in := tt.NewQueue(
@@ -47,8 +46,8 @@ func Example_Client() {
 			}
 			return nil
 		},
-		fl.DumpPacket,
-		fl.LogIncoming,
+		logger.DumpPacket,
+		logger.LogIncoming,
 	)
 
 	// start handling packet flow
