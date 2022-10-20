@@ -8,23 +8,23 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewAckWait(v int) *AckWait {
-	return &AckWait{orig: v, count: v}
+func NewSubWait(v int) *SubWait {
+	return &SubWait{orig: v, count: v}
 }
 
-type AckWait struct {
+type SubWait struct {
 	sync.Mutex
 	orig  int
 	count int
 }
 
-func (a *AckWait) In(next mq.Handler) mq.Handler {
+func (a *SubWait) In(next mq.Handler) mq.Handler {
 	return a.Out(next)
 }
 
 // Use resets on mq.Connect and counts mq.SubAck. Must be used in both
 // in and out queues.
-func (a *AckWait) Out(next mq.Handler) mq.Handler {
+func (a *SubWait) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.Connect:
@@ -41,7 +41,7 @@ func (a *AckWait) Out(next mq.Handler) mq.Handler {
 
 // AllSubscribed returns channel which blocks until expected number of
 // mq.SubAck packets have been counted.
-func (a *AckWait) AllSubscribed(ctx context.Context) <-chan struct{} {
+func (a *SubWait) AllSubscribed(ctx context.Context) <-chan struct{} {
 	c := make(chan struct{})
 	go func() {
 		for {
@@ -63,7 +63,7 @@ func (a *AckWait) AllSubscribed(ctx context.Context) <-chan struct{} {
 	return c
 }
 
-func (a *AckWait) reset() {
+func (a *SubWait) reset() {
 	a.Lock()
 	a.count = a.orig
 	a.Unlock()

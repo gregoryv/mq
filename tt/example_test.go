@@ -26,7 +26,7 @@ func Example_Client() {
 		logger     = tt.NewLogger(tt.LevelInfo)
 		sender     = tt.NewSender(conn)
 		subscriber = tt.NewSubscriber(sender.Out, routes...)
-		ackwait    = tt.NewAckWait(len(routes))
+		ackwait    = tt.NewSubWait(len(routes))
 	)
 
 	send := tt.NewQueue(
