@@ -11,7 +11,7 @@ import (
 func Example_Client() {
 	// replace with eg.
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
-	conn, _ := tt.Dial()
+	conn, server := tt.Dial()
 
 	routes := []*tt.Route{
 		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
@@ -22,16 +22,17 @@ func Example_Client() {
 	}
 
 	var (
-		router     = tt.NewRouter(routes...)
-		logger     = tt.NewLogger(tt.LevelInfo)
-		sender     = tt.NewSender(conn)
-		subscriber = tt.NewSubscriber(sender.Out, routes...)
-		ackwait    = tt.NewSubWait(len(routes))
+		router  = tt.NewRouter(routes...)
+		logger  = tt.NewLogger(tt.LevelInfo)
+		sender  = tt.NewSender(conn)
+		ackwait = tt.NewSubWait(len(routes))
+		conwait = tt.NewConnWait()
 	)
 
-	send := tt.NewQueue(
+	out := tt.NewQueue(
 		sender.Out, // last
 
+		conwait.Out,
 		ackwait.Out,
 
 		logger.Out,
@@ -40,8 +41,8 @@ func Example_Client() {
 	in := tt.NewQueue(
 		router.In, // last
 
+		conwait.In,
 		ackwait.In,
-		subscriber.SubscribeOnConnect,
 
 		logger.In,
 	)
@@ -54,7 +55,17 @@ func Example_Client() {
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID("example")
-		_ = send(ctx, &p)
+		_ = out(ctx, &p)
+		server.Ack(&p)
 	}
+	<-conwait.Done(ctx)
+
+	for _, r := range routes {
+		p := r.Subscribe()
+		_ = out(ctx, p)
+		server.Ack(p) // mock server response
+	}
+
 	<-ackwait.AllSubscribed(ctx)
+	// output:
 }

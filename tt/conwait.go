@@ -45,11 +45,13 @@ func (a *ConnWait) Done(ctx context.Context) <-chan struct{} {
 		for {
 			select {
 			case <-ctx.Done():
-				close(c)
 				return
-			case <-time.After(2 * time.Millisecond):
+			default:
 				if a.connected {
-					c <- struct{}{}
+					select {
+					case c <- struct{}{}:
+					case <-time.After(2 * time.Millisecond):
+					}
 					return
 				}
 			}
