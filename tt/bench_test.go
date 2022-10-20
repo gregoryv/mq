@@ -69,7 +69,7 @@ func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 	go receiver.Run(context.Background())
 
 	in = NewQueue(
-		mq.NoopHandler,
+		NoopHandler,
 		logger.PrefixLoggers,
 		pool.ReusePacketID,
 		logger.DumpPacket,

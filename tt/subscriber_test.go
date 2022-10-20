@@ -16,11 +16,11 @@ func TestSubscriber(t *testing.T) {
 		wg.Done()
 		return nil
 	},
-		NewRoute("#", mq.NoopPub),
+		NewRoute("#", NoopPub),
 	)
 
 	p := mq.NewConnAck()
-	go s.AutoSubscribe(mq.NoopHandler)(nil, &p)
+	go s.AutoSubscribe(NoopHandler)(nil, &p)
 
 	wg.Wait()
 }

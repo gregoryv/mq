@@ -32,7 +32,7 @@ func TestReceiver(t *testing.T) {
 
 func TestReceiver_RunRespectsContextCancel(t *testing.T) {
 	conn := dialBroker(t)
-	receiver := NewReceiver(conn, mq.NoopHandler)
+	receiver := NewReceiver(conn, NoopHandler)
 	var wg sync.WaitGroup
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
 
@@ -48,7 +48,7 @@ func TestReceiver_RunRespectsContextCancel(t *testing.T) {
 }
 
 func TestReceiver_closedConn(t *testing.T) {
-	receiver := NewReceiver(&ClosedConn{}, mq.NoopHandler)
+	receiver := NewReceiver(&ClosedConn{}, NoopHandler)
 
 	var wg sync.WaitGroup
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)

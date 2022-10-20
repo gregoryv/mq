@@ -28,6 +28,3 @@ type ControlPacket interface {
 type HasPacketID interface {
 	PacketID() uint16
 }
-
-func NoopHandler(_ context.Context, _ Packet) error { return nil }
-func NoopPub(_ context.Context, _ *Publish) error { return nil }

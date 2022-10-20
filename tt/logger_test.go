@@ -14,7 +14,7 @@ func ExampleLogger_LogIncoming() {
 	l := NewLogger(LevelInfo)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.LogIncoming(mq.NoopHandler)(nil, p)
+	l.LogIncoming(NoopHandler)(nil, p)
 
 	// output:
 	// in PUBLISH ---- p0 a/b 16 bytes
@@ -25,7 +25,7 @@ func ExampleLogger_LogOutgoing() {
 	l := NewLogger(LevelInfo)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.LogOutgoing(mq.NoopHandler)(nil, p)
+	l.LogOutgoing(NoopHandler)(nil, p)
 
 	// output:
 	// ut PUBLISH ---- p0 a/b 16 bytes
@@ -36,7 +36,7 @@ func ExampleLogger_DumpPacket() {
 	l := NewLogger(LevelDebug)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.DumpPacket(mq.NoopHandler)(nil, p)
+	l.DumpPacket(NoopHandler)(nil, p)
 
 	// output:
 	// 00000000  30 0e 00 03 61 2f 62 00  00 06 67 6f 70 68 65 72  |0...a/b...gopher|
@@ -49,20 +49,20 @@ func ExampleLogger_PrefixLoggers() {
 	{
 		p := mq.NewConnect()
 		p.SetClientID("myclient")
-		l.PrefixLoggers(mq.NoopHandler)(nil, &p)
+		l.PrefixLoggers(NoopHandler)(nil, &p)
 	}
 	{
 		p := mq.Pub(0, "a/b", "gopher")
-		l.LogOutgoing(mq.NoopHandler)(nil, p)
+		l.LogOutgoing(NoopHandler)(nil, p)
 	}
 	{
 		p := mq.NewConnAck()
 		p.SetAssignedClientID("123456789-123456789-123456789")
-		l.PrefixLoggers(mq.NoopHandler)(nil, &p)
+		l.PrefixLoggers(NoopHandler)(nil, &p)
 	}
 	{
 		p := mq.Pub(0, "a/c", "gopher")
-		l.LogIncoming(mq.NoopHandler)(nil, p)
+		l.LogIncoming(NoopHandler)(nil, p)
 	}
 	// output:
 	// myclient ut PUBLISH ---- p0 a/b 16 bytes

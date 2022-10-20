@@ -48,7 +48,7 @@ func Test_IDPool(t *testing.T) {
 	}
 
 	for _, p := range packets {
-		if err := pool.SetPacketID(mq.NoopHandler)(ctx, p); err != nil {
+		if err := pool.SetPacketID(NoopHandler)(ctx, p); err != nil {
 			t.Error(err)
 		}
 		if p, ok := p.(mq.HasPacketID); ok {
@@ -56,7 +56,7 @@ func Test_IDPool(t *testing.T) {
 				t.Error(p)
 			}
 		}
-		if err := pool.ReusePacketID(mq.NoopHandler)(ctx, p); err != nil {
+		if err := pool.ReusePacketID(NoopHandler)(ctx, p); err != nil {
 			t.Error(err)
 		}
 	}
