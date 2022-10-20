@@ -78,10 +78,10 @@ func (r *Route) Match(name string) ([]string, bool) {
 	return words, true
 }
 
-// Subscribe returns a no local subscribe packet for this route
+// Subscribe returns a subscribe packet for this route with no options
 func (r *Route) Subscribe() *mq.Subscribe {
 	p := mq.NewSubscribe()
-	p.AddFilter(r.filter, mq.OptNL)
+	p.AddFilter(r.filter, 0)
 	return &p
 }
 

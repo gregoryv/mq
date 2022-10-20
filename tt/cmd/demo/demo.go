@@ -47,8 +47,8 @@ func main() {
 	complete := make(chan struct{})
 	routes := []*tt.Route{
 		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
-			close(complete)
 			fmt.Println(string(p.Payload()))
+			close(complete)
 			return nil
 		}),
 	}
@@ -58,7 +58,6 @@ func main() {
 	pool := tt.NewIDPool(100)
 	logger := tt.NewLogger(tt.LevelInfo)
 	sender := tt.NewSender(conn)
-	subscriber := tt.NewSubscriber(sender.Send, routes...)
 
 	out := tt.NewQueue(
 		sender.Send, // last
@@ -67,6 +66,7 @@ func main() {
 		pool.SetPacketID,
 		logger.PrefixLoggers, //first
 	)
+	subscriber := tt.NewSubscriber(out, routes...)
 
 	// we'll wait for all subscriptions to be acknowledged
 	var subscribes sync.WaitGroup
