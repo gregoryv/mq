@@ -2,6 +2,7 @@ package tt_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
@@ -25,10 +26,14 @@ func Example_Client() {
 		logger     = tt.NewLogger(tt.LevelInfo)
 		sender     = tt.NewSender(conn)
 		subscriber = tt.NewSubscriber(sender.Send, routes...)
+		ackwait    = tt.NewAckWait(len(routes))
 	)
 
 	send := tt.NewQueue(
 		sender.Send, // last
+
+		ackwait.ResetOnConnect,
+
 		logger.DumpPacket,
 		logger.LogOutgoing,
 		logger.PrefixLoggers, // first
@@ -36,13 +41,17 @@ func Example_Client() {
 
 	in := tt.NewQueue(
 		router.Route, // last
+
+		ackwait.CountSubAck,
 		subscriber.SubscribeOnConnect,
+
 		logger.DumpPacket,
-		logger.LogIncoming, // first
+		logger.LogIncoming,
+		logger.PrefixLoggers, // first
 	)
 
 	// start handling packet flow
-	ctx := context.Background()
+	ctx, _ := context.WithTimeout(context.Background(), 20*time.Millisecond)
 	receiver := tt.NewReceiver(conn, in)
 	go receiver.Run(ctx)
 
@@ -51,4 +60,5 @@ func Example_Client() {
 		p.SetClientID("example")
 		_ = send(ctx, &p)
 	}
+	<-ackwait.AllSubscribed(ctx)
 }

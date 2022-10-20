@@ -20,7 +20,8 @@ type Subscriber struct {
 
 func (s *Subscriber) SubscribeOnConnect(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		if _, ok := p.(*mq.ConnAck); ok {
+		switch p.(type) {
+		case *mq.ConnAck:
 			// subscribe to each route separately, though you do not have to
 			for _, r := range s.routes {
 				_ = s.send(ctx, r.Subscribe())
