@@ -32,7 +32,7 @@ func Example_Client() {
 	send := tt.NewQueue(
 		sender.Out, // last
 
-		ackwait.Use,
+		ackwait.Out,
 
 		logger.Out,
 	)
@@ -40,7 +40,7 @@ func Example_Client() {
 	in := tt.NewQueue(
 		router.In, // last
 
-		ackwait.Use,
+		ackwait.In,
 		subscriber.SubscribeOnConnect,
 
 		logger.In,

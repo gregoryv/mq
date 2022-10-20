@@ -18,9 +18,13 @@ type AckWait struct {
 	count int
 }
 
+func (a *AckWait) In(next mq.Handler) mq.Handler {
+	return a.Out(next)
+}
+
 // Use resets on mq.Connect and counts mq.SubAck. Must be used in both
 // in and out queues.
-func (a *AckWait) Use(next mq.Handler) mq.Handler {
+func (a *AckWait) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.Connect:
