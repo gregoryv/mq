@@ -20,7 +20,7 @@ func TestSubscriber(t *testing.T) {
 	)
 
 	p := mq.NewConnAck()
-	go s.AutoSubscribe(NoopHandler)(nil, &p)
+	go s.SubscribeOnConnect(NoopHandler)(nil, &p)
 
 	wg.Wait()
 }

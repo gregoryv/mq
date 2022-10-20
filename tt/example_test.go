@@ -20,10 +20,12 @@ func Example_Client() {
 		tt.NewRoute("a/b"),
 	}
 
-	router := tt.NewRouter(routes...)
-	logger := tt.NewLogger(tt.LevelInfo)
-	sender := tt.NewSender(conn)
-	subscriber := tt.NewSubscriber(sender.Send, routes...)
+	var (
+		router     = tt.NewRouter(routes...)
+		logger     = tt.NewLogger(tt.LevelInfo)
+		sender     = tt.NewSender(conn)
+		subscriber = tt.NewSubscriber(sender.Send, routes...)
+	)
 
 	send := tt.NewQueue(
 		sender.Send, // last
@@ -34,7 +36,7 @@ func Example_Client() {
 
 	in := tt.NewQueue(
 		router.Route, // last
-		subscriber.AutoSubscribe,
+		subscriber.SubscribeOnConnect,
 		logger.DumpPacket,
 		logger.LogIncoming, // first
 	)

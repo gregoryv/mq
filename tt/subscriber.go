@@ -18,7 +18,7 @@ type Subscriber struct {
 	send   mq.Handler
 }
 
-func (s *Subscriber) AutoSubscribe(next mq.Handler) mq.Handler {
+func (s *Subscriber) SubscribeOnConnect(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if _, ok := p.(*mq.ConnAck); ok {
 			// subscribe to each route separately, though you do not have to
