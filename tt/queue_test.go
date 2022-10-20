@@ -15,8 +15,8 @@ func TestQueues(t *testing.T) {
 			return next(ctx, p)
 		}
 	}
-	recv := NewQueue([]mq.Middleware{mid, mid}, mq.NoopHandler)
-	send := NewQueue([]mq.Middleware{mid}, mq.NoopHandler)
+	recv := NewQueue(mq.NoopHandler, mid, mid)
+	send := NewQueue(mq.NoopHandler, mid)
 
 	ctx := context.Background()
 

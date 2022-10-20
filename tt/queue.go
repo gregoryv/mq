@@ -4,9 +4,10 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewQueue(v []mq.Middleware, last mq.Handler) mq.Handler {
+func NewQueue(last mq.Handler, v ...mq.Middleware) mq.Handler {
 	if len(v) == 0 {
 		return last
 	}
-	return v[0](NewQueue(v[1:], last))
+	l := len(v) - 1
+	return v[l](NewQueue(last, v[:l]...))
 }

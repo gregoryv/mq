@@ -56,24 +56,23 @@ func NewBasicClient(v io.ReadWriter) (in mq.Handler, out mq.Handler) {
 	fpool := NewIDPool(10)
 	fl := NewLogger()
 
-	in = NewQueue([]mq.Middleware{
-		fl.LogIncoming,
-		fl.DumpPacket,
-		fpool.ReusePacketID,
+	in = NewQueue(
+		mq.NoopHandler,
 		fl.PrefixLoggers,
-	}, mq.NoopHandler)
+		fpool.ReusePacketID,
+		fl.DumpPacket,
+		fl.LogIncoming,
+	)
 
 	receiver := NewReceiver(v, in)
 	go receiver.Run(context.Background())
 
 	out = NewQueue(
-		[]mq.Middleware{
-			fl.PrefixLoggers,
-			fpool.SetPacketID,
-			fl.LogOutgoing,
-			fl.DumpPacket,
-		},
 		NewSender(v).Send,
+		fl.DumpPacket,
+		fl.LogOutgoing,
+		fpool.SetPacketID,
+		fl.PrefixLoggers,
 	)
 
 	return

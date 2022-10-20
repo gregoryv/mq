@@ -26,16 +26,13 @@ func Example_Client() {
 	router.AddRoutes(routes...)
 
 	send := tt.NewQueue(
-		[]mq.Middleware{
-			fl.PrefixLoggers,
-			fl.LogOutgoing,
-			fl.DumpPacket,
-		},
 		tt.NewSender(conn).Send,
+		fl.DumpPacket,
+		fl.LogOutgoing,
+		fl.PrefixLoggers,
 	)
 
 	in := tt.NewQueue(
-		[]mq.Middleware{fl.LogIncoming, fl.DumpPacket},
 		func(ctx context.Context, p mq.Packet) error {
 			switch p := p.(type) {
 			case *mq.ConnAck:
@@ -50,6 +47,8 @@ func Example_Client() {
 			}
 			return nil
 		},
+		fl.DumpPacket,
+		fl.LogIncoming,
 	)
 
 	// start handling packet flow
