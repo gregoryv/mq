@@ -36,15 +36,16 @@ func ExampleLogger_DumpPacket() {
 	l := NewLogger(LevelDebug)
 
 	p := mq.Pub(0, "a/b", "gopher")
-	l.DumpPacket(NoopHandler)(nil, p)
+	l.In(NoopHandler)(nil, p)
 
 	// output:
+	// in PUBLISH ---- p0 a/b 16 bytes
 	// 00000000  30 0e 00 03 61 2f 62 00  00 06 67 6f 70 68 65 72  |0...a/b...gopher|
 }
 
 func ExampleLogger_PrefixLoggers() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger(LevelDebug)
+	l := NewLogger(LevelInfo)
 
 	{
 		p := mq.NewConnect()

@@ -34,7 +34,35 @@ type Logger struct {
 	debug    *log.Logger
 }
 
-// PrefixLoggers uses the short client id from mq.Connect or
+// In logs incoming packets and errors from the stack on the
+// info level.
+func (f *Logger) In(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		f.prefixLoggers(p)
+		f.info.Print("in ", p)
+		err := next(ctx, p)
+		if err != nil {
+			f.info.Print(err)
+		}
+		f.dumpPacket(p)
+		return err // return error just incase this middleware is not the first
+	}
+}
+
+func (f *Logger) Out(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		f.prefixLoggers(p)
+		f.info.Print("ut ", p)
+		err := next(ctx, p)
+		if err != nil {
+			f.info.Print(err)
+		}
+		f.dumpPacket(p)
+		return err
+	}
+}
+
+// prefixLoggers uses the short client id from mq.Connect or
 // AssignedClientID from mq.ConnAck as prefix in the loggers.
 func (f *Logger) prefixLoggers(p mq.Packet) {
 	switch p := p.(type) {
@@ -48,46 +76,18 @@ func (f *Logger) prefixLoggers(p mq.Packet) {
 	}
 }
 
-// In logs incoming packets and errors from the stack on the
-// info level.
-func (f *Logger) In(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		f.prefixLoggers(p)
-		f.info.Print("in ", p)
-		err := next(ctx, p)
-		if err != nil {
-			f.info.Print(err)
-		}
-		return err // return error just incase this middleware is not the first
-	}
-}
-
-func (f *Logger) DumpPacket(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		if f.logLevel == LevelDebug {
-			var buf bytes.Buffer
-			p.WriteTo(&buf)
-			f.debug.Print(hex.Dump(buf.Bytes()), "\n")
-		}
-		return next(ctx, p)
-	}
-}
-
-func (f *Logger) Out(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		f.prefixLoggers(p)
-		f.info.Print("ut ", p)
-		err := next(ctx, p)
-		if err != nil {
-			f.info.Print(err)
-		}
-		return err
-	}
-}
-
 func (f *Logger) setLogPrefix(cid string) {
 	f.info.SetPrefix(fmt.Sprintf("%s ", cid))
 	f.debug.SetPrefix(fmt.Sprintf("%s ", cid))
+}
+
+func (f *Logger) dumpPacket(p mq.Packet) {
+	if f.logLevel != LevelDebug {
+		return
+	}
+	var buf bytes.Buffer
+	p.WriteTo(&buf)
+	f.debug.Print(hex.Dump(buf.Bytes()), "\n")
 }
 
 // ----------------------------------------

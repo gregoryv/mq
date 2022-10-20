@@ -34,7 +34,6 @@ func Example_Client() {
 
 		ackwait.Use,
 
-		logger.DumpPacket,
 		logger.Out,
 	)
 
@@ -44,7 +43,6 @@ func Example_Client() {
 		ackwait.Use,
 		subscriber.SubscribeOnConnect,
 
-		logger.DumpPacket,
 		logger.In,
 	)
 
