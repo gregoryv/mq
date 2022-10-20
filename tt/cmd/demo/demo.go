@@ -43,19 +43,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// setup outgoing queue
-	pool := tt.NewIDPool(100)
-	logger := tt.NewLogger(tt.LevelInfo)
-	sender := tt.NewSender(conn)
-
-	out := tt.NewQueue(
-		sender.Send, // last
-		logger.DumpPacket,
-		logger.LogOutgoing,
-		pool.SetPacketID,
-		logger.PrefixLoggers, //first
-	)
-
 	// define routing of mq.Publish packets
 	complete := make(chan struct{})
 	routes := []*tt.Route{
@@ -68,32 +55,35 @@ func main() {
 	router := tt.NewRouter()
 	router.AddRoutes(routes...)
 
+	// setup outgoing queue
+	pool := tt.NewIDPool(100)
+	logger := tt.NewLogger(tt.LevelInfo)
+	sender := tt.NewSender(conn)
+	subscriber := tt.NewSubscriber(sender.Send, routes...)
+
+	out := tt.NewQueue(
+		sender.Send, // last
+		logger.DumpPacket,
+		logger.LogOutgoing,
+		pool.SetPacketID,
+		logger.PrefixLoggers, //first
+	)
+
 	// we'll wait for all subscriptions to be acknowledged
 	var subscribes sync.WaitGroup
 	subscribes.Add(len(routes))
 
 	// setup incoming queue
 	in := tt.NewQueue(
+		router.Route,
 		func(ctx context.Context, p mq.Packet) error {
-			switch p := p.(type) {
-			case *mq.ConnAck:
-				// once connected we subscribe each route separately
-				for _, r := range routes {
-					p := mq.NewSubscribe()
-					p.AddFilter(r.Filter(), 0)
-					if err := out(ctx, &p); err != nil {
-						log.Fatal(err)
-					}
-				}
-
-			case *mq.SubAck:
+			if _, ok := p.(*mq.SubAck) {
 				subscribes.Done()
-
-			case *mq.Publish:
-				return router.Route(ctx, p)
 			}
 			return nil
 		},
+		
+		subscriber.AutoSubscribe,
 		logger.PrefixLoggers,
 		pool.ReusePacketID,
 		logger.DumpPacket,
