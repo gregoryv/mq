@@ -47,8 +47,7 @@ func ExampleLogger_DumpPacket() {
 
 func ExampleLogger_PrefixLoggers() {
 	log.SetOutput(os.Stdout)
-	l := NewLogger(LevelInfo)
-	l.LogLevelSet(LevelDebug)
+	l := NewLogger(LevelDebug)
 
 	{
 		p := mq.NewConnect()

@@ -13,20 +13,10 @@ import (
 
 func NewLogger(v Level) *Logger {
 	f := &Logger{
-		info:  log.New(log.Writer(), "", log.Flags()),
-		debug: log.New(log.Writer(), "", log.Flags()),
+		logLevel: v,
+		info:     log.New(ioutil.Discard, "", log.Flags()),
+		debug:    log.New(ioutil.Discard, "", log.Flags()),
 	}
-	f.LogLevelSet(v)
-	return f
-}
-
-type Logger struct {
-	logLevel Level
-	info     *log.Logger
-	debug    *log.Logger
-}
-
-func (f *Logger) LogLevelSet(v Level) {
 	switch v {
 	case LevelDebug:
 		f.info.SetOutput(log.Writer())
@@ -34,13 +24,14 @@ func (f *Logger) LogLevelSet(v Level) {
 
 	case LevelInfo:
 		f.info.SetOutput(log.Writer())
-		f.debug.SetOutput(ioutil.Discard)
-
-	case LevelNone:
-		f.info.SetOutput(ioutil.Discard)
-		f.debug.SetOutput(ioutil.Discard)
 	}
-	f.logLevel = v
+	return f
+}
+
+type Logger struct {
+	logLevel Level
+	info     *log.Logger
+	debug    *log.Logger
 }
 
 // PrefixLoggers uses the short client id from mq.Connect or
