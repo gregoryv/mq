@@ -34,16 +34,10 @@ func Example_Client() {
 	)
 
 	in := tt.NewQueue(
-		func(ctx context.Context, p mq.Packet) error {
-			switch p := p.(type) {
-			case *mq.Publish:
-				return router.Route(ctx, p)
-			}
-			return nil
-		},
+		router.Route, // last
 		subscriber.AutoSubscribe,
 		logger.DumpPacket,
-		logger.LogIncoming,
+		logger.LogIncoming, // first
 	)
 
 	// start handling packet flow

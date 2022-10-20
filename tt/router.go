@@ -19,12 +19,14 @@ func (r *Router) String() string {
 	return plural(len(r.routes), "route")
 }
 
-func (r *Router) Route(ctx context.Context, p *mq.Publish) error {
-	// todo naive implementation looping over each route
-	for _, route := range r.routes {
-		if _, ok := route.Match(p.TopicName()); ok {
-			for _, h := range route.handlers {
-				_ = h(ctx, p) // todo how to handle errors
+func (r *Router) Route(ctx context.Context, p mq.Packet) error {
+	if p, ok := p.(*mq.Publish); ok {
+		// todo naive implementation looping over each route
+		for _, route := range r.routes {
+			if _, ok := route.Match(p.TopicName()); ok {
+				for _, h := range route.handlers {
+					_ = h(ctx, p) // todo how to handle errors
+				}
 			}
 		}
 	}
