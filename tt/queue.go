@@ -11,3 +11,19 @@ func NewQueue(last mq.Handler, v ...mq.Middleware) mq.Handler {
 	l := len(v) - 1
 	return v[l](NewQueue(last, v[:l]...))
 }
+
+func NewInQueue(last mq.Handler, v ...InFlow) mq.Handler {
+	if len(v) == 0 {
+		return last
+	}
+	l := len(v) - 1
+	return v[l].In(NewInQueue(last, v[:l]...))
+}
+
+func NewOutQueue(last mq.Handler, v ...OutFlow) mq.Handler {
+	if len(v) == 0 {
+		return last
+	}
+	l := len(v) - 1
+	return v[l].Out(NewOutQueue(last, v[:l]...))
+}

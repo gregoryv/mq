@@ -2,7 +2,6 @@ package tt
 
 import (
 	"context"
-	"time"
 
 	"github.com/gregoryv/mq"
 )
@@ -48,10 +47,7 @@ func (a *ConnWait) Done(ctx context.Context) <-chan struct{} {
 				return
 			default:
 				if a.connected {
-					select {
-					case c <- struct{}{}:
-					case <-time.After(2 * time.Millisecond):
-					}
+					c <- struct{}{}
 					return
 				}
 			}
