@@ -4,14 +4,14 @@ https://hub.docker.com/_/eclipse-mosquitto/
 
 Run the broker and then
 
-	$ go run github.com/gregoryv/mq/tt/cmd/demo
-	ttdemo ut CONNECT ---- -------- MQTT5 ttdemo 0s 21 bytes
-	ttdemo in CONNACK ---- --------  8 bytes
-	ttdemo ut SUBSCRIBE --1- p1, # --r0---- 9 bytes
-	ttdemo in SUBACK ---- p1 6 bytes
-	ttdemo ut PUBLISH ---- p0 16 bytes
-	ttdemo in PUBLISH ---- p0 16 bytes
-	Hello MQTT gopher friend!
+  $ go run github.com/gregoryv/mq/tt/cmd/demo
+  # pink joined gohpher/chat
+  # blue joined gohpher/chat
+  # pink> hello friends
+  # blue> hi
+  # pink: hello friends
+  # blue: hi
+
 */
 package main
 
@@ -29,6 +29,8 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
+var logLevel = tt.LevelNone
+
 func main() {
 	var (
 		cli    = cmdline.NewBasicParser()
@@ -37,23 +39,48 @@ func main() {
 	)
 	cli.Parse()
 
-	logLevel := tt.LevelInfo
 	if debug {
-		logLevel = tt.LevelDebug
+		logLevel = tt.LevelInfo
 	}
 
+	room := "gohpher/chat"
+	pink := NewGopher("pink", broker)
+	pink.Join(room)
+
+	blue := NewGopher("blue", broker)
+	blue.Join(room)
+
+	pink.Say("hello friends")
+	blue.Say("hi")
+
+	<-time.After(10 * time.Millisecond)
+}
+
+func NewGopher(name, broker string) *Gopher {
+	return &Gopher{name: name, broker: broker}
+}
+
+type Gopher struct {
+	name   string
+	broker string
+	room   string
+	net.Conn
+
+	out mq.Handler
+}
+
+func (g *Gopher) Join(room string) {
+	g.room = room
 	// connect to server
-	conn, err := net.Dial("tcp", broker)
+	conn, err := net.Dial("tcp", g.broker)
 	if err != nil {
 		log.Fatal(err)
 	}
+	g.Conn = conn
 
-	// define routing of mq.Publish packets
-	complete := make(chan struct{})
 	routes := []*tt.Route{
-		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
-			fmt.Println(string(p.Payload()))
-			close(complete)
+		tt.NewRoute(room, func(_ context.Context, p *mq.Publish) error {
+			fmt.Println("#", string(p.Payload()))
 			return nil
 		}),
 	}
@@ -70,44 +97,41 @@ func main() {
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
 		out = tt.NewOutQueue(sender, subwait, pool, logger)
 	)
+	g.out = out
 
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
 
+	// forward received packets to the in queue
 	receiver := tt.NewReceiver(conn, in)
 	go func() {
-		err := receiver.Run(ctx)
-		if errors.Is(err, io.EOF) {
-			// client disconnected...
+		if err := receiver.Run(ctx); errors.Is(err, io.EOF) {
+			fmt.Println("#", g.name, "disconnected")
 		}
 	}()
 
 	{ // connect
 		p := mq.NewConnect()
-		p.SetClientID("ttdemo")
+		p.SetClientID(g.name)
 		_ = out(ctx, &p)
 	}
 	<-conwait.Done()
 
 	// suscribe all topics define by our routes
 	for _, r := range routes {
-		p := r.Subscribe()
-		_ = out(ctx, p)
+		p := mq.NewSubscribe()
+		p.AddFilter(r.Filter(), mq.OptNL)
+		_ = out(ctx, &p)
 	}
-
 	<-subwait.Done(ctx)
+	fmt.Println("#", g.name, "joined", room)
+}
 
-	{ // publish
-		p := mq.NewPublish()
-		p.SetTopicName("a/b")
-		p.SetPayload([]byte("Hello MQTT gopher friend!"))
-		go out(ctx, &p)
-	}
-
-	select {
-	case <-complete:
-	case <-ctx.Done():
-		log.Print("demo failed!")
-	}
+func (g *Gopher) Say(v string) {
+	fmt.Print("# ", g.name, "> ", v, "\n")
+	p := mq.NewPublish()
+	p.SetTopicName(g.room)
+	p.SetPayload([]byte(g.name + ": " + v))
+	g.out(context.Background(), &p)
 }
