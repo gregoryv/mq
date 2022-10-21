@@ -36,4 +36,9 @@ func TestPubAck(t *testing.T) {
 	if p := NewPubComp(); !strings.Contains(p.String(), "PUBCOMP") {
 		t.Error(p.String())
 	}
+
+	// type
+	if a, b := NewPubAck(), NewPubRel(); a.AckType() == b.AckType() {
+		t.Error("PubAck byte same as PubRel byte")
+	}
 }
