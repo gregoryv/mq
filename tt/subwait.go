@@ -19,21 +19,22 @@ type SubWait struct {
 }
 
 func (a *SubWait) In(next mq.Handler) mq.Handler {
-	return a.Out(next)
+	return func(ctx context.Context, p mq.Packet) error {
+		switch p.(type) {
+		case *mq.SubAck:
+			a.Lock()
+			a.count--
+			a.Unlock()
+		}
+		return next(ctx, p)
+	}
 }
 
-// Use resets on mq.Connect and counts mq.SubAck. Must be used in both
-// in and out queues.
 func (a *SubWait) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.Connect:
 			a.reset()
-
-		case *mq.SubAck:
-			a.Lock()
-			a.count--
-			a.Unlock()
 		}
 		return next(ctx, p)
 	}

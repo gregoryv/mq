@@ -43,8 +43,8 @@ loop:
 			}
 			return err
 		}
-		// ignore error here, it's up to the user to configure a
-		// stack where the first middleware handles any errors.
+		// ignore error here, it's up to the user to configure a queue
+		// where the first middleware handles any errors, eg. Logger
 		_ = r.first(ctx, p)
 	}
 }
