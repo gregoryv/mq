@@ -22,7 +22,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/gregoryv/cmdline"
@@ -52,48 +51,24 @@ func main() {
 			return nil
 		}),
 	}
-	router := tt.NewRouter(routes...)
 
-	// setup outgoing queue
-	pool := tt.NewIDPool(100)
-	logger := tt.NewLogger(tt.LevelInfo)
-	sender := tt.NewSender(conn)
+	var (
+		router  = tt.NewRouter(routes...)
+		logger  = tt.NewLogger(tt.LevelInfo)
+		sender  = tt.NewSender(conn).Out
+		subwait = tt.NewSubWait(len(routes))
+		conwait = tt.NewConnWait()
+		pool    = tt.NewIDPool(100)
 
-	out := tt.NewQueue(
-		sender.Send, // last
-		logger.DumpPacket,
-		logger.Out,
-		pool.Out,
-		logger.PrefixLoggers, //first
-	)
-	subscriber := tt.NewSubscriber(out, routes...)
-
-	// we'll wait for all subscriptions to be acknowledged
-	var subscribes sync.WaitGroup
-	subscribes.Add(len(routes))
-	waitForAllSubs := func(next mq.Handler) mq.Handler {
-		return func(ctx context.Context, p mq.Packet) error {
-			if _, ok := p.(*mq.SubAck); ok {
-				subscribes.Done()
-			}
-			return next(ctx, p)
-		}
-	}
-	// setup incoming queue
-	in := tt.NewQueue(
-		router.In,
-		subscriber.SubscribeOnConnect,
-		waitForAllSubs,
-		logger.PrefixLoggers,
-		pool.In,
-		logger.DumpPacket,
-		logger.In,
+		out = tt.NewOutQueue(sender, subwait, pool, logger)
+		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
 	)
 
 	// start handling packet flow
-	ctx, _ := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	receiver := tt.NewReceiver(conn, in)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
 
+	receiver := tt.NewReceiver(conn, in)
 	go func() {
 		err := receiver.Run(ctx)
 		if errors.Is(err, io.EOF) {
@@ -106,7 +81,15 @@ func main() {
 		p.SetClientID("ttdemo")
 		_ = out(ctx, &p)
 	}
-	subscribes.Wait()
+	<-conwait.Done()
+
+	// suscribe all topics define by our routes
+	for _, r := range routes {
+		p := r.Subscribe()
+		_ = out(ctx, p)
+	}
+
+	<-subwait.AllSubscribed(ctx)
 
 	{ // publish
 		p := mq.NewPublish()
