@@ -12,26 +12,36 @@ import (
 )
 
 func NewLogger(v Level) *Logger {
-	f := &Logger{
+	l := &Logger{
 		logLevel: v,
 		info:     log.New(ioutil.Discard, "", log.Flags()),
 		debug:    log.New(ioutil.Discard, "", log.Flags()),
 	}
 	switch v {
 	case LevelDebug:
-		f.info.SetOutput(log.Writer())
-		f.debug.SetOutput(log.Writer())
+		l.info.SetOutput(log.Writer())
+		l.debug.SetOutput(log.Writer())
 
 	case LevelInfo:
-		f.info.SetOutput(log.Writer())
+		l.info.SetOutput(log.Writer())
 	}
-	return f
+	l.SetMaxIDLen(11)
+	return l
 }
 
 type Logger struct {
 	logLevel Level
 	info     *log.Logger
 	debug    *log.Logger
+
+	// client ids
+	maxLen int
+}
+
+// SetMaxIDLen configures the logger to trim the client id to number of
+// characters. Use 0 to not trim.
+func (l *Logger) SetMaxIDLen(max int) {
+	l.maxLen = max
 }
 
 // In logs incoming packets and errors from the stack on the
@@ -67,11 +77,11 @@ func (f *Logger) Out(next mq.Handler) mq.Handler {
 func (f *Logger) prefixLoggers(p mq.Packet) {
 	switch p := p.(type) {
 	case *mq.Connect:
-		f.setLogPrefix(p.ClientID())
+		f.setLogPrefix(tail(p.ClientID(), f.maxLen))
 
 	case *mq.ConnAck:
 		if p.AssignedClientID() != "" {
-			f.setLogPrefix(p.AssignedClientID())
+			f.setLogPrefix(tail(p.AssignedClientID(), f.maxLen))
 		}
 	}
 }
@@ -100,9 +110,14 @@ const (
 	LevelInfo
 )
 
-func tail(prefix, s string, width int) string {
+func tail(s string, width int) string {
+	if width <= 0 {
+		return s
+	}
 	if v := len(s); v > width {
-		return prefix + s[v-width+len(prefix):]
+		return prefix + s[v-width:]
 	}
 	return s
 }
+
+const prefix = "~"

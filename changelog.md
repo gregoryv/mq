@@ -6,6 +6,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add Logger.SetMaxIDLen to control length of id
+
 ## [0.19.0] 2022-10-21
 
 - Add TestServer with manual responses
