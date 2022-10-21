@@ -54,23 +54,10 @@ func NewClient(v io.ReadWriter) (out mq.Handler, in mq.Handler) {
 	var (
 		pool   = NewIDPool(10)
 		logger = NewLogger(LevelNone)
-		sender = NewSender(v)
+		sender = NewSender(v).Out
 	)
-
-	out = NewQueue(
-		sender.Out,
-		logger.Out,
-		pool.Out,
-	)
-
-	in = NewQueue(
-		NoopHandler,
-		pool.In,
-		logger.In,
-	)
-
-	receiver := NewReceiver(v, in)
-	go receiver.Run(context.Background())
-
+	out = NewOutQueue(sender, logger, pool)
+	in = NewInQueue(NoopHandler, pool, logger)
+	go NewReceiver(v, in).Run(context.Background())
 	return
 }

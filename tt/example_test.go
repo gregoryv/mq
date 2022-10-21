@@ -24,27 +24,12 @@ func Example_Client() {
 	var (
 		router  = tt.NewRouter(routes...)
 		logger  = tt.NewLogger(tt.LevelInfo)
-		sender  = tt.NewSender(conn)
+		sender  = tt.NewSender(conn).Out
 		ackwait = tt.NewSubWait(len(routes))
 		conwait = tt.NewConnWait()
-	)
 
-	out := tt.NewQueue(
-		sender.Out, // last
-
-		conwait.Out,
-		ackwait.Out,
-
-		logger.Out,
-	)
-
-	in := tt.NewQueue(
-		router.In, // last
-
-		conwait.In,
-		ackwait.In,
-
-		logger.In,
+		out = tt.NewOutQueue(sender, conwait, ackwait, logger)
+		in  = tt.NewInQueue(router.In, conwait, ackwait, logger)
 	)
 
 	// start handling packet flow

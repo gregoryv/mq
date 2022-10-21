@@ -10,13 +10,10 @@ import (
 // thing is anything like an iot device that mostly sends stats to the
 // cloud
 func TestQueues(t *testing.T) {
-	mid := func(next mq.Handler) mq.Handler {
-		return func(ctx context.Context, p mq.Packet) error {
-			return next(ctx, p)
-		}
-	}
-	in := NewQueue(NoopHandler, mid, mid)
-	out := NewQueue(NoopHandler, mid)
+	mid := &NoopFlow{}
+
+	out := NewOutQueue(NoopHandler, mid)
+	in := NewInQueue(NoopHandler, mid, mid)
 
 	ctx := context.Background()
 
@@ -44,5 +41,19 @@ func TestQueues(t *testing.T) {
 		if err := out(ctx, &p); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+type NoopFlow struct{}
+
+func (n *NoopFlow) In(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		return next(ctx, p)
+	}
+}
+
+func (n *NoopFlow) Out(next mq.Handler) mq.Handler {
+	return func(ctx context.Context, p mq.Packet) error {
+		return next(ctx, p)
 	}
 }
