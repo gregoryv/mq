@@ -1,31 +1,27 @@
-package tt_test
+package tt
 
 import (
 	"context"
-	"fmt"
+	"strings"
+	"testing"
 
 	"github.com/gregoryv/mq"
-	"github.com/gregoryv/mq/tt"
 )
 
-func ExampleRouter() {
-	routes := []*tt.Route{
-		tt.NewRoute("gopher/pink", func(_ context.Context, p *mq.Publish) error {
-			fmt.Println(p)
-			return nil
-		}),
-		tt.NewRoute("gopher/blue", func(_ context.Context, p *mq.Publish) error {
-			fmt.Println(p)
-			return nil
-		}),
+func TestRouter(t *testing.T) {
+	routes := []*Route{
+		NewRoute("gopher/pink", NoopPub),
+		NewRoute("gopher/blue", NoopPub),
+		NewRoute("#", NoopPub),
 	}
-	r := tt.NewRouter(routes...)
+	r := NewRouter(routes...)
 
 	ctx := context.Background()
-	r.In(ctx, mq.Pub(0, "gopher/pink", "hi"))
+	if err := r.In(ctx, mq.Pub(0, "gopher/pink", "hi")); err != nil {
+		t.Error(err)
+	}
 
-	fmt.Print(r)
-	//output:
-	// PUBLISH ---- p0 gopher/pink 20 bytes
-	// 2 routes
+	if v := r.String(); !strings.Contains(v, "3 routes") {
+		t.Error(v)
+	}
 }
