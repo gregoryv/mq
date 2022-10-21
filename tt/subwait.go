@@ -40,9 +40,9 @@ func (a *SubWait) Out(next mq.Handler) mq.Handler {
 	}
 }
 
-// AllSubscribed returns channel which blocks until expected number of
+// Done returns channel which blocks until expected number of
 // mq.SubAck packets have been counted.
-func (a *SubWait) AllSubscribed(ctx context.Context) <-chan struct{} {
+func (a *SubWait) Done(ctx context.Context) <-chan struct{} {
 	c := make(chan struct{})
 	go func() {
 		for {

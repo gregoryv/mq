@@ -35,7 +35,7 @@ func TestSubWait(t *testing.T) {
 		server.Ack(p)
 	}
 
-	<-subwait.AllSubscribed(ctx)
+	<-subwait.Done(ctx)
 	if err := ctx.Err(); err != nil {
 		t.Error(err)
 	}
@@ -44,7 +44,7 @@ func TestSubWait(t *testing.T) {
 	_ = out(ctx, &p)
 	// without server ack
 	select {
-	case <-subwait.AllSubscribed(ctx):
+	case <-subwait.Done(ctx):
 		t.Error("AllSubscribed should timeout")
 	case <-time.After(time.Millisecond):
 	}

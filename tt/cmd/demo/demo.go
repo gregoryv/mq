@@ -89,7 +89,7 @@ func main() {
 		_ = out(ctx, p)
 	}
 
-	<-subwait.AllSubscribed(ctx)
+	<-subwait.Done(ctx)
 
 	{ // publish
 		p := mq.NewPublish()
