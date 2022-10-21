@@ -33,8 +33,14 @@ func main() {
 	var (
 		cli    = cmdline.NewBasicParser()
 		broker = cli.Option("-b --broker, $BROKER").String("127.0.0.1:1883")
+		debug  = cli.Flag("-d, --debug")
 	)
 	cli.Parse()
+
+	logLevel := tt.LevelInfo
+	if debug {
+		logLevel = tt.LevelDebug
+	}
 
 	// connect to server
 	conn, err := net.Dial("tcp", broker)
@@ -52,16 +58,17 @@ func main() {
 		}),
 	}
 
+	// define all the features of our in/out queues
 	var (
 		router  = tt.NewRouter(routes...)
-		logger  = tt.NewLogger(tt.LevelInfo)
+		logger  = tt.NewLogger(logLevel)
 		sender  = tt.NewSender(conn).Out
 		subwait = tt.NewSubWait(len(routes))
 		conwait = tt.NewConnWait()
 		pool    = tt.NewIDPool(100)
 
-		out = tt.NewOutQueue(sender, subwait, pool, logger)
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
+		out = tt.NewOutQueue(sender, subwait, pool, logger)
 	)
 
 	// start handling packet flow

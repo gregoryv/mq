@@ -29,8 +29,8 @@ func Example_Client() {
 		conwait = tt.NewConnWait()
 		pool    = tt.NewIDPool(100)
 
-		out = tt.NewOutQueue(sender, subwait, pool, logger)
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
+		out = tt.NewOutQueue(sender, subwait, pool, logger)
 	)
 
 	// start handling packet flow
