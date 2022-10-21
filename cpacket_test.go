@@ -72,4 +72,9 @@ func testControlPacket(t *testing.T, in ControlPacket) {
 		assert := asserter.New(t)
 		assert().Equals(b, a)
 	}
+
+	// String
+	if v := got.String(); !strings.Contains(v, " bytes") {
+		t.Error("empty .String")
+	}
 }

@@ -10,4 +10,9 @@ func TestAuth(t *testing.T) {
 	eq(t, p.SetReasonCode, p.ReasonCode, MalformedPacket)
 	p.AddUserProp("color", "red")
 	testControlPacket(t, &p)
+
+	// String
+	if v := p.String(); v != "AUTH ---- 17 bytes" {
+		t.Error(v)
+	}
 }
