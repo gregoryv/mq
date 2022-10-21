@@ -4,61 +4,59 @@ import (
 	"context"
 	"errors"
 	"io"
-	"sync"
 	"testing"
-	"time"
 
 	"github.com/gregoryv/mq"
 )
 
 func TestReceiver(t *testing.T) {
-	conn, server := Dial()
+	{ // handler is called on packet from server
+		conn, server := Dial()
+		called := NewCalled()
+		receiver := NewReceiver(conn, called.Handler)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	receiver := NewReceiver(conn, func(_ context.Context, _ mq.Packet) error {
-		wg.Done()
-		return nil
-	})
+		go receiver.Run(context.Background())
+		server.Pub(0, "a/b", "gopher")
+		<-called.Done()
+	}
 
-	ctx := context.Background()
-	go receiver.Run(ctx)
-	p := mq.NewPublish()
-	p.WriteTo(server)
+	{ // respects context cancellation
+		conn, _ := Dial()
+		receiver := NewReceiver(conn, NoopHandler)
 
-	wg.Wait()
-}
-
-func TestReceiver_RunRespectsContextCancel(t *testing.T) {
-	conn, _ := Dial()
-	receiver := NewReceiver(conn, NoopHandler)
-	var wg sync.WaitGroup
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-
-	wg.Add(1)
-	go func() {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
 		if err := receiver.Run(ctx); !errors.Is(err, context.Canceled) {
 			t.Errorf("unexpected error: %v", err)
 		}
-		wg.Done()
-	}()
-	wg.Wait()
-}
+	}
 
-func TestReceiver_closedConn(t *testing.T) {
-	receiver := NewReceiver(&ClosedConn{}, NoopHandler)
-
-	var wg sync.WaitGroup
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Millisecond)
-
-	wg.Add(1)
-	go func() {
-		if err := receiver.Run(ctx); !errors.Is(err, io.EOF) {
+	{ // Run is stopped on closed connection
+		receiver := NewReceiver(&ClosedConn{}, NoopHandler)
+		err := receiver.Run(context.Background())
+		if !errors.Is(err, io.EOF) {
 			t.Errorf("unexpected error: %T", err)
 		}
-		wg.Done()
-	}()
+	}
+}
 
-	wg.Wait()
+// ----------------------------------------
+
+func NewCalled() *Called {
+	return &Called{
+		c: make(chan struct{}, 0),
+	}
+}
+
+type Called struct {
+	c chan struct{}
+}
+
+func (c *Called) Handler(_ context.Context, _ mq.Packet) error {
+	close(c.c)
+	return nil
+}
+
+func (c *Called) Done() <-chan struct{} {
+	return c.c
 }

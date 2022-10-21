@@ -41,3 +41,11 @@ func (t *TestServer) Ack(p mq.Packet) {
 		panic(fmt.Sprintf("TestServer cannot ack %T", p))
 	}
 }
+
+func (t *TestServer) Pub(qos uint8, topic, payload string) {
+	p := mq.NewPublish()
+	p.SetQoS(qos)
+	p.SetTopicName(topic)
+	p.SetPayload([]byte(payload))
+	p.WriteTo(t)
+}
