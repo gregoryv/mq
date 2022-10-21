@@ -7,51 +7,25 @@ import (
 )
 
 func NewConnWait() *ConnWait {
-	return &ConnWait{}
+	return &ConnWait{
+		c: make(chan struct{}, 0),
+	}
 }
 
 type ConnWait struct {
-	connected bool
+	c chan struct{}
 }
 
 func (a *ConnWait) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
 		case *mq.ConnAck:
-			a.connected = true
+			a.c <- struct{}{}
 		}
 		return next(ctx, p)
 	}
 }
 
-// Use resets on mq.Connect and counts mq.ConnAck. Must be used in both
-// in and out queues.
-func (a *ConnWait) Out(next mq.Handler) mq.Handler {
-	return func(ctx context.Context, p mq.Packet) error {
-		switch p.(type) {
-		case *mq.Connect:
-			a.connected = false
-		}
-		return next(ctx, p)
-	}
-}
-
-// AllConnscribed returns channel which blocks until expected number of
-// mq.ConnAck packets have been counted.
-func (a *ConnWait) Done(ctx context.Context) <-chan struct{} {
-	c := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				if a.connected {
-					c <- struct{}{}
-					return
-				}
-			}
-		}
-	}()
-	return c
+func (a *ConnWait) Done() <-chan struct{} {
+	return a.c
 }

@@ -28,7 +28,7 @@ func Example_Client() {
 		ackwait = tt.NewSubWait(len(routes))
 		conwait = tt.NewConnWait()
 
-		out = tt.NewOutQueue(sender, conwait, ackwait, logger)
+		out = tt.NewOutQueue(sender, ackwait, logger) // todo rename ackwait
 		in  = tt.NewInQueue(router.In, conwait, ackwait, logger)
 	)
 
@@ -43,7 +43,7 @@ func Example_Client() {
 		_ = out(ctx, &p)
 		server.Ack(&p)
 	}
-	<-conwait.Done(ctx)
+	<-conwait.Done()
 
 	for _, r := range routes {
 		p := r.Subscribe()

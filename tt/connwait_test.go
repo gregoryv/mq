@@ -9,17 +9,15 @@ import (
 )
 
 func TestConnWait(t *testing.T) {
-	conn, server := Dial()
-
 	var (
+		conn, server = Dial()
+
 		sender  = NewSender(conn).Out
 		conwait = NewConnWait()
-		logger  = NewLogger(LevelInfo)
+
+		out = NewOutQueue(sender)
+		in  = NewInQueue(NoopHandler, conwait)
 	)
-
-	out := NewOutQueue(sender, conwait, logger)
-
-	in := NewInQueue(NoopHandler, conwait, logger)
 
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
@@ -32,8 +30,22 @@ func TestConnWait(t *testing.T) {
 		_ = out(ctx, &p)
 		server.Ack(&p)
 	}
-	<-conwait.Done(ctx)
+
+	<-conwait.Done()
 	if err := ctx.Err(); err != nil {
 		t.Fatal(err)
+	}
+
+	// times out
+	{ // connect
+		p := mq.NewConnect()
+		p.SetClientID("connwait-timeout")
+		_ = out(ctx, &p)
+	}
+
+	select {
+	case <-conwait.Done():
+		t.Error("Done should timeout")
+	case <-time.After(time.Millisecond):
 	}
 }
