@@ -6,7 +6,9 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-- Reverse order in NewQueue
+- Add TestServer with manual responses
+- Add types tt.InFlow and tt.OutFlow
+- Replace NewQueue with NewInQueue and NewOutQueue
 - Move tt/* packages to tt/
 
 ## [0.18.0] 2022-10-19
