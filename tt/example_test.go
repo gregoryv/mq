@@ -25,11 +25,11 @@ func Example_Client() {
 		router  = tt.NewRouter(routes...)
 		logger  = tt.NewLogger(tt.LevelInfo)
 		sender  = tt.NewSender(conn).Out
-		ackwait = tt.NewSubWait(len(routes))
+		subwait = tt.NewSubWait(len(routes))
 		conwait = tt.NewConnWait()
 
-		out = tt.NewOutQueue(sender, ackwait, logger) // todo rename ackwait
-		in  = tt.NewInQueue(router.In, conwait, ackwait, logger)
+		out = tt.NewOutQueue(sender, subwait, logger)
+		in  = tt.NewInQueue(router.In, conwait, subwait, logger)
 	)
 
 	// start handling packet flow
@@ -41,16 +41,16 @@ func Example_Client() {
 		p := mq.NewConnect()
 		p.SetClientID("example")
 		_ = out(ctx, &p)
-		server.Ack(&p)
+		server.Ack(&p) // mock server response
 	}
 	<-conwait.Done()
 
 	for _, r := range routes {
 		p := r.Subscribe()
 		_ = out(ctx, p)
-		server.Ack(p) // mock server response
+		server.Ack(p)
 	}
 
-	<-ackwait.AllSubscribed(ctx)
+	<-subwait.AllSubscribed(ctx)
 	// output:
 }
