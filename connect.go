@@ -92,19 +92,6 @@ func (c *Connect) ProtocolName() string     { return string(c.protocolName) }
 func (c *Connect) SetClientID(v string) { c.clientID = wstring(v) }
 func (c *Connect) ClientID() string     { return string(c.clientID) }
 
-// ClientIDShort returns last 8 characters of ClientID prefixed with
-// ... if it's length is longer than 11 characters.
-func (c *Connect) ClientIDShort() string {
-	return tail("...", c.ClientID(), 11)
-}
-
-func tail(prefix, s string, width int) string {
-	if v := len(s); v > width {
-		return prefix + s[v-width+len(prefix):]
-	}
-	return s
-}
-
 func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
@@ -422,7 +409,7 @@ func (c *Connect) String() string {
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),
 		c.protocolName,
 		c.protocolVersion,
-		c.ClientIDShort(),
+		c.ClientID(),
 		time.Duration(c.keepAlive)*time.Second,
 		c.fill(_LEN, 0),
 	)

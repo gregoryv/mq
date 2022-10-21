@@ -67,7 +67,7 @@ func (f *Logger) Out(next mq.Handler) mq.Handler {
 func (f *Logger) prefixLoggers(p mq.Packet) {
 	switch p := p.(type) {
 	case *mq.Connect:
-		f.setLogPrefix(p.ClientIDShort())
+		f.setLogPrefix(p.ClientID())
 
 	case *mq.ConnAck:
 		if p.AssignedClientID() != "" {
@@ -99,3 +99,10 @@ const (
 	LevelDebug
 	LevelInfo
 )
+
+func tail(prefix, s string, width int) string {
+	if v := len(s); v > width {
+		return prefix + s[v-width+len(prefix):]
+	}
+	return s
+}
