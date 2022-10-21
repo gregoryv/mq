@@ -22,7 +22,7 @@ func NewRoute(filter string, handlers ...mq.PubHandler) *Route {
 
 type Route struct {
 	filter    string
-	filters   []string
+	filters   []string // topicFilter split into words a/# becomes "a", "#"
 	always    bool
 	hasMulti  bool
 	hasSingle bool
@@ -76,13 +76,6 @@ func (r *Route) Match(name string) ([]string, bool) {
 	}
 
 	return words, true
-}
-
-// Subscribe returns a subscribe packet for this route with no options
-func (r *Route) Subscribe() *mq.Subscribe {
-	p := mq.NewSubscribe()
-	p.AddFilter(r.filter, 0)
-	return &p
 }
 
 func (r *Route) Filter() string { return r.filter }

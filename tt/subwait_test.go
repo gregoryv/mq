@@ -30,9 +30,10 @@ func TestSubWait(t *testing.T) {
 	go NewReceiver(conn, in).Run(ctx)
 
 	for _, r := range routes {
-		p := r.Subscribe()
-		_ = out(ctx, p)
-		server.Ack(p)
+		p := mq.NewSubscribe()
+		p.AddFilter(r.Filter(), mq.OptNL)
+		_ = out(ctx, &p)
+		server.Ack(&p)
 	}
 
 	<-subwait.Done(ctx)

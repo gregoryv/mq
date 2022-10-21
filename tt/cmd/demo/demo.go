@@ -5,12 +5,12 @@ https://hub.docker.com/_/eclipse-mosquitto/
 Run the broker and then
 
   $ go run github.com/gregoryv/mq/tt/cmd/demo
-  # pink joined gohpher/chat
-  # blue joined gohpher/chat
-  # pink> hello friends
-  # blue> hi
-  # pink: hello friends
-  # blue: hi
+  pink joined gohpher/chat
+  blue joined gohpher/chat
+  pink> hello friends
+  blue> hi
+  pink: hello friends
+  blue: hi
 
 */
 package main
@@ -80,7 +80,7 @@ func (g *Gopher) Join(room string) {
 
 	routes := []*tt.Route{
 		tt.NewRoute(room, func(_ context.Context, p *mq.Publish) error {
-			fmt.Println("#", string(p.Payload()))
+			fmt.Println(string(p.Payload()))
 			return nil
 		}),
 	}
@@ -107,7 +107,7 @@ func (g *Gopher) Join(room string) {
 	receiver := tt.NewReceiver(conn, in)
 	go func() {
 		if err := receiver.Run(ctx); errors.Is(err, io.EOF) {
-			fmt.Println("#", g.name, "disconnected")
+			fmt.Println(g.name, "disconnected")
 		}
 	}()
 
@@ -125,11 +125,11 @@ func (g *Gopher) Join(room string) {
 		_ = out(ctx, &p)
 	}
 	<-subwait.Done(ctx)
-	fmt.Println("#", g.name, "joined", room)
+	fmt.Println(g.name, "joined", room)
 }
 
 func (g *Gopher) Say(v string) {
-	fmt.Print("# ", g.name, "> ", v, "\n")
+	fmt.Print(g.name, "> ", v, "\n")
 	p := mq.NewPublish()
 	p.SetTopicName(g.room)
 	p.SetPayload([]byte(g.name + ": " + v))

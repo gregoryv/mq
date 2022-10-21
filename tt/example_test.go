@@ -47,9 +47,10 @@ func Example_Client() {
 	<-conwait.Done()
 
 	for _, r := range routes {
-		p := r.Subscribe()
-		_ = out(ctx, p)
-		server.Ack(p)
+		p := mq.NewSubscribe()
+		p.AddFilter(r.Filter(), mq.OptNL)
+		_ = out(ctx, &p)
+		server.Ack(&p)
 	}
 
 	<-subwait.Done(ctx)
