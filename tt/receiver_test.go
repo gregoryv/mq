@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net"
 	"testing"
+	"time"
 
 	"github.com/gregoryv/mq"
 )
@@ -21,11 +23,24 @@ func TestReceiver(t *testing.T) {
 	}
 
 	{ // respects context cancellation
-		conn, _ := Dial()
+		// create a tcp server
+		ln, err := net.Listen("tcp", ":")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer ln.Close()
+		// connect to it
+		conn, err := net.Dial("tcp", ln.Addr().String())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer conn.Close()
+
 		receiver := NewReceiver(conn, NoopHandler)
+		receiver.readTimeout = time.Microsecond // speedup
 
 		ctx, cancel := context.WithCancel(context.Background())
-		cancel()
+		time.AfterFunc(2*time.Microsecond, cancel)
 		if err := receiver.Run(ctx); !errors.Is(err, context.Canceled) {
 			t.Errorf("unexpected error: %v", err)
 		}
