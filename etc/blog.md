@@ -12,7 +12,7 @@ xx January 2023
 
 On Aug 3, 2022 efforts began to implement <a
 href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">mqtt-v5.0</a>
-in Go. [github.com/gregoryv/mq](https://github.com/gregoryv/mq) is the
+in Go. [gregoryv/mq](https://github.com/gregoryv/mq) is the
 result and this article documents the thoughts around it's design and
 efforts of writing it.
 
@@ -25,6 +25,7 @@ efforts of writing it.
 		<li><a href="#approach">Approach</a></li>
 		<li><a href="#design">Design</a></li>
 		<li><a href="#performance">Performance</a></li>
+		<li><a href="#conclusion">Conclusion</a></li>
 		<li><a href="#references">References</a></li>
 	</ul>
 </nav>
@@ -238,6 +239,13 @@ after improving the pool allocation of next packet id
 BenchmarkClient_PubQoS0-16       1304368              1016 ns/op             560 B/op         11 allocs/op
 BenchmarkClient_PubQoS1-16        231313             11030 ns/op            1072 B/op         24 allocs/op
 </pre>
+
+<a name="conclusion"></a>
+## Conclusion <a class="link" href="#conclusion">§</a>
+
+After D days, C commits and R
+releases [gregoryv/mq](https://github.com/gregoryv/mq) is ready for
+the scrutiny of the community.
 
 <a name="references"></a>
 ## References <a class="link" href="#references">§</a>
