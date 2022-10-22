@@ -17,7 +17,7 @@ result and this article documents the thoughts around it's design and
 efforts of writing it.
 
 <a name="toc"></a>
-<span class="anchored">Table of contents <a class="link" href="#toc">§</a></span>
+<div class="anchored">Table of contents <a class="link" href="#toc">§</a></div>
 <nav>
 	<ul>
 		<li><a href="#background">Background</a></li>
@@ -67,6 +67,7 @@ process of implementing a package according to the specification,
 something you rarely get to do these days.
 
 
+
 <a name="goal"></a>
 ## Goal <a class="link" href="#goal">§</a>
 
@@ -82,9 +83,33 @@ Its design aims for
 With these goals in mind approaching the solution is a tricky thing,
 though rewarding.
 
+
+
 <a name="approach"></a>
 ## Approach <a class="link" href="#approach">§</a>
 
+The entire specification is 137 pages. This is quite a lot of
+information to read before actually starting anything. Luckily the
+first section is *terminology*. Especially useful as it provides the
+necessary vocabulary and a general feel for what concepts are
+*large* and which are small.
+
+Having poor experience with a top-down development approach I looked
+for the smallest concepts to implement first, like constants and error
+codes. However these are spread out throughout the specification so I
+stopped after a while and decided to move on with the first control
+packet, connect. 
+
+Representing the control packet with public fields felt wrong.  I
+already knew that in some cases the fields where related and would
+make it hard to fulfill the *Correctness*. So I went with the
+getter/setter approach, hiding all the fields. The downside being the
+documentation is now quite long. Benchmarks between the initial
+implementation and pahos showed poor results in several areas, I
+needed a redesign.
+
+
+<!--
 A decision I made was Not to dig deep into the other packages
 to find solutions. Instead the challenge would be to figure it out on
 my own and just compare, e.g. performance.
@@ -93,26 +118,7 @@ Performance: this is where I would get a chance to explore more of the
 memory alignment and allocation optimizations I've read about but
 never tried. Hopefully with benchmarks in place I can provide some
 useful insights to the community about either my own improvements or
-possible ones in the paho module.
-
-
-How to implement a protocol specification, such as the [mqtt-v5]? With a top-down
-approach , writing the client first and then add on what's needed as
-you go along. I've never been a fan of such top down development, felt
-that it always resulted in more refactoring and hard to do test driven
-developent(TDD).
-
-First thing is to actually read the specification and get a feel for
-it. The requirements are spread out within the document which gives
-them context and they follow RFC2119 for phrasing, which is nice.
-
-As I read on, navigation became a bit of a hassle. Having to jump up
-and down to the table of contents and then into a specific section was
-cumbersome with that many sections. This issue became even more
-prominent once development started. To remedy that, I saved a local
-copy and added anchors with proper names where needed, ie. #connect to
-directly jump to the Connect packet section. This enabled me to save
-some readable bookmarks.
+possible ones in the paho module. -->
 
 <a name="design"></a>
 ## Design <a class="link" href="#design">§</a>
