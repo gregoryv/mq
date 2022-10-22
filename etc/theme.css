@@ -1,13 +1,17 @@
 html, body { margin: 0 0; padding: 0 0; }
+html { border-top: 4em solid #007d9c }
 body { padding: 1em 1.612em; max-width: 990px; margin: 0 auto}
 p, li { line-height: 1.3em; font-family: sans-serif}
 a:link { color: #007d9c;text-decoration: none;}
 a:visited { color: #007d9c; }
 a:hover {text-decoration: underline;}
 
+img[src="logo.svg"] { margin: 0 auto; display: block }
 h1:first-child { margin-top: 0; }
 pre {background-color: #f2f2f2; padding: 8px 13px; overflow: auto}
 pre em { font-style: normal; background-color: #e2e2e2; }
 .link { display: none; }
 .anchored:hover .link, h1:hover .link, h2:hover .link { display: inline; }
 img[src="logo.svg"] { width: 400px; }
+
+#about { font-style: italic }

@@ -1,12 +1,20 @@
 <a name="top"></a>
-# Writing the mq/tt packages <a class="link" href="blog.html">§</a>
+
+# MQTT - exploring alternatives
+
+<div id="about">
+Gregory Vin&ccaron;i&cacute;<br>
+xx January 2023
+</div>
 
 <img src="logo.svg" alt="logo" />
 
-This article documents development efforts and thoughts
-of [github.com/gregoryv/mq](https://github.com/gregoryv/mq), an
-alternative MQTT v5 implementation in Go. Development started on Aug
-3, 2022 and is still ongoing.
+
+On Aug 3, 2022 efforts began to implement <a
+href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">mqtt-v5.0</a>
+in Go. [github.com/gregoryv/mq](https://github.com/gregoryv/mq) is the
+result and this article documents the thoughts around it's design and
+efforts of writing it.
 
 <a name="toc"></a>
 <span class="anchored">Table of contents <a class="link" href="#toc">§</a></span>
@@ -25,21 +33,38 @@ alternative MQTT v5 implementation in Go. Development started on Aug
 <a name="background"></a>
 ## Background <a class="link" href="#background">§</a>
 
-I've mainly used <a
-href="https://github.com/eclipse/paho.mqtt.golang">github.com/eclipse/paho.mqtt.golang</a>
-for systems that required MQTT as a communication protocol. In one
-such project difficulties where encountered and I needed to learn more
-about the protocol details.
+MQTT is widely used in connected devices or internet of things
+(IoT). It is simple and of low bandwidth. In the Go community a few
+options are available,
+like
+[huin/mqtt](https://pkg.go.dev/github.com/huin/mqtt),
+[surgemq/message](https://pkg.go.dev/github.com/surgemq/message)
+or
+[eclipse/paho.mqtt.golang](https://github.com/eclipse/paho.mqtt.golang).
+The latter comes up on top in number of imports and is the one I have
+been using.
 
-The specification has detailed instructions and requirements on most
-areas such as the wire format and behavior of clients and
-servers. Some things are optional and made me think that maybe it's
-actually more benefitial to write your own clients and servers over
-using a generic one. 
+In one project difficulties where encountered and I needed to learn
+more about the protocol details. There where simply to many
+abstractions on top of the wire format and I wanted to *simplify*
+things. 
 
-I could have opted for reusing components of e.g. the paho module but
-also wanted to experience what it's like to implement the requirements
-of the specification on my own.
+The specification is well written with requirements clearly stated.
+You can divide the specification into two main areas, 
+
+- wire format and 
+- behavior of clients and servers
+
+The wire format is very concrete but the behavior has many optional
+capabilities. As such, maybe writing your own client, with only the
+things you need, is *simpler* than using a generic one?
+
+Looking into alternatives I found that some packages do provided the
+wire format features, though most of them are for mqtt-v3.1.  I could
+have opted used e.g. the eclipse/paho package, which has support for
+mqtt-v5, though I also wanted to experience and learn more about the
+process of implementing a package according to the specification,
+something you rarely get to do these days.
 
 
 <a name="goal"></a>
