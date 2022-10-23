@@ -11,19 +11,23 @@ import (
 	"time"
 
 	"github.com/gregoryv/mq"
+	"github.com/gregoryv/mq/tt"
 )
 
 func NewServer() *Server {
 	return &Server{
-		bind:          ":", // random
-		acceptTimeout: time.Millisecond,
-		clients:       make(map[string]io.ReadWriter),
+		bind:           ":", // random
+		acceptTimeout:  time.Millisecond,
+		connectTimeout: 20 * time.Millisecond,
+		clients:        make(map[string]io.ReadWriter),
 	}
 }
 
 type Server struct {
-	bind          string
-	acceptTimeout time.Duration
+	bind string
+
+	acceptTimeout  time.Duration
+	connectTimeout time.Duration // client has to send the initial connect packet
 
 	io.Writer
 
@@ -39,16 +43,26 @@ func (s *Server) Dial() *Conn {
 		Reader: fromServer,
 		Writer: toServer,
 	}
-	s.AddConnection(&Conn{
+	s.AddConnection(context.Background(), &Conn{
 		// Reader: fromClient
 		Writer: toClient,
 	})
 	return c
 }
 
-func (s *Server) AddConnection(v io.ReadWriter) {
+func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriter) {
 	// todo create in/out queues for each connection
-	s.Writer = v
+	var (
+		sender    = tt.NewSender(conn)
+		connector = NewConnector()
+		logger    = tt.NewLogger(tt.LevelInfo)
+
+		in  = tt.NewInQueue(tt.NoopHandler, connector, logger)
+		out = tt.NewOutQueue(sender.Out, logger)
+	)
+	_ = out
+	go tt.NewReceiver(conn, in).Run(ctx)
+	s.Writer = conn
 }
 
 func (s *Server) Run(ctx context.Context) error {
@@ -74,8 +88,9 @@ func (s *Server) Run(ctx context.Context) error {
 				}
 				c <- err
 			}
-			// todo go handle connection
-			_ = conn
+
+			// the server tracks active connections
+			go s.AddConnection(ctx, conn)
 		}
 	}()
 
