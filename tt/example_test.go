@@ -2,6 +2,7 @@ package tt_test
 
 import (
 	"context"
+	"net"
 	"time"
 
 	"github.com/gregoryv/mq"
@@ -9,9 +10,7 @@ import (
 )
 
 func Example_client() {
-	// replace with eg.
-	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
-	conn, server := tt.Dial()
+	conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 
 	routes := []*tt.Route{
 		tt.NewRoute("#", func(_ context.Context, p *mq.Publish) error {
@@ -31,9 +30,8 @@ func Example_client() {
 		pool    = tt.NewIDPool(100)
 		logger  = tt.NewLogger(tt.LevelInfo)
 
-		//                           <-       <-       <-    <-
-		in = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
-		//                             <-       <-    <-
+		//                                  <-   <-    <-
+		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
 		out = tt.NewOutQueue(sender.Out, subwait, pool, logger)
 	)
 
@@ -45,7 +43,6 @@ func Example_client() {
 		p := mq.NewConnect()
 		p.SetClientID("example")
 		_ = out(ctx, &p)
-		server.Ack(&p) // mock server response
 	}
 	<-conwait.Done()
 
@@ -54,10 +51,6 @@ func Example_client() {
 		p := mq.NewSubscribe()
 		p.AddFilter(r.Filter(), mq.OptNL)
 		_ = out(ctx, &p)
-		server.Ack(&p)
 	}
 	<-subwait.Done(ctx)
-
-	// subscribed...
-	// output:
 }

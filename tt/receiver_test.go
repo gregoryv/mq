@@ -13,12 +13,15 @@ import (
 
 func TestReceiver(t *testing.T) {
 	{ // handler is called on packet from server
-		conn, server := Dial()
+		conn, client := Dial()
 		called := NewCalled()
 		receiver := NewReceiver(conn, called.Handler)
 
 		go receiver.Run(context.Background())
-		server.Pub(0, "a/b", "gopher")
+		p := mq.NewPublish()
+		p.SetTopicName("a/b")
+		p.SetPayload([]byte("gopher"))
+		p.WriteTo(client)
 		<-called.Done()
 	}
 
