@@ -43,6 +43,13 @@ func (s *Server) AddConnection(v io.ReadWriter) {
 }
 
 func (s *Server) Run(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+
+	}
 	return fmt.Errorf("Server.Run: todo")
 }
 
