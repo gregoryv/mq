@@ -3,14 +3,11 @@ package pink
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"time"
 
-	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 )
 
@@ -32,37 +29,6 @@ type Server struct {
 	io.Writer
 
 	clients map[string]io.ReadWriter
-}
-
-// Dial returns a test connection to a server used to send responses
-// with.
-func (s *Server) Dial() *Conn {
-	fromServer, toClient := io.Pipe()
-	toServer := ioutil.Discard
-	c := &Conn{
-		Reader: fromServer,
-		Writer: toServer,
-	}
-	s.AddConnection(context.Background(), &Conn{
-		// Reader: fromClient
-		Writer: toClient,
-	})
-	return c
-}
-
-func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriter) {
-	// todo create in/out queues for each connection
-	var (
-		sender    = tt.NewSender(conn)
-		connector = NewConnector()
-		logger    = tt.NewLogger(tt.LevelInfo)
-
-		in  = tt.NewInQueue(tt.NoopHandler, connector, logger)
-		out = tt.NewOutQueue(sender.Out, logger)
-	)
-	_ = out
-	go tt.NewReceiver(conn, in).Run(ctx)
-	s.Writer = conn
 }
 
 func (s *Server) Run(ctx context.Context) error {
@@ -102,24 +68,16 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 }
 
-func (s *Server) Ack(p mq.Packet) {
-	switch p := p.(type) {
-	case *mq.Subscribe:
-		a := mq.NewSubAck()
-		a.SetPacketID(p.PacketID())
-		a.WriteTo(s)
-	case *mq.Connect:
-		a := mq.NewConnAck()
-		a.WriteTo(s)
-	default:
-		panic(fmt.Sprintf("TestServer cannot ack %T", p))
-	}
-}
+func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriter) {
+	// todo create in/out queues for each connection
+	var (
+		sender = tt.NewSender(conn)
+		logger = tt.NewLogger(tt.LevelInfo)
 
-func (s *Server) Pub(qos uint8, topic, payload string) {
-	p := mq.NewPublish()
-	p.SetQoS(qos)
-	p.SetTopicName(topic)
-	p.SetPayload([]byte(payload))
-	p.WriteTo(s)
+		in  = tt.NewInQueue(tt.NoopHandler, logger)
+		out = tt.NewOutQueue(sender.Out, logger)
+	)
+	_ = out // todo register outgoing connection once connected
+	go tt.NewReceiver(conn, in).Run(ctx)
+	s.Writer = conn
 }
