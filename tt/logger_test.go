@@ -1,17 +1,20 @@
 package tt
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"testing"
 
 	"github.com/gregoryv/mq"
 )
 
 func ExampleLogger_In() {
-	log.SetOutput(os.Stdout)
 	l := NewLogger(LevelInfo)
+	l.SetOutput(os.Stdout)
 
 	p := mq.Pub(0, "a/b", "gopher")
 	l.In(NoopHandler)(nil, p)
@@ -63,8 +66,8 @@ func ExampleLogger_SetMaxIDLen() {
 }
 
 func ExampleLogger_errors() {
-	log.SetOutput(os.Stdout)
 	l := NewLogger(LevelInfo)
+	l.SetOutput(os.Stdout)
 
 	p := mq.Pub(0, "a/b", "gopher")
 	broken := func(context.Context, mq.Packet) error {
@@ -77,4 +80,46 @@ func ExampleLogger_errors() {
 	// broken
 	// ut PUBLISH ---- p0 a/b 16 bytes
 	// broken
+}
+
+func BenchmarkLogger_Out(b *testing.B) {
+	l := NewLogger(LevelInfo)
+	p := mq.NewConnect()
+	p.SetClientID("1bbde752-5161-11ed-a94b-675e009b6f46")
+	ctx := context.Background()
+
+	b.Run("Out", func(b *testing.B) {
+		out := l.Out(NoopHandler)
+		for i := 0; i < b.N; i++ {
+			out(ctx, &p)
+		}
+	})
+
+	b.Run("In", func(b *testing.B) {
+		in := l.In(NoopHandler)
+		for i := 0; i < b.N; i++ {
+			in(ctx, &p)
+		}
+	})
+}
+
+func TestLogger(t *testing.T) {
+	l := NewLogger(LevelInfo)
+	var buf bytes.Buffer
+	l.SetOutput(&buf)
+	cid := "1bbde752-5161-11ed-a94b-675e009b6f46"
+	p := mq.NewConnect()
+	p.SetClientID(cid)
+
+	// trimmed client id
+	l.Out(NoopHandler)(nil, &p)
+	if v := buf.String(); !strings.HasPrefix(v, "~75e009b6f46") {
+		t.Error(v)
+	}
+
+	// subsequent
+	l.Out(NoopHandler)(nil, &p)
+	if v := buf.String(); !strings.HasPrefix(v, "~75e009b6f46") {
+		t.Error(v)
+	}
 }

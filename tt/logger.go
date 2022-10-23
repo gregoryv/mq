@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -38,6 +37,8 @@ type Logger struct {
 
 	// client ids
 	maxLen uint
+
+	prefix string
 }
 
 // SetMaxIDLen configures the logger to trim the client id to number of
@@ -55,54 +56,51 @@ func (l *Logger) SetOutput(w io.Writer) {
 // info level.
 func (f *Logger) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		f.prefixLoggers(p)
+		if p, ok := p.(*mq.ConnAck); ok {
+			if v := p.AssignedClientID(); v != "" {
+				f.setLogPrefix(v)
+			}
+		}
 		f.info.Print("in ", p)
 		err := next(ctx, p)
 		if err != nil {
 			f.info.Print(err)
 		}
-		f.dumpPacket(p)
+		if f.logLevel == LevelDebug {
+			f.dumpPacket(p)
+		}
 		return err // return error just incase this middleware is not the first
 	}
 }
 
 func (f *Logger) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		f.prefixLoggers(p)
+		if p, ok := p.(*mq.Connect); ok {
+			f.setLogPrefix(p.ClientID())
+		}
 		f.info.Print("ut ", p)
 		err := next(ctx, p)
 		if err != nil {
 			f.info.Print(err)
 		}
-		f.dumpPacket(p)
+		if f.logLevel == LevelDebug {
+			f.dumpPacket(p)
+		}
 		return err
 	}
 }
 
-// prefixLoggers uses the short client id from mq.Connect or
-// AssignedClientID from mq.ConnAck as prefix in the loggers.
-func (f *Logger) prefixLoggers(p mq.Packet) {
-	switch p := p.(type) {
-	case *mq.Connect:
-		f.setLogPrefix(p.ClientID())
-
-	case *mq.ConnAck:
-		if v := p.AssignedClientID(); v != "" {
-			f.setLogPrefix(v)
-		}
-	}
-}
-
 func (f *Logger) setLogPrefix(v string) {
-	v = tail(v, f.maxLen)
-	f.info.SetPrefix(fmt.Sprintf("%s ", v))
-	f.debug.SetPrefix(fmt.Sprintf("%s ", v))
+	v = newPrefix(v, f.maxLen)
+	if v == f.prefix {
+		return
+	}
+	f.info.SetPrefix(v + " ")
+	f.debug.SetPrefix(v + " ")
+	f.prefix = v
 }
 
 func (f *Logger) dumpPacket(p mq.Packet) {
-	if f.logLevel != LevelDebug {
-		return
-	}
 	var buf bytes.Buffer
 	p.WriteTo(&buf)
 	f.debug.Print(hex.Dump(buf.Bytes()), "\n")
@@ -118,11 +116,11 @@ const (
 	LevelInfo
 )
 
-func tail(s string, width uint) string {
+func newPrefix(s string, width uint) string {
 	if v := uint(len(s)); v > width {
-		return prefix + s[v-width:]
+		return prefixStr + s[v-width:]
 	}
 	return s
 }
 
-const prefix = "~"
+const prefixStr = "~"
