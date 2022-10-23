@@ -31,9 +31,11 @@ func (s *Server) Ack(p mq.Packet) {
 		a := mq.NewSubAck()
 		a.SetPacketID(p.PacketID())
 		a.WriteTo(s)
+
 	case *mq.Connect:
 		a := mq.NewConnAck()
 		a.WriteTo(s)
+
 	default:
 		panic(fmt.Sprintf("TestServer cannot ack %T", p))
 	}

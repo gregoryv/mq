@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/gregoryv/mq"
 	"github.com/gregoryv/mq/tt"
 )
 
@@ -84,7 +86,14 @@ func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 	select {
 	case p := <-connector.Done():
 		// connect came in...
-		_ = p // todo ack the connect
+		a := mq.NewConnAck()
+		// todo generate client id if not set
+		if v := p.ClientID(); v == "" {
+			cid := uuid.NewString()
+			// todo make sure it's uniq
+			a.SetAssignedClientID(cid)
+		}
+		a.WriteTo(s)
 
 	case <-ctx.Done():
 		// stopped from the outside

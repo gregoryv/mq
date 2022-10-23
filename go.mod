@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gregoryv/nexus v0.5.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
