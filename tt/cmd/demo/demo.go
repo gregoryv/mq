@@ -4,14 +4,13 @@ https://hub.docker.com/_/eclipse-mosquitto/
 
 Run the broker and then
 
-  $ go run github.com/gregoryv/mq/tt/cmd/demo
-  pink joined gohpher/chat
-  blue joined gohpher/chat
-  pink> hello friends
-  blue> hi
-  pink: hello friends
-  blue: hi
-
+	$ go run github.com/gregoryv/mq/tt/cmd/demo
+	pink joined gohpher/chat
+	blue joined gohpher/chat
+	pink> hello friends
+	blue> hi
+	pink: hello friends
+	blue: hi
 */
 package main
 
