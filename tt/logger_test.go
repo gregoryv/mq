@@ -122,4 +122,13 @@ func TestLogger(t *testing.T) {
 	if v := buf.String(); !strings.HasPrefix(v, "~75e009b6f46") {
 		t.Error(v)
 	}
+
+	// debug
+	l = NewLogger(LevelDebug)
+	l.SetOutput(&buf)
+	buf.Reset()
+	l.Out(NoopHandler)(nil, &p)
+	if v := buf.String(); !strings.Contains(v, "|f46|") {
+		t.Error(v)
+	}
 }
