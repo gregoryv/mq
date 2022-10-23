@@ -25,6 +25,11 @@ func NewOutQueue(last mq.Handler, v ...OutFlow) mq.Handler {
 	return v[l].Out(NewOutQueue(last, v[:l]...))
 }
 
+type InOutFlow interface {
+	InFlow
+	OutFlow
+}
+
 type InFlow interface {
 	In(next mq.Handler) mq.Handler
 }
@@ -35,3 +40,15 @@ type OutFlow interface {
 
 func NoopHandler(_ context.Context, _ mq.Packet) error { return nil }
 func NoopPub(_ context.Context, _ *mq.Publish) error   { return nil }
+
+type InFunc func(mq.Handler) mq.Handler
+
+func (f InFunc) In(next mq.Handler) mq.Handler {
+	return f(next)
+}
+
+type OutFunc func(mq.Handler) mq.Handler
+
+func (f OutFunc) Out(next mq.Handler) mq.Handler {
+	return f(next)
+}
