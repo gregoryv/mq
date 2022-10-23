@@ -68,16 +68,30 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 }
 
-func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriter) {
-	// todo create in/out queues for each connection
+func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 	var (
-		sender = tt.NewSender(conn)
-		logger = tt.NewLogger(tt.LevelInfo)
+		sender    = tt.NewSender(conn)
+		connector = NewConnector()
+		logger    = tt.NewLogger(tt.LevelInfo)
 
-		in  = tt.NewInQueue(tt.NoopHandler, logger)
+		in  = tt.NewInQueue(tt.NoopHandler, connector, logger)
 		out = tt.NewOutQueue(sender.Out, logger)
 	)
+
 	_ = out // todo register outgoing connection once connected
 	go tt.NewReceiver(conn, in).Run(ctx)
+
+	select {
+	case p := <-connector.Done():
+		// connect came in...
+		_ = p // todo ack the connect
+
+	case <-ctx.Done():
+		// stopped from the outside
+
+	case <-time.After(s.connectTimeout):
+		// todo send disconnect or just close the connection
+		conn.Close()
+	}
 	s.Writer = conn
 }
