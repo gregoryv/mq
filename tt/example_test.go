@@ -26,7 +26,7 @@ func Example_client() {
 		router  = tt.NewRouter(routes...)
 		sender  = tt.NewSender(conn)
 		subwait = tt.NewSubWait(len(routes))
-		conwait = tt.NewConnWait()
+		conwait = tt.Intercept[*mq.ConnAck]()
 		pool    = tt.NewIDPool(100)
 		logger  = tt.NewLogger(tt.LevelInfo)
 
@@ -53,4 +53,5 @@ func Example_client() {
 		_ = out(ctx, &p)
 	}
 	<-subwait.Done(ctx)
+	// output:
 }
