@@ -43,26 +43,23 @@ func ExampleLogger_DumpPacket() {
 	// 00000000  30 0e 00 03 61 2f 62 00  00 06 67 6f 70 68 65 72  |0...a/b...gopher|
 }
 
-func ExampleLogger() {
-	log.SetOutput(os.Stdout)
+func ExampleLogger_SetMaxIDLen() {
 	l := NewLogger(LevelInfo)
+	l.SetOutput(os.Stdout)
 	l.SetMaxIDLen(6)
 	{
 		p := mq.NewConnect()
-		p.SetClientID("myclient")
+		p.SetClientID("short")
 		l.Out(NoopHandler)(nil, &p)
 	}
 	{
 		p := mq.NewConnAck()
 		p.SetAssignedClientID("1bbde752-5161-11ed-a94b-675e009b6f46")
 		l.In(NoopHandler)(nil, &p)
-		l.SetMaxIDLen(0)
-		l.In(NoopHandler)(nil, &p)
 	}
 	// output:
-	// ~client ut CONNECT ---- -------- MQTT5 myclient 0s 23 bytes
+	// short ut CONNECT ---- -------- MQTT5 short 0s 20 bytes
 	// ~9b6f46 in CONNACK ---- -------- 1bbde752-5161-11ed-a94b-675e009b6f46 44 bytes
-	// 1bbde752-5161-11ed-a94b-675e009b6f46 in CONNACK ---- -------- 1bbde752-5161-11ed-a94b-675e009b6f46 44 bytes
 }
 
 func ExampleLogger_errors() {
