@@ -1,21 +1,6 @@
 package mq
 
-import (
-	"io"
-)
-
-func ReadPacket(r io.Reader) (ControlPacket, error) {
-	var fh FixedHeader
-	if _, err := fh.ReadFrom(r); err != nil {
-		return nil, err
-	}
-
-	got, err := fh.ReadRemaining(r)
-	if err != nil {
-		return nil, err
-	}
-	return got, nil
-}
+import "io"
 
 type FixedHeader struct {
 	fixed        Bits
