@@ -24,6 +24,10 @@ efforts of writing it.
 		<li><a href="#goal">Goal</a></li>
 		<li><a href="#approach">Approach</a></li>
 		<li><a href="#design">Design</a></li>
+		<ul>
+			<li><a href="#queues">Queues</a></li>
+			<li><a href="#packageName">Package name</a></li>
+		</ul>
 		<li><a href="#performance">Performance</a></li>
 		<li><a href="#conclusion">Conclusion</a></li>
 		<li><a href="#references">References</a></li>
@@ -109,19 +113,27 @@ implementation and pahos showed poor results in several areas, I
 needed a redesign.
 
 
-<!--
-A decision I made was Not to dig deep into the other packages
-to find solutions. Instead the challenge would be to figure it out on
-my own and just compare, e.g. performance.
-
-Performance: this is where I would get a chance to explore more of the
-memory alignment and allocation optimizations I've read about but
-never tried. Hopefully with benchmarks in place I can provide some
-useful insights to the community about either my own improvements or
-possible ones in the paho module. -->
 
 <a name="design"></a>
 ## Design <a class="link" href="#design">§</a>
+
+At this point design was limited to performance of control packet
+conversion to and from the wire format. But I really wanted to
+have a design that was at least in par with pahos, performance wise.
+The hidden fields with getter and setter methods had no affect on the
+performance so they stayed. But a lot of effort went into designing
+the wire types described in the specification in an efficient way but
+also somewhat readable. 
+
+Reading and writing packets is deterministic as the length is
+provided.  This trait is used in all the wire types to minimize
+allocations.
+
+Once the performance was adequate the remaining packets where fairly
+quickly implemented.
+
+<a name="queues"></a>
+### Queues <a class="link" href="#queues">§</a>
 
 ### Package name
 
@@ -214,7 +226,7 @@ BenchmarkAuth/our              1808374        682 ns/op      264 B/op      17 al
 BenchmarkAuth/their             513357       4823 ns/op     4208 B/op      43 allocs/op
 BenchmarkConnect/our            785091       1311 ns/op      880 B/op      16 allocs/op
 BenchmarkConnect/their          205426       6685 ns/op     5552 B/op      50 allocs/op
-<b>BenchmarkPublish/our            586962       1974 ns/op      688 B/op      31 allocs/op</b>
+<em>BenchmarkPublish/our            586962       1974 ns/op      688 B/op      31 allocs/op</em>
 BenchmarkPublish/their          479336       2846 ns/op     4064 B/op      41 allocs/op
 </pre>
 
