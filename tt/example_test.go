@@ -21,22 +21,25 @@ func Example_client() {
 		tt.NewRoute("a/b"),
 	}
 
+	// use middlewares and build your in/out queues with desired
+	// features
 	var (
 		router  = tt.NewRouter(routes...)
-		logger  = tt.NewLogger(tt.LevelInfo)
-		sender  = tt.NewSender(conn).Out
+		sender  = tt.NewSender(conn)
 		subwait = tt.NewSubWait(len(routes))
 		conwait = tt.NewConnWait()
 		pool    = tt.NewIDPool(100)
+		logger  = tt.NewLogger(tt.LevelInfo)
 
-		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
-		out = tt.NewOutQueue(sender, subwait, pool, logger)
+		//                           <-       <-       <-    <-
+		in = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
+		//                             <-       <-    <-
+		out = tt.NewOutQueue(sender.Out, subwait, pool, logger)
 	)
 
 	// start handling packet flow
 	ctx, _ := context.WithTimeout(context.Background(), 20*time.Millisecond)
-	receiver := tt.NewReceiver(conn, in)
-	go receiver.Run(ctx)
+	go tt.NewReceiver(conn, in).Run(ctx)
 
 	{ // connect
 		p := mq.NewConnect()
@@ -46,13 +49,15 @@ func Example_client() {
 	}
 	<-conwait.Done()
 
+	// connected, subscribe
 	for _, r := range routes {
 		p := mq.NewSubscribe()
 		p.AddFilter(r.Filter(), mq.OptNL)
 		_ = out(ctx, &p)
 		server.Ack(&p)
 	}
-
 	<-subwait.Done(ctx)
+
+	// subscribed...
 	// output:
 }
