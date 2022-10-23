@@ -2,6 +2,7 @@ package tt
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -35,4 +36,18 @@ func TestSubWait(t *testing.T) {
 	case <-ctx.Done():
 		t.Error(ctx.Err())
 	}
+
+	// check timeout
+	{
+		p := mq.NewSubAck()
+		_ = in(ctx, &p) // only send one
+	}
+	select {
+	case <-subwait.Done(ctx):
+	case <-ctx.Done():
+		if err := ctx.Err(); !errors.Is(err, context.DeadlineExceeded) {
+			t.Error(err)
+		}
+	}
+
 }
