@@ -28,11 +28,11 @@ type Server struct {
 	acceptTimeout  time.Duration
 	connectTimeout time.Duration // client has to send the initial connect packet
 
-	io.Writer
-
 	clients map[string]io.ReadWriter
 }
 
+// Run listens for tcp connections. Blocks until context is cancelled
+// or accepting a connection fails.
 func (s *Server) Run(ctx context.Context) error {
 	l, err := net.Listen("tcp", s.bind)
 	if err != nil {
@@ -54,6 +54,9 @@ func (s *Server) Run(ctx context.Context) error {
 				if errors.Is(err, os.ErrDeadlineExceeded) {
 					continue loop
 				}
+				// todo check what causes Accept to fail other than
+				// timeout, guess not all errors should result in
+				// server run to stop
 				c <- err
 			}
 
@@ -87,13 +90,16 @@ func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 	case p := <-connector.Done():
 		// connect came in...
 		a := mq.NewConnAck()
-		// todo generate client id if not set
-		if v := p.ClientID(); v == "" {
-			cid := uuid.NewString()
-			// todo make sure it's uniq
-			a.SetAssignedClientID(cid)
+		id := p.ClientID()
+		if id == "" {
+			id = uuid.NewString()
 		}
-		a.WriteTo(s)
+		// todo make sure it's uniq
+		a.SetAssignedClientID(id)
+		if _, err := a.WriteTo(conn); err != nil {
+			return
+		}
+		s.clients[id] = conn
 
 	case <-ctx.Done():
 		// stopped from the outside
@@ -102,5 +108,5 @@ func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 		// todo send disconnect or just close the connection
 		conn.Close()
 	}
-	s.Writer = conn
+
 }
