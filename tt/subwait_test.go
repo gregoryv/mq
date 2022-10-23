@@ -9,44 +9,30 @@ import (
 )
 
 func TestSubWait(t *testing.T) {
-	conn, server := Dial()
-
-	routes := []*Route{
-		NewRoute("#"),
-		NewRoute("a/b"),
-	}
-
+	subscriptions := 3
 	var (
-		sender  = NewSender(conn).Out
-		subwait = NewSubWait(len(routes))
-
-		out = NewOutQueue(sender, subwait)
-		in  = NewInQueue(NoopHandler, subwait)
+		subwait     = NewSubWait(subscriptions)
+		in          = subwait.In(NoopHandler)
+		out         = subwait.Out(NoopHandler)
+		ctx, cancel = context.WithTimeout(
+			context.Background(), 20*time.Millisecond,
+		)
 	)
-
-	// start handling packet flow
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
 	defer cancel()
-	go NewReceiver(conn, in).Run(ctx)
 
-	for _, r := range routes {
-		p := mq.NewSubscribe()
-		p.AddFilter(r.Filter(), mq.OptNL)
+	{
+		p := mq.NewConnect()
 		_ = out(ctx, &p)
-		server.Ack(&p)
 	}
-
-	<-subwait.Done(ctx)
-	if err := ctx.Err(); err != nil {
-		t.Error(err)
+	{
+		p := mq.NewSubAck()
+		for i := 0; i < subscriptions; i++ {
+			_ = in(ctx, &p)
+		}
 	}
-
-	p := mq.NewSubscribe()
-	_ = out(ctx, &p)
-	// without server ack
 	select {
 	case <-subwait.Done(ctx):
-		t.Error("AllSubscribed should timeout")
-	case <-time.After(time.Millisecond):
+	case <-ctx.Done():
+		t.Error(ctx.Err())
 	}
 }
