@@ -8,16 +8,19 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+// NewSubWait returns a middleware which allows clients to wait for
+// all subscriptions to be acknowledged.
 func NewSubWait(v int) *SubWait {
 	return &SubWait{orig: v, count: v}
 }
 
 type SubWait struct {
 	sync.Mutex
-	orig  int
-	count int
+	orig  int // used to reset the count
+	count int // when 0 it's done
 }
 
+// In counts number of mq.SubAck
 func (a *SubWait) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {
@@ -30,6 +33,7 @@ func (a *SubWait) In(next mq.Handler) mq.Handler {
 	}
 }
 
+// Out resets the count on mq.Connect
 func (a *SubWait) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p.(type) {

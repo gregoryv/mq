@@ -8,7 +8,7 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
-func Example_Client() {
+func Example_client() {
 	// replace with eg.
 	// conn, _ := net.Dial("tcp", "127.0.0.1:1883")
 	conn, server := tt.Dial()
