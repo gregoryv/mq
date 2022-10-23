@@ -2,20 +2,29 @@ package pink
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
+	"os"
+	"time"
 
 	"github.com/gregoryv/mq"
 )
 
 func NewServer() *Server {
 	return &Server{
-		clients: make(map[string]io.ReadWriter),
+		bind:          ":", // random
+		acceptTimeout: time.Millisecond,
+		clients:       make(map[string]io.ReadWriter),
 	}
 }
 
 type Server struct {
+	bind          string
+	acceptTimeout time.Duration
+
 	io.Writer
 
 	clients map[string]io.ReadWriter
@@ -43,14 +52,39 @@ func (s *Server) AddConnection(v io.ReadWriter) {
 }
 
 func (s *Server) Run(ctx context.Context) error {
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		}
-
+	l, err := net.Listen("tcp", s.bind)
+	if err != nil {
+		return err
 	}
-	return fmt.Errorf("Server.Run: todo")
+	defer l.Close()
+
+	c := make(chan error, 0)
+
+	go func() {
+	loop:
+		for {
+			// Wait for a connection.
+			if l, ok := l.(interface{ SetDeadline(time.Time) error }); ok {
+				l.SetDeadline(time.Now().Add(s.acceptTimeout))
+			}
+			conn, err := l.Accept()
+			if err != nil {
+				if errors.Is(err, os.ErrDeadlineExceeded) {
+					continue loop
+				}
+				c <- err
+			}
+			// todo go handle connection
+			_ = conn
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-c:
+		return err
+	}
 }
 
 func (s *Server) Ack(p mq.Packet) {
