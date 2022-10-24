@@ -75,11 +75,11 @@ func (s *Server) Run(ctx context.Context) error {
 
 func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 	var (
-		sender    = tt.NewSender(conn)
-		connector = NewConnector()
-		logger    = tt.NewLogger(tt.LevelInfo)
+		sender   = tt.NewSender(conn)
+		connwait = tt.Intercept[*mq.Connect]()
+		logger   = tt.NewLogger(tt.LevelInfo)
 
-		in  = tt.NewInQueue(tt.NoopHandler, connector, logger)
+		in  = tt.NewInQueue(tt.NoopHandler, connwait, logger)
 		out = tt.NewOutQueue(sender.Out, logger)
 	)
 
@@ -87,7 +87,7 @@ func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 	go tt.NewReceiver(conn, in).Run(ctx)
 
 	select {
-	case p := <-connector.Done():
+	case p := <-connwait.Done():
 		// connect came in...
 		a := mq.NewConnAck()
 		id := p.ClientID()
