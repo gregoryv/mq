@@ -53,5 +53,4 @@ func Example_client() {
 		_ = out(ctx, &p)
 	}
 	<-subwait.Done(ctx)
-	// output:
 }
