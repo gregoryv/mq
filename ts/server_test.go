@@ -1,7 +1,7 @@
 package ts
 
 import (
-	"context"
+	. "context"
 	"errors"
 	"testing"
 	"time"
@@ -10,10 +10,10 @@ import (
 func TestServer(t *testing.T) {
 	s := NewServer()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := WithCancel(Background())
 	time.AfterFunc(2*s.acceptTimeout, cancel)
 
-	if err := s.Run(ctx); !errors.Is(err, context.Canceled) {
+	if err := s.Run(ctx); !errors.Is(err, Canceled) {
 		t.Error(err)
 	}
 }

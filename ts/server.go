@@ -1,7 +1,7 @@
 package ts
 
 import (
-	"context"
+	. "context"
 	"errors"
 	"io"
 	"net"
@@ -25,15 +25,17 @@ func NewServer() *Server {
 type Server struct {
 	bind string
 
-	acceptTimeout  time.Duration
-	connectTimeout time.Duration // client has to send the initial connect packet
+	acceptTimeout time.Duration
+
+	// client has to send the initial connect packet
+	connectTimeout time.Duration
 
 	clients map[string]io.ReadWriter
 }
 
 // Run listens for tcp connections. Blocks until context is cancelled
 // or accepting a connection fails.
-func (s *Server) Run(ctx context.Context) error {
+func (s *Server) Run(ctx Context) error {
 	l, err := net.Listen("tcp", s.bind)
 	if err != nil {
 		return err
@@ -61,7 +63,10 @@ func (s *Server) Run(ctx context.Context) error {
 			}
 
 			// the server tracks active connections
-			go s.AddConnection(ctx, conn)
+			go func() {
+				id, _ := initConnection(ctx, conn)
+				_ = id
+			}()
 		}
 	}()
 
@@ -73,7 +78,7 @@ func (s *Server) Run(ctx context.Context) error {
 	}
 }
 
-func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
+func initConnection(ctx Context, conn io.ReadWriteCloser) (string, error) {
 	var (
 		sender   = tt.NewSender(conn)
 		connwait = tt.Intercept[*mq.Connect]()
@@ -97,16 +102,13 @@ func (s *Server) AddConnection(ctx context.Context, conn io.ReadWriteCloser) {
 		// todo make sure it's uniq
 		a.SetAssignedClientID(id)
 		if _, err := a.WriteTo(conn); err != nil {
-			return
+			return "", err
 		}
-		s.clients[id] = conn
+		return id, nil
 
 	case <-ctx.Done():
 		// stopped from the outside
-
-	case <-time.After(s.connectTimeout):
-		// todo send disconnect or just close the connection
-		conn.Close()
+		return "", ctx.Err()
 	}
 
 }
