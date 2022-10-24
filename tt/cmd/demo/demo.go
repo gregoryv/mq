@@ -90,7 +90,7 @@ func (g *Gopher) Join(room string) {
 		logger  = tt.NewLogger(logLevel)
 		sender  = tt.NewSender(conn).Out
 		subwait = tt.NewSubWait(len(routes))
-		conwait = tt.NewConnWait()
+		conwait = tt.Intercept[*mq.ConnAck]()
 		pool    = tt.NewIDPool(100)
 
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
