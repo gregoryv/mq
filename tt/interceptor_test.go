@@ -9,12 +9,13 @@ import (
 )
 
 func TestIntercept(t *testing.T) {
-	i := Intercept[*mq.Connect]()
+	c := make(chan *mq.Connect, 0)
+	i := Intercept(c)
 	h := i.In(NoopHandler)
 	go h(Background(), &mq.Connect{})
 
 	select {
-	case <-i.C:
+	case <-c:
 	case <-time.After(1 * time.Millisecond):
 		t.Fail()
 	}

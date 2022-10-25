@@ -23,15 +23,16 @@ func Example_client() {
 	// use middlewares and build your in/out queues with desired
 	// features
 	var (
-		router  = tt.NewRouter(routes...)
-		sender  = tt.NewSender(conn)
-		subwait = tt.NewSubWait(len(routes))
-		conwait = tt.Intercept[*mq.ConnAck]()
-		pool    = tt.NewIDPool(100)
-		logger  = tt.NewLogger(tt.LevelInfo)
+		router    = tt.NewRouter(routes...)
+		sender    = tt.NewSender(conn)
+		subwait   = tt.NewSubWait(len(routes))
+		onConnAck = make(chan *mq.ConnAck, 0)
+		connwait  = tt.Intercept(onConnAck)
+		pool      = tt.NewIDPool(100)
+		logger    = tt.NewLogger(tt.LevelInfo)
 
 		//                                  <-   <-    <-
-		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
+		in  = tt.NewInQueue(router.In, connwait, subwait, pool, logger)
 		out = tt.NewOutQueue(sender.Out, subwait, pool, logger)
 	)
 
@@ -44,7 +45,7 @@ func Example_client() {
 		p.SetClientID("example")
 		_ = out(ctx, &p)
 	}
-	<-conwait.C
+	<-onConnAck
 
 	// connected, subscribe
 	for _, r := range routes {

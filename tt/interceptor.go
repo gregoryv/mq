@@ -6,25 +6,15 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func Intercept[T mq.Packet]() *Interceptor[T] {
-	c := make(chan T, 0)
-	mid := func(next mq.Handler) mq.Handler {
+// Intercept returns an interceptor of any packet.
+func Intercept[T mq.Packet](c chan T) InFlow {
+	return InFunc(func(next mq.Handler) mq.Handler {
 		return func(ctx context.Context, p mq.Packet) error {
 			switch p := p.(type) {
 			case T:
 				c <- p
 			}
-			return next(ctx, p)
+			return nil
 		}
-	}
-
-	return &Interceptor[T]{
-		InFunc: mid,
-		C:      c,
-	}
-}
-
-type Interceptor[T mq.Packet] struct {
-	InFunc
-	C <-chan T
+	})
 }
