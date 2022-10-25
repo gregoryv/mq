@@ -20,15 +20,11 @@ func Intercept[T mq.Packet]() *Interceptor[T] {
 
 	return &Interceptor[T]{
 		InFunc: mid,
-		c:      c,
+		C:      c,
 	}
 }
 
 type Interceptor[T mq.Packet] struct {
 	InFunc
-	c chan T
-}
-
-func (i *Interceptor[T]) Done() <-chan T {
-	return i.c
+	C <-chan T
 }

@@ -44,7 +44,7 @@ func Example_client() {
 		p.SetClientID("example")
 		_ = out(ctx, &p)
 	}
-	<-conwait.Done()
+	<-conwait.C
 
 	// connected, subscribe
 	for _, r := range routes {

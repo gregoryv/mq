@@ -14,7 +14,7 @@ func TestIntercept(t *testing.T) {
 	go h(Background(), &mq.Connect{})
 
 	select {
-	case <-i.Done():
+	case <-i.C:
 	case <-time.After(1 * time.Millisecond):
 		t.Fail()
 	}
