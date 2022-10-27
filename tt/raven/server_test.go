@@ -40,7 +40,6 @@ func TestServer(t *testing.T) {
 	if err := s.Run(l, Background()); !errors.Is(err, net.ErrClosed) {
 		t.Error(err)
 	}
-
 }
 
 // ----------------------------------------

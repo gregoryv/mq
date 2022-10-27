@@ -62,13 +62,15 @@ loop:
 
 		// the server tracks active connections
 		go func() {
-			id, _ := initConnection(ctx, conn)
+			id, _ := InitConnection(ctx, conn)
 			_ = id
 		}()
 	}
 }
 
-func initConnection(ctx Context, conn net.Conn) (string, error) {
+// InitConnection returns the client id after a successful connect and
+// ack.
+func InitConnection(ctx Context, conn net.Conn) (string, error) {
 	var (
 		sender    = tt.NewSender(conn)
 		onConnect = make(chan *mq.Connect, 0)
