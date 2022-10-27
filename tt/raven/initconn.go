@@ -2,7 +2,7 @@ package raven
 
 import (
 	. "context"
-	"net"
+	"io"
 
 	"github.com/google/uuid"
 	"github.com/gregoryv/mq"
@@ -11,12 +11,12 @@ import (
 
 // InitConn returns the client id after a successful connect and
 // ack.
-func InitConn(ctx Context, conn net.Conn) (string, error) {
+func InitConn(ctx Context, conn io.ReadWriter) (string, error) {
 	var (
 		sender    = tt.NewSender(conn)
 		onConnect = make(chan *mq.Connect, 0)
 		connwait  = tt.Intercept(onConnect)
-		logger    = tt.NewLogger(tt.LevelInfo)
+		logger    = NewLogger(tt.LevelInfo)
 
 		in  = tt.NewInQueue(tt.NoopHandler, connwait, logger)
 		out = tt.NewOutQueue(sender.Out, logger)
