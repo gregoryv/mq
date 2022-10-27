@@ -34,51 +34,41 @@ type Server struct {
 }
 
 // Run listens for tcp connections. Blocks until context is cancelled
-// or accepting a connection fails.
-func (s *Server) Run(ctx Context) error {
-	l, err := net.Listen("tcp", s.bind)
-	if err != nil {
-		return err
-	}
-	defer l.Close()
-
-	c := make(chan error, 0)
-
-	go func() {
-	loop:
-		for {
-			// Wait for a connection.
-			if l, ok := l.(interface{ SetDeadline(time.Time) error }); ok {
-				l.SetDeadline(time.Now().Add(s.acceptTimeout))
-			}
-			conn, err := l.Accept()
-			if err != nil {
-				if errors.Is(err, os.ErrDeadlineExceeded) {
-					continue loop
-				}
-				// todo check what causes Accept to fail other than
-				// timeout, guess not all errors should result in
-				// server run to stop
-				c <- err
-			}
-
-			// the server tracks active connections
-			go func() {
-				id, _ := initConnection(ctx, conn)
-				_ = id
-			}()
+// or accepting a connection fails. Accepting new connection can only
+// be interrupted if listener has SetDeadline method.
+func (s *Server) Run(l net.Listener, ctx Context) error {
+loop:
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
-	}()
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-c:
-		return err
+		// Wait for a connection.
+		if l, ok := l.(interface{ SetDeadline(time.Time) error }); ok {
+			l.SetDeadline(time.Now().Add(s.acceptTimeout))
+		}
+		conn, err := l.Accept()
+		if err != nil {
+			if errors.Is(err, os.ErrDeadlineExceeded) {
+				continue loop
+			}
+			// todo check what causes Accept to fail other than
+			// timeout, guess not all errors should result in
+			// server run to stop
+			return err
+		}
+
+		// the server tracks active connections
+		go func() {
+			id, _ := initConnection(ctx, conn)
+			_ = id
+		}()
 	}
 }
 
-func initConnection(ctx Context, conn io.ReadWriteCloser) (string, error) {
+func initConnection(ctx Context, conn net.Conn) (string, error) {
 	var (
 		sender    = tt.NewSender(conn)
 		onConnect = make(chan *mq.Connect, 0)
