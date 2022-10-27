@@ -9,6 +9,9 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
+// todo maybe a connections handler of sorts that keeps track of
+// unique connections
+
 // InitConn returns the client id after a successful connect and
 // ack.
 func InitConn(ctx Context, conn io.ReadWriter) (string, error) {

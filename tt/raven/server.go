@@ -26,6 +26,7 @@ type Server struct {
 	// client has to send the initial connect packet
 	connectTimeout time.Duration
 
+	// todo place this in a connections store
 	clients map[string]io.ReadWriter
 }
 
@@ -41,15 +42,16 @@ loop:
 		default:
 		}
 
-		// Wait for a connection.
+		// timeout Accept call so we don't block the loop
 		if l, ok := l.(interface{ SetDeadline(time.Time) error }); ok {
 			l.SetDeadline(time.Now().Add(s.acceptTimeout))
 		}
 		conn, err := l.Accept()
+		if errors.Is(err, os.ErrDeadlineExceeded) {
+			continue loop
+		}
+
 		if err != nil {
-			if errors.Is(err, os.ErrDeadlineExceeded) {
-				continue loop
-			}
 			// todo check what causes Accept to fail other than
 			// timeout, guess not all errors should result in
 			// server run to stop

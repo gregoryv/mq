@@ -33,4 +33,11 @@ func TestInitConn(t *testing.T) {
 		t.Log(logs.String())
 		t.Error("got", id)
 	}
+
+	// todo respects cancel
+
+	// todo does not leek receiver run
+
+	// todo decide if InitConn should only be running during the
+	// connection and once ok, switch to another
 }
