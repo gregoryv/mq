@@ -12,6 +12,7 @@ import (
 func TestServer(t *testing.T) {
 	s := NewServer()
 
+	// Accept respects deadline
 	ctx, cancel := WithCancel(Background())
 	time.AfterFunc(2*s.acceptTimeout, cancel)
 
@@ -19,9 +20,13 @@ func TestServer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer l.Close()
-
 	if err := s.Run(l, ctx); !errors.Is(err, Canceled) {
+		t.Error(err)
+	}
+
+	// Ends on listener close
+	time.AfterFunc(time.Millisecond, func() { l.Close() })
+	if err := s.Run(l, Background()); !errors.Is(err, net.ErrClosed) {
 		t.Error(err)
 	}
 }
