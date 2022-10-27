@@ -7,7 +7,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 ## [unreleased]
 
 - Improve tt.Logger performance
-- Move tt.TestServer to mq/ts
+- Move tt.TestServer to mq/tt/raven
 - Add Logger.SetMaxIDLen to control length of id
 
 ## [0.19.0] 2022-10-21
