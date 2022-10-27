@@ -11,17 +11,19 @@ import (
 	"github.com/gregoryv/mq"
 )
 
-func NewReceiver(r io.Reader, first mq.Handler) *Receiver {
+// NewReceiver returns a receiver that reads packets from the reader
+// and calls the handler.
+func NewReceiver(h mq.Handler, r io.Reader) *Receiver {
 	return &Receiver{
 		wire:        r,
-		first:       first,
+		handle:      h,
 		readTimeout: 100 * time.Millisecond,
 	}
 }
 
 type Receiver struct {
 	wire        io.Reader
-	first       mq.Handler
+	handle      mq.Handler
 	readTimeout time.Duration
 }
 
@@ -45,6 +47,6 @@ loop:
 		}
 		// ignore error here, it's up to the user to configure a queue
 		// where the first middleware handles any errors, eg. Logger
-		_ = r.first(ctx, p)
+		_ = r.handle(ctx, p)
 	}
 }

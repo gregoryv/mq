@@ -15,7 +15,7 @@ func TestReceiver(t *testing.T) {
 	{ // handler is called on packet from server
 		conn, client := Dial()
 		called := NewCalled()
-		receiver := NewReceiver(conn, called.Handler)
+		receiver := NewReceiver(called.Handler, conn)
 
 		go receiver.Run(context.Background())
 		p := mq.NewPublish()
@@ -39,7 +39,7 @@ func TestReceiver(t *testing.T) {
 		}
 		defer conn.Close()
 
-		receiver := NewReceiver(conn, NoopHandler)
+		receiver := NewReceiver(NoopHandler, conn)
 		receiver.readTimeout = time.Microsecond // speedup
 
 		ctx, cancel := context.WithCancel(context.Background())
@@ -50,7 +50,7 @@ func TestReceiver(t *testing.T) {
 	}
 
 	{ // Run is stopped on closed connection
-		receiver := NewReceiver(&ClosedConn{}, NoopHandler)
+		receiver := NewReceiver(NoopHandler, &ClosedConn{})
 		err := receiver.Run(context.Background())
 		if !errors.Is(err, io.EOF) {
 			t.Errorf("unexpected error: %T", err)

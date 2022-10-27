@@ -26,7 +26,7 @@ func InitConn(ctx Context, conn io.ReadWriter) (string, error) {
 	)
 
 	_ = out // todo register outgoing connection once connected
-	go tt.NewReceiver(conn, in).Run(ctx)
+	go tt.NewReceiver(in, conn).Run(ctx)
 
 	select {
 	case p := <-onConnect:

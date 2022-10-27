@@ -104,7 +104,7 @@ func (g *Gopher) Join(room string) {
 	defer cancel()
 
 	// forward received packets to the in queue
-	receiver := tt.NewReceiver(conn, in)
+	receiver := tt.NewReceiver(in, conn)
 	go func() {
 		if err := receiver.Run(ctx); errors.Is(err, io.EOF) {
 			fmt.Println(g.name, "disconnected")

@@ -38,7 +38,7 @@ func Example_client() {
 
 	// start handling packet flow
 	ctx, _ := context.WithTimeout(context.Background(), 20*time.Millisecond)
-	go tt.NewReceiver(conn, in).Run(ctx)
+	go tt.NewReceiver(in, conn).Run(ctx)
 
 	{ // connect
 		p := mq.NewConnect()

@@ -36,10 +36,8 @@ type Server struct {
 func (s *Server) Run(l net.Listener, ctx Context) error {
 loop:
 	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
+		if err := ctx.Err(); err != nil {
+			return err
 		}
 
 		// timeout Accept call so we don't block the loop
