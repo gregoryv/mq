@@ -11,16 +11,27 @@ import (
 
 func TestServer(t *testing.T) {
 	s := NewServer()
-
-	// Accept respects deadline
-	ctx, cancel := WithCancel(Background())
-	time.AfterFunc(2*s.acceptTimeout, cancel)
-
+	// run in background
 	l, err := net.Listen("tcp", ":")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := s.Run(l, ctx); !errors.Is(err, Canceled) {
+	ctx, cancel := WithCancel(Background())
+	go func() {
+		err = s.Run(l, ctx)
+	}()
+
+	// Accept connection
+	conn, err := net.Dial("tcp", l.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
+
+	// Accept respects deadline
+	cancel()
+	<-time.After(2 * s.acceptTimeout)
+	if !errors.Is(err, Canceled) {
 		t.Error(err)
 	}
 
@@ -29,6 +40,7 @@ func TestServer(t *testing.T) {
 	if err := s.Run(l, Background()); !errors.Is(err, net.ErrClosed) {
 		t.Error(err)
 	}
+
 }
 
 // ----------------------------------------
