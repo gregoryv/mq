@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/gregoryv/cmdline"
 )
@@ -28,9 +27,12 @@ func main() {
 	)
 	cli.Parse()
 
-	if err := cmd.(Command).Run(context.Background()); err != nil {
-		log.Fatal(err)
+	if cmd != nil {
+		if err := cmd.(Command).Run(context.Background()); err != nil {
+			cmdline.DefaultShell.Fatal(err)
+		}
 	}
+	cmdline.DefaultShell.Exit(0)
 }
 
 type Command interface {
