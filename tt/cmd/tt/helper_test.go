@@ -1,4 +1,4 @@
-package raven
+package main
 
 import "io"
 
