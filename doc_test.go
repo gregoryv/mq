@@ -19,6 +19,14 @@ func DocumentFlags(p Packet) string {
 1 s   Clean Start
 0     reserved
 `
+	case *ConnAck:
+		return `        3210 76543210 AssignedClientID Size
+
+3-0 reserved
+
+7-1 reserved
+0 s Session present
+`
 	default:
 		return p.String()
 	}

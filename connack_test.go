@@ -17,6 +17,23 @@ func ExampleConnAck() {
 	// CONNACK ---- -------s  5 bytes
 }
 
+func ExampleConnAck_String() {
+	a := NewConnAck()
+	a.SetSessionPresent(true)
+	a.SetAssignedClientID("pink")
+
+	fmt.Println(a.String())
+	fmt.Print(DocumentFlags(&a))
+	// output:
+	// CONNACK ---- -------s pink 12 bytes
+	//         3210 76543210 AssignedClientID Size
+	//
+	// 3-0 reserved
+	//
+	// 7-1 reserved
+	// 0 s Session present
+}
+
 func TestConnAck(t *testing.T) {
 	a := NewConnAck()
 	size := unsafe.Sizeof(a)
