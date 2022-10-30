@@ -26,6 +26,14 @@ func ExampleNewPubComp() {
 	// PUBCOMP ---- p9 Success 4 bytes
 }
 
+func ExampleNewPubRec() {
+	p := NewPubRec()
+	p.SetPacketID(9)
+	fmt.Println(&p)
+	// output:
+	// PUBREC ---- p9 Success 4 bytes
+}
+
 func ExampleNewPubRel() {
 	p := NewPubRel()
 	p.SetPacketID(9)
