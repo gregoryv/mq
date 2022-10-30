@@ -1,6 +1,20 @@
 package mq
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
+
+func ExampleAuth_String() {
+	p := NewAuth()
+	fmt.Println(&p)
+	fmt.Print(DocumentFlags(&p))
+	// output:
+	// AUTH ---- 2 bytes
+	//      3210 Size
+	//
+	// 3-0 reserved
+}
 
 func TestAuth(t *testing.T) {
 	p := NewAuth()

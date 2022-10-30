@@ -2,6 +2,11 @@ package mq
 
 func DocumentFlags(p Packet) string {
 	switch p.(type) {
+	case *Auth:
+		return `     3210 Size
+
+3-0 reserved
+`
 	case *Connect:
 		return `        3210 76543210 ProtocolVersion ClientID KeepAlive Size
 
