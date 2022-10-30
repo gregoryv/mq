@@ -404,6 +404,7 @@ func (c *Connect) propertyMap() map[Ident]wireType {
 	}
 }
 
+// String returns a short string describing the connect packet.
 func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s%v %s %s %v bytes",
 		firstByte(c.fixed).String(), connectFlags(c.Flags()),

@@ -19,6 +19,34 @@ func ExampleConnect() {
 	// CONNECT ---- up------ MQTT5 macy 4m59s 34 bytes
 }
 
+func ExampleConnect_String() {
+	p := NewConnect()
+	p.SetClientID("pink")
+	p.SetUsername("gopher")
+	p.SetPassword([]byte("cute"))
+	p.SetWillQoS(1)
+
+	fmt.Println(p.String())
+	fmt.Println(DocumentFlags(&p))
+	// output:
+	// CONNECT ---- up--1--- MQTT5 pink 0s 33 bytes
+	//         3210 76543210
+	//
+	// 3 reserved
+	// 2 reserved
+	// 1 reserved
+	// 0 reserved
+	//
+	// 7 u   User Name Flag
+	// 6 p   Password Flag
+	// 5 r   Will Retain
+	// 4 2|! Will QoS
+	// 3 1|! Will QoS
+	// 2 w   Will Flag
+	// 1 s   Clean Start
+	// 0     reserved
+}
+
 func TestConnect(t *testing.T) {
 	c := NewConnect()
 
