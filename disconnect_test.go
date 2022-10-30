@@ -2,8 +2,20 @@ package mq
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 )
+
+func ExampleDisconnect_String() {
+	p := NewDisconnect()
+	fmt.Println(&p)
+	fmt.Print(DocumentFlags(&p))
+	// output:
+	// DISCONNECT ---- 2 bytes
+	//            3210 Size
+	//
+	// 3-0 reserved
+}
 
 func TestDisconnect(t *testing.T) {
 	p := NewDisconnect()

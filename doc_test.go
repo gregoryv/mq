@@ -1,12 +1,10 @@
 package mq
 
+import "strings"
+
 func DocumentFlags(p Packet) string {
 	switch p.(type) {
-	case *Auth:
-		return `     3210 Size
 
-3-0 reserved
-`
 	case *Connect:
 		return `        3210 76543210 ProtocolVersion ClientID KeepAlive Size
 
@@ -29,7 +27,13 @@ func DocumentFlags(p Packet) string {
 7-1 reserved
 0 s Session present
 `
+
 	default:
-		return p.String()
+		name := p.String()
+		i := strings.Index(name, " ")
+		return strings.Repeat(" ", i+1) + `3210 Size
+
+3-0 reserved
+		`
 	}
 }
