@@ -42,7 +42,7 @@ func (p *PubAck) String() string {
 		p.packetID,
 		ReasonCode(p.reasonCode).String(),
 		func() string {
-			if p.reasonCode > 0 {
+			if p.reasonCode > 0 && len(p.reason) > 0 {
 				return " " + string(p.reason)
 			}
 			return ""

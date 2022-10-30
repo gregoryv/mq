@@ -9,6 +9,15 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[Success-0]
+	_ = x[NormalDisconnect-0]
+	_ = x[GrantedQoS0-0]
+	_ = x[GrantedQoS1-1]
+	_ = x[GrantedQoS2-2]
+	_ = x[DisconnectWithWill-4]
+	_ = x[NoMatchingSubscribers-16]
+	_ = x[NoSubscriptionExisted-17]
+	_ = x[ContinueAuth-24]
+	_ = x[ReAuthenticate-25]
 	_ = x[UnspecifiedError-128]
 	_ = x[MalformedPacket-129]
 	_ = x[ProtocolError-130]
@@ -22,9 +31,14 @@ func _() {
 	_ = x[Banned-138]
 	_ = x[BadAuthenticationMethod-140]
 	_ = x[TopicNameInvalid-144]
+	_ = x[PacketIdentifierInUse-145]
+	_ = x[PacketIdentifierNotFound-146]
 	_ = x[ReceiveMaximumExceeded-147]
+	_ = x[TopicAliasInvalid-148]
 	_ = x[PacketTooLarge-149]
+	_ = x[MessageRateToHigh-150]
 	_ = x[QuotaExceeded-151]
+	_ = x[AdministrativeAction-152]
 	_ = x[PayloadFormatInvalid-153]
 	_ = x[RetainNotSupported-154]
 	_ = x[QoSNotSupported-155]
@@ -32,51 +46,49 @@ func _() {
 	_ = x[ServerMoved-157]
 	_ = x[SharedSubscriptionsNotSupported-158]
 	_ = x[ConnectionRateExceeded-159]
+	_ = x[MaximumConnectTime-160]
 	_ = x[SubscriptionIdentifiersNotSupported-161]
 	_ = x[WildcardSubscriptionsNotSupported-162]
 }
 
 const (
-	_ReasonCode_name_0 = "Success"
-	_ReasonCode_name_1 = "UnspecifiedErrorMalformedPacketProtocolErrorImplementationSpecificErrorUnsupportedProtocolVersionClientIdentifierNotValidBadUserNameOrPasswordNotAuthorizedServerUnavailableServerBusyBanned"
-	_ReasonCode_name_2 = "BadAuthenticationMethod"
-	_ReasonCode_name_3 = "TopicNameInvalid"
-	_ReasonCode_name_4 = "ReceiveMaximumExceeded"
-	_ReasonCode_name_5 = "PacketTooLarge"
-	_ReasonCode_name_6 = "QuotaExceeded"
-	_ReasonCode_name_7 = "PayloadFormatInvalidRetainNotSupportedQoSNotSupportedUseAnotherServerServerMovedSharedSubscriptionsNotSupportedConnectionRateExceeded"
-	_ReasonCode_name_8 = "SubscriptionIdentifiersNotSupportedWildcardSubscriptionsNotSupported"
+	_ReasonCode_name_0 = "SuccessGrantedQoS1GrantedQoS2"
+	_ReasonCode_name_1 = "DisconnectWithWill"
+	_ReasonCode_name_2 = "NoMatchingSubscribersNoSubscriptionExisted"
+	_ReasonCode_name_3 = "ContinueAuthReAuthenticate"
+	_ReasonCode_name_4 = "UnspecifiedErrorMalformedPacketProtocolErrorImplementationSpecificErrorUnsupportedProtocolVersionClientIdentifierNotValidBadUserNameOrPasswordNotAuthorizedServerUnavailableServerBusyBanned"
+	_ReasonCode_name_5 = "BadAuthenticationMethod"
+	_ReasonCode_name_6 = "TopicNameInvalidPacketIdentifierInUsePacketIdentifierNotFoundReceiveMaximumExceededTopicAliasInvalidPacketTooLargeMessageRateToHighQuotaExceededAdministrativeActionPayloadFormatInvalidRetainNotSupportedQoSNotSupportedUseAnotherServerServerMovedSharedSubscriptionsNotSupportedConnectionRateExceededMaximumConnectTimeSubscriptionIdentifiersNotSupportedWildcardSubscriptionsNotSupported"
 )
 
 var (
-	_ReasonCode_index_1 = [...]uint8{0, 16, 31, 44, 71, 97, 121, 142, 155, 172, 182, 188}
-	_ReasonCode_index_7 = [...]uint8{0, 20, 38, 53, 69, 80, 111, 133}
-	_ReasonCode_index_8 = [...]uint8{0, 35, 68}
+	_ReasonCode_index_0 = [...]uint8{0, 7, 18, 29}
+	_ReasonCode_index_2 = [...]uint8{0, 21, 42}
+	_ReasonCode_index_3 = [...]uint8{0, 12, 26}
+	_ReasonCode_index_4 = [...]uint8{0, 16, 31, 44, 71, 97, 121, 142, 155, 172, 182, 188}
+	_ReasonCode_index_6 = [...]uint16{0, 16, 37, 61, 83, 100, 114, 131, 144, 164, 184, 202, 217, 233, 244, 275, 297, 315, 350, 383}
 )
 
 func (i ReasonCode) String() string {
 	switch {
-	case i == 0:
-		return _ReasonCode_name_0
+	case i <= 2:
+		return _ReasonCode_name_0[_ReasonCode_index_0[i]:_ReasonCode_index_0[i+1]]
+	case i == 4:
+		return _ReasonCode_name_1
+	case 16 <= i && i <= 17:
+		i -= 16
+		return _ReasonCode_name_2[_ReasonCode_index_2[i]:_ReasonCode_index_2[i+1]]
+	case 24 <= i && i <= 25:
+		i -= 24
+		return _ReasonCode_name_3[_ReasonCode_index_3[i]:_ReasonCode_index_3[i+1]]
 	case 128 <= i && i <= 138:
 		i -= 128
-		return _ReasonCode_name_1[_ReasonCode_index_1[i]:_ReasonCode_index_1[i+1]]
+		return _ReasonCode_name_4[_ReasonCode_index_4[i]:_ReasonCode_index_4[i+1]]
 	case i == 140:
-		return _ReasonCode_name_2
-	case i == 144:
-		return _ReasonCode_name_3
-	case i == 147:
-		return _ReasonCode_name_4
-	case i == 149:
 		return _ReasonCode_name_5
-	case i == 151:
-		return _ReasonCode_name_6
-	case 153 <= i && i <= 159:
-		i -= 153
-		return _ReasonCode_name_7[_ReasonCode_index_7[i]:_ReasonCode_index_7[i+1]]
-	case 161 <= i && i <= 162:
-		i -= 161
-		return _ReasonCode_name_8[_ReasonCode_index_8[i]:_ReasonCode_index_8[i+1]]
+	case 144 <= i && i <= 162:
+		i -= 144
+		return _ReasonCode_name_6[_ReasonCode_index_6[i]:_ReasonCode_index_6[i+1]]
 	default:
 		return "ReasonCode(" + strconv.FormatInt(int64(i), 10) + ")"
 	}

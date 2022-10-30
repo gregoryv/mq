@@ -92,6 +92,8 @@ const (
 //
 // MQTT_Version_5_0.html#_Toc3901031
 
+//go:generate stringer -type ReasonCode
+
 type ReasonCode byte
 
 const (

@@ -26,6 +26,15 @@ func ExampleNewPubComp() {
 	// PUBCOMP ---- p9 Success 4 bytes
 }
 
+func ExampleNewPubRel() {
+	p := NewPubRel()
+	p.SetPacketID(9)
+	p.SetReasonCode(PacketIdentifierNotFound)
+	fmt.Println(&p)
+	// output:
+	// PUBREL ---- p9 PacketIdentifierNotFound 5 bytes
+}
+
 func TestPubAck(t *testing.T) {
 	p := NewPubAck()
 	if v := p.String(); !strings.Contains(v, "PUBACK") {
