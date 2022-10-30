@@ -41,7 +41,11 @@ func DocumentFlags(p Packet) string {
 
 3-0 reserved
 `)
+	case *SubAck:
+		buf.WriteString(`3210 PacketID Size
 
+3-0 reserved
+`)
 	case *Publish:
 		buf.WriteString(`3210 PacketID Topic [CorrelationData] Size
 

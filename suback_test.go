@@ -1,9 +1,22 @@
 package mq
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
+
+func ExampleSubAck_String() {
+	p := NewSubAck()
+	p.SetPacketID(3)
+	fmt.Println(&p)
+	fmt.Print(DocumentFlags(&p))
+	// output:
+	// SUBACK ---- p3 5 bytes
+	//        3210 PacketID Size
+	//
+	// 3-0 reserved
+}
 
 func TestSubAck(t *testing.T) {
 	p := NewSubAck()
