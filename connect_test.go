@@ -30,12 +30,9 @@ func ExampleConnect_String() {
 	fmt.Println(DocumentFlags(&p))
 	// output:
 	// CONNECT ---- up--1--- MQTT5 pink 0s 33 bytes
-	//         3210 76543210
+	//         3210 76543210 ProtocolVersion ClientID KeepAlive Size
 	//
-	// 3 reserved
-	// 2 reserved
-	// 1 reserved
-	// 0 reserved
+	// 3-0 reserved
 	//
 	// 7 u   User Name Flag
 	// 6 p   Password Flag
