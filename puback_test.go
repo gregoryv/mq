@@ -1,10 +1,22 @@
 package mq
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
 
+func ExamplePubAck_String() {
+	p := NewPubAck()
+	p.SetPacketID(9)
+	fmt.Println(&p)
+	fmt.Print(DocumentFlags(&p))
+	// output:
+	// PUBACK ---- p9 4 bytes
+	//        3210 PacketID Size
+	//
+	// 3-0 reserved
+}
 func TestPubAck(t *testing.T) {
 	p := NewPubAck()
 	if v := p.String(); !strings.Contains(v, "PUBACK") {

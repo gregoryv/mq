@@ -28,6 +28,11 @@ func DocumentFlags(p Packet) string {
 0 s Session present
 `
 
+	case *PubAck:
+		return `       3210 PacketID Size
+
+3-0 reserved
+`
 	default:
 		name := p.String()
 		i := strings.Index(name, " ")
