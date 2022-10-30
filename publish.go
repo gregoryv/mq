@@ -41,10 +41,16 @@ func (p *Publish) String() string {
 	if v := uint16(p.topicAlias); v > 0 {
 		topic = fmt.Sprintf("topic:%v", v)
 	}
-	return fmt.Sprintf("%s p%v %s %v bytes",
+	return fmt.Sprintf("%s p%v %s%s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		topic,
+		func() string {
+			if len(p.correlationData) == 0 {
+				return ""
+			}
+			return " " + string(p.correlationData)
+		}(),
 		p.width(),
 	)
 }

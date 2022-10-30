@@ -6,13 +6,21 @@ import (
 	"testing"
 )
 
-func ExamplePublish() {
+func ExamplePublish_String() {
 	p := Pub(2, "a/b/1", "gopher")
+	p.SetPacketID(3)
 	p.SetRetain(true)
-
-	fmt.Print(p)
+	p.SetCorrelationData([]byte("1111-222222-3333333"))
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
 	// output:
-	// PUBLISH -2-r p0 a/b/1 20 bytes
+	// PUBLISH -2-r p3 a/b/1 1111-222222-3333333 42 bytes
+	//         3210 PacketID Topic [CorrelationData] Size
+	//
+	// 3 d   Duplicate
+	// 2 2|! QoS
+	// 1 1|! QoS
+	// 0 r   Retain
 }
 
 func TestPublish(t *testing.T) {
