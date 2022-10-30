@@ -29,7 +29,7 @@ func DocumentFlags(p Packet) string {
 `
 
 	case *PubAck:
-		return `       3210 PacketID Size
+		return `       3210 PacketID Reason [reason text] Size
 
 3-0 reserved
 `

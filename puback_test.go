@@ -12,11 +12,20 @@ func ExamplePubAck_String() {
 	fmt.Println(&p)
 	fmt.Print(DocumentFlags(&p))
 	// output:
-	// PUBACK ---- p9 4 bytes
-	//        3210 PacketID Size
+	// PUBACK ---- p9 Success 4 bytes
+	//        3210 PacketID Reason [reason text] Size
 	//
 	// 3-0 reserved
 }
+
+func ExampleNewPubComp() {
+	p := NewPubComp()
+	p.SetPacketID(9)
+	fmt.Println(&p)
+	// output:
+	// PUBCOMP ---- p9 Success 4 bytes
+}
+
 func TestPubAck(t *testing.T) {
 	p := NewPubAck()
 	if v := p.String(); !strings.Contains(v, "PUBACK") {

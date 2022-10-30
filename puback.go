@@ -37,19 +37,18 @@ type PubAck struct {
 }
 
 func (p *PubAck) String() string {
-	s := fmt.Sprintf("%s p%v %v bytes",
+	return fmt.Sprintf("%s p%v %s%s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
+		ReasonCode(p.reasonCode).String(),
+		func() string {
+			if p.reasonCode > 0 {
+				return " " + string(p.reason)
+			}
+			return ""
+		}(),
 		p.width(),
 	)
-	if p.reasonCode > 0 {
-		return fmt.Sprintf("%s %s %s",
-			s,
-			ReasonCode(p.reasonCode).String(),
-			p.reason,
-		)
-	}
-	return s
 }
 
 func (p *PubAck) AckType() byte {
