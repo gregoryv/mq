@@ -23,7 +23,7 @@ func main() {
 
 	u := cli.Usage()
 	u.Preface(
-		"mqtt-v5 server and client by Gregory Vincic",
+		"mqtt-v5 server and client by Gregory Vinčić",
 	)
 	cli.Parse()
 
