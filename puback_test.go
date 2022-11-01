@@ -65,14 +65,24 @@ func TestPubAck(t *testing.T) {
 	}
 
 	// variations
-	if p := NewPubRel(); !strings.Contains(p.String(), "PUBREL") {
-		t.Error(p.String())
+	{
+		p := NewPubRel()
+		testControlPacket(t, p)
+		if v := p.String(); !strings.Contains(v, "PUBREL") {
+			t.Error(v)
+		}
 	}
-	if p := NewPubRec(); !strings.Contains(p.String(), "PUBREC") {
-		t.Error(p.String())
+	{
+		p := NewPubRec()
+		if v := p.String(); !strings.Contains(v, "PUBREC") {
+			t.Error(v)
+		}
 	}
-	if p := NewPubComp(); !strings.Contains(p.String(), "PUBCOMP") {
-		t.Error(p.String())
+	{
+		p := NewPubComp()
+		if v := p.String(); !strings.Contains(v, "PUBCOMP") {
+			t.Error(v)
+		}
 	}
 
 	// type

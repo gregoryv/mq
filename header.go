@@ -30,7 +30,10 @@ func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	case PUBLISH:
 		p = &Publish{fixed: f.fixed}
 
-	case PUBACK, PUBREC, PUBREL, PUBCOMP:
+	case PUBREL:
+		p = &PubRel{PubAck{fixed: f.fixed}}
+
+	case PUBACK, PUBREC, PUBCOMP:
 		p = &PubAck{fixed: f.fixed}
 
 	case CONNECT:

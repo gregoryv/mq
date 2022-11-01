@@ -11,8 +11,14 @@ func NewPubRec() *PubAck {
 }
 
 // NewPubRel returns control packet with type PUBREL
-func NewPubRel() *PubAck {
-	return &PubAck{fixed: Bits(PUBREL)}
+func NewPubRel() *PubRel {
+	p := &PubRel{}
+	p.fixed = Bits(PUBREL)
+	return p
+}
+
+type PubRel struct {
+	PubAck
 }
 
 // NewPubComp returns control packet with type PUBCOMP

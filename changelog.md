@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add type PubRel
 - Add type UserProperties
 
 ## [0.20.0] 2022-11-01

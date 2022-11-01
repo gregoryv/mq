@@ -11,7 +11,7 @@ func NewAuth() *Auth {
 
 type Auth struct {
 	fixed Bits
-
+	// todo missing authMethod, dataData and reasonString
 	reasonCode wuint8
 	UserProperties
 }
