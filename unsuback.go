@@ -8,8 +8,8 @@ import (
 // UnsubAck and SubAck are exactly the same except for the fixed
 // byte. Keep for now.
 
-func NewUnsubAck() UnsubAck {
-	return UnsubAck{fixed: Bits(UNSUBACK)}
+func NewUnsubAck() *UnsubAck {
+	return &UnsubAck{fixed: Bits(UNSUBACK)}
 }
 
 type UnsubAck struct {

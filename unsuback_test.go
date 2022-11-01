@@ -19,5 +19,5 @@ func TestUnsubAck(t *testing.T) {
 		t.Error(v)
 	}
 
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 }
