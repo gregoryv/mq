@@ -32,19 +32,10 @@ func Test_IDPool(t *testing.T) {
 	go drain()
 
 	// check all packets that require id
-	packets := []mq.Packet{}
-	{
-		p := mq.NewPublish()
-		p.SetQoS(1) //
-		packets = append(packets, p)
-	}
-	{
-		p := mq.NewSubscribe()
-		packets = append(packets, p)
-	}
-	{
-		p := mq.NewUnsubscribe()
-		packets = append(packets, &p)
+	packets := []mq.Packet{
+		mq.Pub(1, "a/b", "gopher"),
+		mq.NewSubscribe(),
+		mq.NewUnsubscribe(),
 	}
 
 	for _, p := range packets {

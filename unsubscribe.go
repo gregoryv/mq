@@ -5,9 +5,9 @@ import (
 	"io"
 )
 
-func NewUnsubscribe() Unsubscribe {
+func NewUnsubscribe() *Unsubscribe {
 	// wonder why bit 1 needs to be set? specification doesn't say
-	return Unsubscribe{fixed: Bits(UNSUBSCRIBE | 1<<1)}
+	return &Unsubscribe{fixed: Bits(UNSUBSCRIBE | 1<<1)}
 }
 
 type Unsubscribe struct {

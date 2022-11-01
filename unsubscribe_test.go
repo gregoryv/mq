@@ -23,5 +23,5 @@ func TestUnsubscribe(t *testing.T) {
 		t.Errorf("%q expect to contain %q", v, "SUBSCRIBE --1-")
 	}
 
-	testControlPacket(t, &s)
+	testControlPacket(t, s)
 }
