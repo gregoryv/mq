@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-func NewAuth() Auth {
-	return Auth{fixed: Bits(AUTH)}
+func NewAuth() *Auth {
+	return &Auth{fixed: Bits(AUTH)}
 }
 
 type Auth struct {
