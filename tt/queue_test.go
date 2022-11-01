@@ -19,7 +19,7 @@ func TestQueues(t *testing.T) {
 
 	{ // connect mq tt
 		p := mq.NewConnect()
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 
 		ack := mq.NewConnAck()
 		in(ctx, &ack)

@@ -18,8 +18,8 @@ import (
 var mqtt5 = []byte("MQTT")
 
 // NewConnect returns an empty MQTT v5 connect packet.
-func NewConnect() Connect {
-	return Connect{
+func NewConnect() *Connect {
+	return &Connect{
 		fixed:           Bits(CONNECT),
 		protocolName:    mqtt5,
 		protocolVersion: 5,

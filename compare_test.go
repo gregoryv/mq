@@ -118,7 +118,7 @@ func TestCompareConnect(t *testing.T) {
 		t.Log("got", got.String())
 
 		a := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
-		b := strings.ReplaceAll(fmt.Sprintf("%#v", &our), ", ", ",\n")
+		b := strings.ReplaceAll(fmt.Sprintf("%#v", our), ", ", ",\n")
 		assert := asserter.New(t)
 		assert().Equals(a, b)
 	}

@@ -43,7 +43,7 @@ func Example_client() {
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID("example")
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 	}
 	<-onConnAck
 

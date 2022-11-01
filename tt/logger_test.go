@@ -53,7 +53,7 @@ func ExampleLogger_SetMaxIDLen() {
 	{
 		p := mq.NewConnect()
 		p.SetClientID("short")
-		l.Out(NoopHandler)(nil, &p)
+		l.Out(NoopHandler)(nil, p)
 	}
 	{
 		p := mq.NewConnAck()
@@ -91,14 +91,14 @@ func BenchmarkLogger_Out(b *testing.B) {
 	b.Run("Out", func(b *testing.B) {
 		out := l.Out(NoopHandler)
 		for i := 0; i < b.N; i++ {
-			out(ctx, &p)
+			out(ctx, p)
 		}
 	})
 
 	b.Run("In", func(b *testing.B) {
 		in := l.In(NoopHandler)
 		for i := 0; i < b.N; i++ {
-			in(ctx, &p)
+			in(ctx, p)
 		}
 	})
 }
@@ -112,13 +112,13 @@ func TestLogger(t *testing.T) {
 	p.SetClientID(cid)
 
 	// trimmed client id
-	l.Out(NoopHandler)(nil, &p)
+	l.Out(NoopHandler)(nil, p)
 	if v := buf.String(); !strings.HasPrefix(v, "~75e009b6f46") {
 		t.Error(v)
 	}
 
 	// subsequent
-	l.Out(NoopHandler)(nil, &p)
+	l.Out(NoopHandler)(nil, p)
 	if v := buf.String(); !strings.HasPrefix(v, "~75e009b6f46") {
 		t.Error(v)
 	}
@@ -127,7 +127,7 @@ func TestLogger(t *testing.T) {
 	l = NewLogger(LevelDebug)
 	l.SetOutput(&buf)
 	buf.Reset()
-	l.Out(NoopHandler)(nil, &p)
+	l.Out(NoopHandler)(nil, p)
 	if v := buf.String(); !strings.Contains(v, "|f46|") {
 		t.Error(v)
 	}

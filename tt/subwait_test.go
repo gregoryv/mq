@@ -23,7 +23,7 @@ func TestSubWait(t *testing.T) {
 
 	{
 		p := mq.NewConnect()
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 	}
 	{
 		p := mq.NewSubAck()

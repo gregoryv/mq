@@ -114,7 +114,7 @@ func (g *Gopher) Join(room string) {
 	{ // connect
 		p := mq.NewConnect()
 		p.SetClientID(g.name)
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 	}
 	<-onConnAck
 

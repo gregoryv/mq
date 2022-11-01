@@ -27,7 +27,7 @@ func ExampleConnect_String() {
 	p.SetWillQoS(1)
 
 	fmt.Println(p.String())
-	fmt.Println(DocumentFlags(&p))
+	fmt.Println(DocumentFlags(p))
 	// output:
 	// CONNECT ---- up--1--- MQTT5 pink 0s 33 bytes
 	//         3210 76543210 ProtocolVersion ClientID KeepAlive Size
@@ -79,7 +79,7 @@ func TestConnect(t *testing.T) {
 		t.Error(got)
 	}
 
-	testControlPacket(t, &c)
+	testControlPacket(t, c)
 
 	// clears it
 	if c.SetUsername(""); c.HasFlag(UsernameFlag) {
