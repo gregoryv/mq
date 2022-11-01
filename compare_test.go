@@ -24,7 +24,7 @@ func TestComparePublish(t *testing.T) {
 
 	//our.SetRetain(true)
 	// bug in pahos, Publish.WriteTo sets the flags, though it's never
-	// used if new control packet is created with func NewControlPacket
+	// used if new control packet is created with packets.NewControlPacket
 	//the.Retain = true
 	//the.Duplicate = true
 

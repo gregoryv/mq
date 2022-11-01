@@ -6,9 +6,9 @@ import (
 	"io"
 )
 
-func NewSubscribe() Subscribe {
+func NewSubscribe() *Subscribe {
 	// wonder why bit 1 needs to be set? specification doesn't say
-	return Subscribe{fixed: Bits(SUBSCRIBE | 1<<1)}
+	return &Subscribe{fixed: Bits(SUBSCRIBE | 1<<1)}
 }
 
 type Subscribe struct {

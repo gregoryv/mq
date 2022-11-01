@@ -51,7 +51,7 @@ func Example_client() {
 	for _, r := range routes {
 		p := mq.NewSubscribe()
 		p.AddFilter(r.Filter(), mq.OptNL)
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 	}
 	<-subwait.Done(ctx)
 }

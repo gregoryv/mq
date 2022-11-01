@@ -122,7 +122,7 @@ func (g *Gopher) Join(room string) {
 	for _, r := range routes {
 		p := mq.NewSubscribe()
 		p.AddFilter(r.Filter(), mq.OptNL)
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 	}
 	<-subwait.Done(ctx)
 	fmt.Println(g.name, "joined", room)

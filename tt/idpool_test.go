@@ -40,7 +40,7 @@ func Test_IDPool(t *testing.T) {
 	}
 	{
 		p := mq.NewSubscribe()
-		packets = append(packets, &p)
+		packets = append(packets, p)
 	}
 	{
 		p := mq.NewUnsubscribe()
