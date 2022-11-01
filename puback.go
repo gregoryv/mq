@@ -6,23 +6,23 @@ import (
 )
 
 // NewPubRec returns control packet with type PUBREC
-func NewPubRec() PubAck {
-	return PubAck{fixed: Bits(PUBREC)}
+func NewPubRec() *PubAck {
+	return &PubAck{fixed: Bits(PUBREC)}
 }
 
 // NewPubRel returns control packet with type PUBREL
-func NewPubRel() PubAck {
-	return PubAck{fixed: Bits(PUBREL)}
+func NewPubRel() *PubAck {
+	return &PubAck{fixed: Bits(PUBREL)}
 }
 
 // NewPubComp returns control packet with type PUBCOMP
-func NewPubComp() PubAck {
-	return PubAck{fixed: Bits(PUBCOMP)}
+func NewPubComp() *PubAck {
+	return &PubAck{fixed: Bits(PUBCOMP)}
 }
 
 // NewPubAck returns control packet with type PUBACK
-func NewPubAck() PubAck {
-	return PubAck{fixed: Bits(PUBACK)}
+func NewPubAck() *PubAck {
+	return &PubAck{fixed: Bits(PUBACK)}
 }
 
 // A PubAck packet is the response to a Publish packets, depending on

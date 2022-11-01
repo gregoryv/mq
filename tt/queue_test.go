@@ -31,7 +31,7 @@ func TestQueues(t *testing.T) {
 
 		ack := mq.NewPubAck()
 		ack.SetPacketID(p.PacketID())
-		in(ctx, &ack)
+		in(ctx, ack)
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()

@@ -9,8 +9,8 @@ import (
 func ExamplePubAck_String() {
 	p := NewPubAck()
 	p.SetPacketID(9)
-	fmt.Println(&p)
-	fmt.Print(DocumentFlags(&p))
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
 	// output:
 	// PUBACK ---- p9 Success 4 bytes
 	//        3210 PacketID Reason [reason text] Size
@@ -21,7 +21,7 @@ func ExamplePubAck_String() {
 func ExampleNewPubComp() {
 	p := NewPubComp()
 	p.SetPacketID(9)
-	fmt.Println(&p)
+	fmt.Println(p)
 	// output:
 	// PUBCOMP ---- p9 Success 4 bytes
 }
@@ -29,7 +29,7 @@ func ExampleNewPubComp() {
 func ExampleNewPubRec() {
 	p := NewPubRec()
 	p.SetPacketID(9)
-	fmt.Println(&p)
+	fmt.Println(p)
 	// output:
 	// PUBREC ---- p9 Success 4 bytes
 }
@@ -38,7 +38,7 @@ func ExampleNewPubRel() {
 	p := NewPubRel()
 	p.SetPacketID(9)
 	p.SetReasonCode(PacketIdentifierNotFound)
-	fmt.Println(&p)
+	fmt.Println(p)
 	// output:
 	// PUBREL ---- p9 PacketIdentifierNotFound 5 bytes
 }
@@ -51,14 +51,14 @@ func TestPubAck(t *testing.T) {
 
 	eq(t, p.SetPacketID, p.PacketID, 99)
 	// should cover the check for remaining len
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, TopicNameInvalid)
 	eq(t, p.SetReason, p.Reason, "name too long")
 
 	p.AddUserProp("color", "red")
 
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 
 	if v := p.String(); !strings.Contains(v, "name too long") {
 		t.Error(v)
