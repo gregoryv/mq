@@ -14,8 +14,8 @@ type Unsubscribe struct {
 	fixed    Bits
 	packetID wuint16
 
-	userProp []property
-	filters  []wstring
+	UserProperties
+	filters []wstring
 }
 
 func (p *Unsubscribe) String() string {
@@ -36,13 +36,6 @@ func (p *Unsubscribe) filterString() string {
 
 func (p *Unsubscribe) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *Unsubscribe) PacketID() uint16     { return uint16(p.packetID) }
-
-func (p *Unsubscribe) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *Unsubscribe) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
-}
 
 func (p *Unsubscribe) AddFilter(filter string) {
 	p.filters = append(p.filters, wstring(filter))
@@ -76,14 +69,6 @@ func (p *Unsubscribe) variableHeader(b []byte, i int) int {
 	i += p.packetID.fill(b, i)
 	i += vbint(p.properties(_LEN, 0)).fill(b, i)
 	i += p.properties(b, i)
-	return i - n
-}
-
-func (p *Unsubscribe) properties(b []byte, i int) int {
-	n := i
-	for _, v := range p.userProp {
-		i += v.fillProp(b, i, UserProperty)
-	}
 	return i - n
 }
 

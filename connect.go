@@ -49,9 +49,9 @@ type Connect struct {
 	requestProblemInfo  wbool
 	willPayloadFormat   wbool
 
-	protocolName    wstring
-	clientID        wstring
-	userProp        []property
+	protocolName wstring
+	clientID     wstring
+	UserProperties
 	willProp        []property
 	authMethod      wstring
 	authData        bindata
@@ -141,16 +141,6 @@ func (c *Connect) SetRequestProblemInfo(v bool) {
 }
 func (c *Connect) RequestProblemInfo() bool {
 	return bool(c.requestProblemInfo)
-}
-
-// AddUserProp adds a user property. The User Property is allowed to
-// appear multiple times to represent multiple name, value pairs. The
-// same name is allowed to appear more than once.
-func (c *Connect) AddUserProp(key, val string) {
-	c.AddUserProperty(property{key, val})
-}
-func (c *Connect) AddUserProperty(p property) {
-	c.userProp = append(c.userProp, p)
 }
 
 func (c *Connect) AddWillProp(key, val string) {
@@ -308,9 +298,7 @@ func (c *Connect) properties(b []byte, i int) int {
 	// User properties, in the spec it's defined before authentication
 	// method. Though order should not matter, placed here to mimic
 	// pahos order.
-	for j, _ := range c.userProp {
-		i += c.userProp[j].fillProp(b, i, UserProperty)
-	}
+	i += c.UserProperties.properties(b, i)
 	return i - n
 }
 

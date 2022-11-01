@@ -13,7 +13,7 @@ type Auth struct {
 	fixed Bits
 
 	reasonCode wuint8
-	userProp   []property
+	UserProperties
 }
 
 func (p *Auth) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
@@ -24,12 +24,6 @@ func (p *Auth) String() string {
 		firstByte(p.fixed).String(),
 		p.width(),
 	)
-}
-func (p *Auth) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *Auth) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
 }
 
 func (p *Auth) WriteTo(w io.Writer) (int64, error) {
@@ -64,13 +58,6 @@ func (p *Auth) variableHeader(b []byte, i int) int {
 	return i - n
 }
 
-func (p *Auth) properties(b []byte, i int) int {
-	n := i
-	for _, v := range p.userProp {
-		i += v.fillProp(b, i, UserProperty)
-	}
-	return i - n
-}
 func (p *Auth) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.reasonCode)

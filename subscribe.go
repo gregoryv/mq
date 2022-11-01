@@ -15,8 +15,8 @@ type Subscribe struct {
 	fixed          Bits
 	packetID       wuint16
 	subscriptionID vbint
-	userProp       []property
-	filters        []TopicFilter
+	UserProperties
+	filters []TopicFilter
 }
 
 func (p *Subscribe) String() string {
@@ -40,13 +40,6 @@ func (p *Subscribe) PacketID() uint16     { return uint16(p.packetID) }
 
 func (p *Subscribe) SetSubscriptionID(v int) { p.subscriptionID = vbint(v) }
 func (p *Subscribe) SubscriptionID() int     { return int(p.subscriptionID) }
-
-func (p *Subscribe) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *Subscribe) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
-}
 
 func (p *Subscribe) AddFilter(filter string, options Opt) {
 	p.filters = append(p.filters, TopicFilter{
@@ -91,9 +84,7 @@ func (p *Subscribe) properties(b []byte, i int) int {
 	for id, v := range p.propertyMap() {
 		i += v.fillProp(b, i, id)
 	}
-	for _, v := range p.userProp {
-		i += v.fillProp(b, i, UserProperty)
-	}
+	i += p.UserProperties.properties(b, i)
 	return i - n
 }
 

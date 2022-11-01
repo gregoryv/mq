@@ -15,7 +15,7 @@ func NewUnsubAck() *UnsubAck {
 type UnsubAck struct {
 	fixed    Bits
 	packetID wuint16
-	userProp []property
+	UserProperties
 
 	reasonString wstring
 	reasonCodes  []uint8
@@ -39,13 +39,6 @@ func (p *UnsubAck) AddReasonCode(v ReasonCode) {
 }
 
 func (p *UnsubAck) ReasonCodes() []uint8 { return p.reasonCodes }
-
-func (p *UnsubAck) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *UnsubAck) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
-}
 
 // ---------------------------------------- end settings
 
@@ -85,9 +78,7 @@ func (p *UnsubAck) properties(b []byte, i int) int {
 	for id, v := range p.propertyMap() {
 		i += v.fillProp(b, i, id)
 	}
-	for _, v := range p.userProp {
-		i += v.fillProp(b, i, UserProperty)
-	}
+	i += p.UserProperties.properties(b, i)
 	return i - n
 }
 

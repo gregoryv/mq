@@ -32,8 +32,8 @@ type Publish struct {
 	correlationData       bindata
 	contentType           wstring
 	payload               bindata
-	userProp              []property
-	subscriptionIDs       []uint32
+	UserProperties
+	subscriptionIDs []uint32
 }
 
 func (p *Publish) String() string {
@@ -109,16 +109,6 @@ func (p *Publish) ResponseTopic() string     { return string(p.responseTopic) }
 func (p *Publish) SetCorrelationData(v []byte) { p.correlationData = bindata(v) }
 func (p *Publish) CorrelationData() []byte     { return []byte(p.correlationData) }
 
-// AddUserProp adds a user property. The User Property is allowed to
-// appear multiple times to represent multiple name, value pairs. The
-// same name is allowed to appear more than once.
-func (p *Publish) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *Publish) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
-}
-
 func (p *Publish) AddSubscriptionID(v uint32) {
 	p.subscriptionIDs = append(p.subscriptionIDs, v)
 }
@@ -185,9 +175,7 @@ func (p *Publish) properties(b []byte, i int) int {
 	i += p.correlationData.fillProp(b, i, CorrelationData)
 	i += p.contentType.fillProp(b, i, ContentType)
 
-	for j, _ := range p.userProp {
-		i += p.userProp[j].fillProp(b, i, UserProperty)
-	}
+	i += p.UserProperties.properties(b, i)
 	for j, _ := range p.subscriptionIDs {
 		i += vbint(p.subscriptionIDs[j]).fillProp(b, i, SubscriptionID)
 	}

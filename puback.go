@@ -33,7 +33,7 @@ type PubAck struct {
 	packetID   wuint16
 	reasonCode wuint8
 	reason     wstring
-	userProp   []property
+	UserProperties
 }
 
 func (p *PubAck) String() string {
@@ -63,13 +63,6 @@ func (p *PubAck) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
 
 func (p *PubAck) SetReason(v string) { p.reason = wstring(v) }
 func (p *PubAck) Reason() string     { return string(p.reason) }
-
-func (p *PubAck) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
-}
-func (p *PubAck) AddUserProperty(prop property) {
-	p.userProp = append(p.userProp, prop)
-}
 
 func (p *PubAck) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.fill(_LEN, 0))
@@ -106,9 +99,7 @@ func (p *PubAck) variableHeader(b []byte, i int) int {
 func (p *PubAck) properties(b []byte, i int) int {
 	n := i
 	i += p.reason.fillProp(b, i, ReasonString)
-	for _, v := range p.userProp {
-		i += v.fillProp(b, i, UserProperty)
-	}
+	i += p.UserProperties.properties(b, i)
 	return i - n
 }
 

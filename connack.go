@@ -27,7 +27,7 @@ type ConnAck struct {
 	topicAliasMax         wuint16
 	reasonString          wstring
 
-	userProp                []property
+	UserProperties
 	wildcardSubAvailable    wbool
 	subIdentifiersAvailable wbool
 	sharedSubAvailable      wbool
@@ -95,16 +95,6 @@ func (c *ConnAck) AuthMethod() string     { return string(c.authMethod) }
 func (c *ConnAck) SetAuthData(v []byte) { c.authData = bindata(v) }
 func (c *ConnAck) AuthData() []byte     { return []byte(c.authData) }
 
-// AddUserProp adds a user property. The User Property is allowed to
-// appear multiple times to represent multiple name, value pairs. The
-// same name is allowed to appear more than once.
-func (c *ConnAck) AddUserProp(key, val string) {
-	c.AddUserProperty(property{key, val})
-}
-func (c *ConnAck) AddUserProperty(p property) {
-	c.userProp = append(c.userProp, p)
-}
-
 // end settings
 // ----------------------------------------
 
@@ -163,10 +153,7 @@ func (c *ConnAck) properties(b []byte, i int) int {
 	i += c.serverReference.fillProp(b, i, ServerReference)
 	i += c.authMethod.fillProp(b, i, AuthMethod)
 	i += c.authData.fillProp(b, i, AuthData)
-
-	for _, prop := range c.userProp {
-		i += prop.fillProp(b, i, UserProperty)
-	}
+	i += c.UserProperties.properties(b, i)
 	return i - n
 }
 
