@@ -28,7 +28,7 @@ func TestSubWait(t *testing.T) {
 	{
 		p := mq.NewSubAck()
 		for i := 0; i < subscriptions; i++ {
-			_ = in(ctx, &p)
+			_ = in(ctx, p)
 		}
 	}
 	select {
@@ -39,8 +39,7 @@ func TestSubWait(t *testing.T) {
 
 	// check timeout
 	{
-		p := mq.NewSubAck()
-		_ = in(ctx, &p) // only send one
+		_ = in(ctx, mq.NewSubAck()) // only send one
 	}
 	select {
 	case <-subwait.Done(ctx):

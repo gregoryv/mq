@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-func NewSubAck() SubAck {
-	return SubAck{fixed: Bits(SUBACK)}
+func NewSubAck() *SubAck {
+	return &SubAck{fixed: Bits(SUBACK)}
 }
 
 type SubAck struct {

@@ -9,8 +9,8 @@ import (
 func ExampleSubAck_String() {
 	p := NewSubAck()
 	p.SetPacketID(3)
-	fmt.Println(&p)
-	fmt.Print(DocumentFlags(&p))
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
 	// output:
 	// SUBACK ---- p3 5 bytes
 	//        3210 PacketID Size
@@ -32,5 +32,5 @@ func TestSubAck(t *testing.T) {
 		t.Error(v)
 	}
 
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 }
