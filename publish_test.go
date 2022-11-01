@@ -23,6 +23,13 @@ func ExamplePublish_String() {
 	// 0 r   Retain
 }
 
+func ExamplePublish_StringWithoutCorrelation() {
+	p := Pub(1, "a/b/1", "gopher")
+	fmt.Println(p)
+	// output:
+	// PUBLISH --1- p0 a/b/1 20 bytes
+}
+
 func TestPublish(t *testing.T) {
 	p := NewPublish()
 
