@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Return pointer to packet types when using New constructor funcs
 - Improve tt.Logger performance
 - Move tt.TestServer to mq/tt/raven
 - Add Logger.SetMaxIDLen to control length of id
