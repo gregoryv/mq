@@ -7,8 +7,8 @@ import (
 
 func ExamplePingResp_String() {
 	p := NewPingResp()
-	fmt.Println(&p)
-	fmt.Print(DocumentFlags(&p))
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
 	// output:
 	// PINGRESP ---- 2 bytes
 	//          3210 Size
@@ -19,7 +19,7 @@ func ExamplePingResp_String() {
 func TestPingResp(t *testing.T) {
 	p := NewPingResp()
 
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 	if err := p.UnmarshalBinary(nil); err != nil {
 		t.Error("PingResp.UnmarshalBinary should be a noop")
 	}
