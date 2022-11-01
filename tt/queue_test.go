@@ -35,7 +35,7 @@ func TestQueues(t *testing.T) {
 	}
 	{ // disconnect nicely
 		p := mq.NewDisconnect()
-		if err := out(ctx, &p); err != nil {
+		if err := out(ctx, p); err != nil {
 			t.Fatal(err)
 		}
 	}

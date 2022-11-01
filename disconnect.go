@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-func NewDisconnect() Disconnect {
-	return Disconnect{fixed: Bits(DISCONNECT)}
+func NewDisconnect() *Disconnect {
+	return &Disconnect{fixed: Bits(DISCONNECT)}
 }
 
 type Disconnect struct {

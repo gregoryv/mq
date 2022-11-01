@@ -8,8 +8,8 @@ import (
 
 func ExampleDisconnect_String() {
 	p := NewDisconnect()
-	fmt.Println(&p)
-	fmt.Print(DocumentFlags(&p))
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
 	// output:
 	// DISCONNECT ---- 2 bytes
 	//            3210 Size
@@ -20,11 +20,11 @@ func ExampleDisconnect_String() {
 func TestDisconnect(t *testing.T) {
 	p := NewDisconnect()
 	// normal disconnect
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, MalformedPacket)
 	p.AddUserProp("color", "red")
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 }
 
 func BenchmarkDisconnect_UnmarshalBinary(b *testing.B) {
