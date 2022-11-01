@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-func NewPingReq() PingReq {
-	return PingReq{fixed: Bits(PINGREQ)}
+func NewPingReq() *PingReq {
+	return &PingReq{fixed: Bits(PINGREQ)}
 }
 
 type PingReq struct {
