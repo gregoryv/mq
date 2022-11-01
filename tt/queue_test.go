@@ -27,7 +27,7 @@ func TestQueues(t *testing.T) {
 		p.SetQoS(1)
 		p.SetTopicName("a/b")
 		p.SetPayload([]byte("gopher"))
-		_ = out(ctx, &p)
+		_ = out(ctx, p)
 
 		ack := mq.NewPubAck()
 		ack.SetPacketID(p.PacketID())

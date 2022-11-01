@@ -10,11 +10,11 @@ func Pub(qos uint8, topic, payload string) *Publish {
 	p.SetQoS(qos)
 	p.SetTopicName(topic)
 	p.SetPayload([]byte(payload))
-	return &p
+	return p
 }
 
-func NewPublish() Publish {
-	return Publish{
+func NewPublish() *Publish {
+	return &Publish{
 		fixed: Bits(PUBLISH),
 	}
 }

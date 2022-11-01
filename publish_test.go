@@ -45,7 +45,7 @@ func TestPublish(t *testing.T) {
 		t.Error("subscriptionIDs", v)
 	}
 
-	testControlPacket(t, &p)
+	testControlPacket(t, p)
 }
 
 func Test_QoS(t *testing.T) {

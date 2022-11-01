@@ -36,7 +36,7 @@ func Test_IDPool(t *testing.T) {
 	{
 		p := mq.NewPublish()
 		p.SetQoS(1) //
-		packets = append(packets, &p)
+		packets = append(packets, p)
 	}
 	{
 		p := mq.NewSubscribe()

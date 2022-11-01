@@ -133,5 +133,5 @@ func (g *Gopher) Say(v string) {
 	p := mq.NewPublish()
 	p.SetTopicName(g.room)
 	p.SetPayload([]byte(g.name + ": " + v))
-	g.out(context.Background(), &p)
+	g.out(context.Background(), p)
 }
