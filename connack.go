@@ -6,8 +6,8 @@ import (
 	"io"
 )
 
-func NewConnAck() ConnAck {
-	return ConnAck{
+func NewConnAck() *ConnAck {
+	return &ConnAck{
 		fixed: Bits(CONNACK),
 	}
 }

@@ -18,11 +18,8 @@ func TestQueues(t *testing.T) {
 	ctx := context.Background()
 
 	{ // connect mq tt
-		p := mq.NewConnect()
-		_ = out(ctx, p)
-
-		ack := mq.NewConnAck()
-		in(ctx, &ack)
+		_ = out(ctx, mq.NewConnect())
+		in(ctx, mq.NewConnAck())
 	}
 
 	{ // publish application message

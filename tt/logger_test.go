@@ -58,7 +58,7 @@ func ExampleLogger_SetMaxIDLen() {
 	{
 		p := mq.NewConnAck()
 		p.SetAssignedClientID("1bbde752-5161-11ed-a94b-675e009b6f46")
-		l.In(NoopHandler)(nil, &p)
+		l.In(NoopHandler)(nil, p)
 	}
 	// output:
 	// short ut CONNECT ---- -------- MQTT5 short 0s 20 bytes

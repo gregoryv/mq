@@ -23,7 +23,7 @@ func ExampleConnAck_String() {
 	a.SetAssignedClientID("pink")
 
 	fmt.Println(a.String())
-	fmt.Print(DocumentFlags(&a))
+	fmt.Print(DocumentFlags(a))
 	// output:
 	// CONNACK ---- -------s pink 12 bytes
 	//         3210 76543210 AssignedClientID Size
@@ -73,10 +73,5 @@ func TestConnAck(t *testing.T) {
 		t.Logf("\n\n%s\n\n%s\n\n%v bytes", a.String(), hex.Dump(buf.Bytes()), size)
 	}
 
-	testControlPacket(t, &a)
-}
-
-func makeConnAck() ConnAck {
-	a := NewConnAck()
-	return a
+	testControlPacket(t, a)
 }
