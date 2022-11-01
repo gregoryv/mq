@@ -7,7 +7,7 @@ import (
 )
 
 func TestUndefined(t *testing.T) {
-	p := NewUndefined()
+	p := &Undefined{}
 
 	if _, err := p.WriteTo(ioutil.Discard); err == nil {
 		t.Error("WriteTo works?!")

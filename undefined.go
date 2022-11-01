@@ -5,10 +5,6 @@ import (
 	"io"
 )
 
-func NewUndefined() Undefined {
-	return Undefined{}
-}
-
 type Undefined struct {
 	fixed Bits
 }
