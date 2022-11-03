@@ -73,6 +73,7 @@ type Connect struct {
 func (c *Connect) SetWill(p *Publish) {
 	c.will = p
 	c.flags.toggle(WillFlag, true)
+	c.flags.toggle(WillRetain, p.Retain())
 	c.willTopic = p.topicName
 	c.willPayload = p.payload
 	c.willContentType = p.contentType
@@ -93,6 +94,7 @@ func (c *Connect) SetWillRetain(v bool) {
 	c.flags.toggle(WillRetain, v)
 	c.flags.toggle(WillFlag, true)
 }
+
 func (c *Connect) WillRetain() bool {
 	return c.HasFlag(WillRetain)
 }

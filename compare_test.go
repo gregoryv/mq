@@ -75,15 +75,16 @@ func TestCompareConnect(t *testing.T) {
 	rm := our.ReceiveMax()
 	the.Properties.ReceiveMaximum = &rm
 
-	our.SetWillRetain(true)
-	the.WillRetain = our.HasFlag(WillRetain)
+	will := NewPublish()
+	will.SetRetain(true)
+	will.SetTopicName("topic/dead/clients")
+	will.SetPayload([]byte(`{"clientID": "macy", "message": "died"`))
+	our.SetWill(will)
+
+	the.WillRetain = our.Will().Retain()
 	the.WillFlag = our.HasFlag(WillFlag)
-
-	our.SetWillTopic("topic/dead/clients")
-	the.WillTopic = our.WillTopic()
-
-	our.SetWillPayload([]byte(`{"clientID": "macy", "message": "died"`))
-	the.WillMessage = our.WillPayload()
+	the.WillTopic = our.Will().TopicName()
+	the.WillMessage = our.Will().Payload()
 
 	// possible bug in Properties.Pack
 	// our.SetWillContentType("application/json")
