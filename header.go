@@ -2,7 +2,7 @@ package mq
 
 import "io"
 
-type FixedHeader struct {
+type fixedHeader struct {
 	fixed        bits
 	remainingLen vbint
 }
@@ -13,7 +13,7 @@ type FixedHeader struct {
 // Note: Reason for splitting this up is that pahos Unpack works on
 // the remaining only. Also it gives us possible ways of optimizing
 // memory usage when reading packets, i.e. using shared FixedHeaders.
-func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
+func (f *fixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
 	if err != nil {
 		return n, err
@@ -23,7 +23,7 @@ func (f *FixedHeader) ReadFrom(r io.Reader) (int64, error) {
 }
 
 // ReadRemaining is more related to client and server
-func (f *FixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
+func (f *fixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	var p ControlPacket
 	switch byte(f.fixed) & 0b1111_0000 {
 

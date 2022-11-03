@@ -8,7 +8,7 @@ import (
 )
 
 func ReadPacket(r io.Reader) (ControlPacket, error) {
-	var fh FixedHeader
+	var fh fixedHeader
 	if _, err := fh.ReadFrom(r); err != nil {
 		return nil, err
 	}
