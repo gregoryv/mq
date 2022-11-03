@@ -38,7 +38,6 @@ type ConnAck struct {
 	authData                bindata
 }
 
-func (c *ConnAck) Flags() Bits         { return c.flags }
 func (c *ConnAck) HasFlag(v byte) bool { return c.flags.Has(v) }
 
 func (c *ConnAck) SetSessionPresent(v bool) { c.flags.toggle(1, true) }

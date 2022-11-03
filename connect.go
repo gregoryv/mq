@@ -77,7 +77,6 @@ func (c *Connect) Will() *Publish {
 	return c.will
 }
 
-func (c *Connect) Flags() Bits         { return c.flags }
 func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
 
 func (c *Connect) SetCleanStart(v bool) {
@@ -320,7 +319,7 @@ func (c *Connect) propertyMap() map[Ident]wireType {
 // String returns a short string describing the connect packet.
 func (c *Connect) String() string {
 	return fmt.Sprintf("%s %s %s%v %s %s %v bytes",
-		firstByte(c.fixed).String(), connectFlags(c.Flags()),
+		firstByte(c.fixed).String(), connectFlags(c.flags),
 		c.protocolName,
 		c.protocolVersion,
 		c.ClientID(),

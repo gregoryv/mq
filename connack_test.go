@@ -62,9 +62,6 @@ func TestConnAck(t *testing.T) {
 	eq(t, a.SetAuthMethod, a.AuthMethod, "digest")
 	eq(t, a.SetAuthData, a.AuthData, []byte("secret"))
 
-	if v := a.Flags(); v != 1 {
-		t.Errorf("flags: %08b", v)
-	}
 	if !a.HasFlag(SessionPresent) {
 		t.Error("HasFlag should be true for 1 if sessionPresent is set")
 	}
