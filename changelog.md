@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add Connect.SetWill replacing all will related methods
 - Add type PubRel
 - Add type UserProperties
 
