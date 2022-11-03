@@ -14,7 +14,7 @@ func Example_packetReadWrite() {
 		p.SetClientID("pink")
 		p.SetUsername("gopher")
 		p.SetPassword([]byte("cute"))
-		p.SetWillQoS(1)
+		p.SetWill(mq.Pub(1, "client/gone", "pink"), 7)
 		p.WriteTo(&buf)
 	}
 	{ // read the packet
@@ -22,5 +22,5 @@ func Example_packetReadWrite() {
 		fmt.Print(p)
 	}
 	// output:
-	// CONNECT ---- up--1--- MQTT5 pink 0s 33 bytes
+	// CONNECT ---- up--1w-- MQTT5 pink 0s 58 bytes
 }

@@ -90,12 +90,16 @@ func (p *Publish) TopicName() string     { return string(p.topicName) }
 func (p *Publish) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *Publish) PacketID() uint16     { return uint16(p.packetID) }
 
+// SetPayloadFormat, false indicates that the message is unspecified
+// bytes. True indicates that the message is UTF-8 encoded character
+// data.
 func (p *Publish) SetPayloadFormat(v bool) { p.payloadFormat = wbool(v) }
 func (p *Publish) PayloadFormat() bool     { return bool(p.payloadFormat) }
 
 func (p *Publish) SetMessageExpiryInterval(v uint32) {
 	p.messageExpiryInterval = wuint32(v)
 }
+
 func (p *Publish) MessageExpiryInterval() uint32 {
 	return uint32(p.messageExpiryInterval)
 }
@@ -117,6 +121,9 @@ func (p *Publish) SubscriptionIDs() []uint32 {
 	return p.subscriptionIDs
 }
 
+// The value of the Content Type is defined by the sending and
+// receiving application, e.g. it may be a mime type like
+// application/json.
 func (p *Publish) SetContentType(v string) { p.contentType = wstring(v) }
 func (p *Publish) ContentType() string     { return string(p.contentType) }
 

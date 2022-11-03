@@ -76,13 +76,14 @@ func TestCompareConnect(t *testing.T) {
 	the.Properties.ReceiveMaximum = &rm
 
 	{
-		will := NewPublish()
-		will.SetRetain(true)
-		will.SetTopicName("topic/dead/clients")
-		will.SetPayload([]byte(`{"clientID": "macy", "message": "died"`))
-		will.SetQoS(2)
-		will.AddUserProp("connected", "2022-01-01 14:44:32")
-		our.SetWill(will)
+		p := NewPublish()
+		p.SetRetain(true)
+		p.SetTopicName("topic/dead/clients")
+		p.SetPayload([]byte(`{"clientID": "macy", "message": "died"`))
+		p.SetQoS(2)
+		p.AddUserProp("connected", "2022-01-01 14:44:32")
+		//p.SetCorrelationData([]byte("11-22-33")) doesn't work in paho
+		our.SetWill(p, 3)
 	}
 	will := our.Will()
 	the.WillRetain = will.Retain()
@@ -98,6 +99,11 @@ func TestCompareConnect(t *testing.T) {
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
 	})
+	wExp := uint32(3) // seconds
+	the.WillProperties.WillDelayInterval = &wExp
+
+	// possible bug in Properties.Pack
+	// the.WillProperties.CorrelationData = []byte("11-22-33")
 
 	// our.SetPayloadFormat(true)
 	// unsupported in paho

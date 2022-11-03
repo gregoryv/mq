@@ -24,12 +24,12 @@ func ExampleConnect_String() {
 	p.SetClientID("pink")
 	p.SetUsername("gopher")
 	p.SetPassword([]byte("cute"))
-	p.SetWillQoS(1)
+	p.SetWill(Pub(1, "client/gone", "pink"), 3)
 
 	fmt.Println(p.String())
 	fmt.Println(DocumentFlags(p))
 	// output:
-	// CONNECT ---- up--1--- MQTT5 pink 0s 33 bytes
+	// CONNECT ---- up--1w-- MQTT5 pink 0s 58 bytes
 	//         3210 76543210 ProtocolVersion ClientID KeepAlive Size
 	//
 	// 3-0 reserved
@@ -60,25 +60,17 @@ func TestConnect(t *testing.T) {
 	eq(t, c.SetTopicAliasMax, c.TopicAliasMax, 128)
 	eq(t, c.SetRequestResponseInfo, c.RequestResponseInfo, true)
 	eq(t, c.SetRequestProblemInfo, c.RequestProblemInfo, true)
-	eq(t, c.SetResponseTopic, c.ResponseTopic, "response/to/macy")
-	eq(t, c.SetCorrelationData, c.CorrelationData, []byte("perhaps a uuid"))
 
 	c.AddUserProp("color", "red")
 
-	eq(t, c.SetWillRetain, c.WillRetain, true)
-	eq(t, c.SetWillQoS, c.WillQoS, 1)
-	eq(t, c.SetWillTopic, c.WillTopic, "topic/dead/clients")
-	eq(t, c.SetWillPayload, c.WillPayload, []byte(`{"clientID": "macy"}`))
-	eq(t, c.SetWillContentType, c.WillContentType, "application/json")
-	eq(t, c.SetWillDelayInterval, c.WillDelayInterval, 111)
-	eq(t, c.SetWillPayloadFormat, c.WillPayloadFormat, true)
-	eq(t, c.SetWillMessageExpiryInterval, c.WillMessageExpiryInterval, 100)
-	c.AddWillProp("connected", "2022-01-01 14:44:32")
+	// todo add will
 
 	if got := c.String(); !strings.Contains(got, "CONNECT") {
 		t.Error(got)
 	}
-
+	if v := c.Will(); v != nil {
+		t.Error("no will was set but got", v)
+	}
 	testControlPacket(t, c)
 
 	// clears it

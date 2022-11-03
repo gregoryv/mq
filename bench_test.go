@@ -88,7 +88,7 @@ func BenchmarkConnectWill(b *testing.B) {
 			w.AddUserProp("color", "red")
 			w.SetContentType("text/plain")
 			w.SetPayload([]byte("gopher"))
-			p.SetWill(w)
+			p.SetWill(w, 5)
 
 			p.WriteTo(&buf)
 			ReadPacket(&buf)
@@ -107,7 +107,6 @@ func BenchmarkConnectWill(b *testing.B) {
 			c.Password = []byte("secret")
 			sExpiry := uint32(30)
 			c.Properties.SessionExpiryInterval = &sExpiry
-			// todo use will
 			c.WillFlag = true
 			c.WillRetain = true
 			c.WillQOS = 1

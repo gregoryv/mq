@@ -68,15 +68,22 @@ type Connect struct {
 // Connect fields are exposed using methods to simplify the type
 // conversion.
 
-func (c *Connect) SetWill(p *Publish) {
+// SetWill sets the will message and delay in seconds. The Server
+// delays publishing the Client’s Will Message until the Will Delay
+// Interval has passed or the Session ends, whichever happens first.
+func (c *Connect) SetWill(p *Publish, delayInterval uint32) {
 	c.flags.toggle(WillFlag, true)
 	c.flags.toggle(WillRetain, p.Retain())
+	c.willDelayInterval = wuint32(delayInterval)
+	c.setWillQoS(p.QoS())
 	c.willTopic = p.topicName
 	c.willPayload = p.payload
 	c.willContentType = p.contentType
 	c.willProp = p.UserProperties
 	c.willMessageExpiryInterval = p.messageExpiryInterval
 	c.willPayloadFormat = p.payloadFormat
+	c.responseTopic = p.responseTopic
+	c.correlationData = p.correlationData
 }
 
 func (c *Connect) Will() *Publish {
@@ -84,6 +91,7 @@ func (c *Connect) Will() *Publish {
 		return nil
 	}
 	p := NewPublish()
+	p.SetQoS(c.willQoS())
 	p.SetRetain(c.HasFlag(WillRetain))
 	p.topicName = c.willTopic
 	p.payload = c.willPayload
@@ -91,21 +99,13 @@ func (c *Connect) Will() *Publish {
 	p.UserProperties = c.willProp
 	p.messageExpiryInterval = c.willMessageExpiryInterval
 	p.payloadFormat = c.willPayloadFormat
+	p.responseTopic = c.responseTopic
+	p.correlationData = c.correlationData
 	return p
 }
 
 func (c *Connect) Flags() Bits         { return c.flags }
 func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
-
-// todo remove will related methods
-func (c *Connect) SetWillRetain(v bool) {
-	c.flags.toggle(WillRetain, v)
-	c.flags.toggle(WillFlag, true)
-}
-
-func (c *Connect) WillRetain() bool {
-	return c.HasFlag(WillRetain)
-}
 
 func (c *Connect) SetCleanStart(v bool) {
 	c.flags.toggle(CleanStart, v)
@@ -123,11 +123,11 @@ func (c *Connect) ClientID() string     { return string(c.clientID) }
 func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
-func (c *Connect) SetWillQoS(v uint8) {
+func (c *Connect) setWillQoS(v uint8) {
 	c.flags &= Bits(^(WillQoS2 | WillQoS1)) // reset
 	c.flags.toggle(v<<3, v < 3)
 }
-func (c *Connect) WillQoS() uint8 {
+func (c *Connect) willQoS() uint8 {
 	return (uint8(c.flags) & (WillQoS2 | WillQoS1)) >> 3
 }
 
@@ -171,13 +171,6 @@ func (c *Connect) RequestProblemInfo() bool {
 	return bool(c.requestProblemInfo)
 }
 
-func (c *Connect) AddWillProp(key, val string) {
-	c.AddWillProperty(property{key, val})
-}
-func (c *Connect) AddWillProperty(p property) {
-	c.appendWillProperty(p)
-	c.flags.toggle(WillFlag, true)
-}
 func (c *Connect) appendWillProperty(p property) {
 	c.willProp = append(c.willProp, p)
 }
@@ -187,78 +180,6 @@ func (c *Connect) AuthMethod() string     { return string(c.authMethod) }
 
 func (c *Connect) SetAuthData(v []byte) { c.authData = v }
 func (c *Connect) AuthData() []byte     { return c.authData }
-
-// SetWillDelayInterval in seconds. The Server delays publishing the
-// Client’s Will Message until the Will Delay Interval has passed or
-// the Session ends, whichever happens first.
-func (c *Connect) SetWillDelayInterval(v uint32) {
-	c.willDelayInterval = wuint32(v)
-	c.flags.toggle(WillFlag, true)
-}
-func (c *Connect) WillDelayInterval() uint32 {
-	return uint32(c.willDelayInterval)
-}
-
-// the lifetime of the Will Message in seconds and is sent as the
-// Publication Expiry Interval when the Server publishes the Will
-// Message.
-func (c *Connect) SetWillMessageExpiryInterval(v uint32) {
-	c.willMessageExpiryInterval = wuint32(v)
-	c.flags.toggle(WillFlag, true)
-}
-func (c *Connect) WillMessageExpiryInterval() uint32 {
-	return uint32(c.willMessageExpiryInterval)
-}
-
-func (c *Connect) SetWillTopic(v string) {
-	c.willTopic = wstring(v)
-	c.flags.toggle(WillFlag, true)
-}
-func (c *Connect) WillTopic() string { return string(c.willTopic) }
-
-// SetWillPayloadFormat, false indicates that the Will Message is
-// unspecified bytes. True indicates that the Will Message is UTF-8
-// Encoded Character Data.
-func (c *Connect) SetWillPayloadFormat(v bool) {
-	c.willPayloadFormat = wbool(v)
-}
-func (c *Connect) WillPayloadFormat() bool {
-	return bool(c.willPayloadFormat)
-}
-
-func (c *Connect) SetWillPayload(v []byte) {
-	c.willPayload = v
-	c.flags.toggle(WillFlag, true)
-}
-func (c *Connect) WillPayload() []byte { return c.willPayload }
-
-// The value of the Content Type is defined by the sending and
-// receiving application, e.g. it may be a mime type like
-// application/json.
-func (c *Connect) SetWillContentType(v string) {
-	c.willContentType = wstring(v)
-	c.flags.toggle(WillFlag, true)
-}
-func (c *Connect) WillContentType() string { return string(c.willContentType) }
-
-// SetResponseTopic a UTF-8 encoded string which is used as the topic
-// name for a response message.
-func (c *Connect) SetResponseTopic(v string) {
-	c.responseTopic = wstring(v)
-}
-func (c *Connect) ResponseTopic() string {
-	return string(c.responseTopic)
-}
-
-// The Correlation Data is used by the sender of the Request Message
-// to identify which request the Response Message is for when it is
-// received.
-func (c *Connect) SetCorrelationData(v []byte) {
-	c.correlationData = v
-}
-func (c *Connect) CorrelationData() []byte {
-	return c.correlationData
-}
 
 func (c *Connect) SetUsername(v string) {
 	c.username = wstring(v)
