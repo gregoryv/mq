@@ -6,11 +6,11 @@ import (
 )
 
 func NewPingResp() *PingResp {
-	return &PingResp{fixed: Bits(PINGRESP)}
+	return &PingResp{fixed: bits(PINGRESP)}
 }
 
 type PingResp struct {
-	fixed Bits
+	fixed bits
 }
 
 func (p *PingResp) String() string {

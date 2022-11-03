@@ -3,7 +3,7 @@ package mq
 import "io"
 
 type FixedHeader struct {
-	fixed        Bits
+	fixed        bits
 	remainingLen vbint
 }
 

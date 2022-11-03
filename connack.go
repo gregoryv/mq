@@ -8,13 +8,13 @@ import (
 
 func NewConnAck() *ConnAck {
 	return &ConnAck{
-		fixed: Bits(CONNACK),
+		fixed: bits(CONNACK),
 	}
 }
 
 type ConnAck struct {
-	fixed      Bits
-	flags      Bits // sessionPresent as 7-1 are reserved
+	fixed      bits
+	flags      bits // sessionPresent as 7-1 are reserved
 	reasonCode wuint8
 
 	// properties
@@ -202,7 +202,7 @@ func (c connAckFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 8)
 
 	mark := func(i int, flag byte, v byte) {
-		if !Bits(c).Has(flag) {
+		if !bits(c).Has(flag) {
 			return
 		}
 		flags[i] = v

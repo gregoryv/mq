@@ -6,11 +6,11 @@ import (
 )
 
 func NewSubAck() *SubAck {
-	return &SubAck{fixed: Bits(SUBACK)}
+	return &SubAck{fixed: bits(SUBACK)}
 }
 
 type SubAck struct {
-	fixed    Bits
+	fixed    bits
 	packetID wuint16
 	UserProperties
 

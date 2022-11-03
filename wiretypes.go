@@ -43,19 +43,19 @@ func (f firstByte) String() string {
 	sb.WriteString(typeNames[byte(f)&0b1111_0000])
 	sb.WriteString(" ")
 	flags := []byte("----")
-	if Bits(f).Has(DUP) {
+	if bits(f).Has(DUP) {
 		flags[0] = 'd'
 	}
 	switch {
-	case Bits(f).Has(QoS3):
+	case bits(f).Has(QoS3):
 		flags[1] = '!' // malformed
 		flags[2] = '!' // malformed
-	case Bits(f).Has(QoS1):
+	case bits(f).Has(QoS1):
 		flags[2] = '1'
-	case Bits(f).Has(QoS2):
+	case bits(f).Has(QoS2):
 		flags[1] = '2'
 	}
-	if Bits(f).Has(RETAIN) {
+	if bits(f).Has(RETAIN) {
 		flags[3] = 'r'
 	}
 	sb.Write(flags)
@@ -226,7 +226,7 @@ func (v *vbint) UnmarshalBinary(data []byte) error {
 
 // wire types
 type (
-	wuint8 = Bits // byte
+	wuint8 = bits // byte
 )
 
 type wbool bool
@@ -264,11 +264,11 @@ func (v *wbool) UnmarshalBinary(data []byte) error {
 func (v wbool) width() int { return 1 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901007
-type Bits byte
+type bits byte
 
-func (v Bits) Has(b byte) bool { return byte(v)&b == b }
+func (v bits) Has(b byte) bool { return byte(v)&b == b }
 
-func (v Bits) fillProp(data []byte, i int, id Ident) int {
+func (v bits) fillProp(data []byte, i int, id Ident) int {
 	if v == 0 {
 		return 0
 	}
@@ -278,7 +278,7 @@ func (v Bits) fillProp(data []byte, i int, id Ident) int {
 	return i - n
 }
 
-func (v Bits) fill(data []byte, i int) int {
+func (v bits) fill(data []byte, i int) int {
 	if len(data) >= i+1 {
 		data[i] = byte(v)
 	}
@@ -286,31 +286,31 @@ func (v Bits) fill(data []byte, i int) int {
 }
 
 // fillOpt fills the bits if > 0
-func (v Bits) fillOpt(data []byte, i int) int {
+func (v bits) fillOpt(data []byte, i int) int {
 	if v == 0 {
 		return 0
 	}
 	return v.fill(data, i)
 }
 
-func (v *Bits) ReadFrom(r io.Reader) (int64, error) {
+func (v *bits) ReadFrom(r io.Reader) (int64, error) {
 	data := make([]byte, 1)
 	if n, err := r.Read(data); err != nil {
 		return int64(n), err
 	}
 	return 1, v.UnmarshalBinary(data)
 }
-func (v *Bits) UnmarshalBinary(data []byte) error {
-	*v = Bits(data[0])
+func (v *bits) UnmarshalBinary(data []byte) error {
+	*v = bits(data[0])
 	return nil
 }
-func (v Bits) width() int { return 1 }
-func (v *Bits) toggle(flag byte, on bool) {
+func (v bits) width() int { return 1 }
+func (v *bits) toggle(flag byte, on bool) {
 	if on {
-		*v = *v | Bits(flag)
+		*v = *v | bits(flag)
 		return
 	}
-	*v = *v & Bits(^flag)
+	*v = *v & bits(^flag)
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901008

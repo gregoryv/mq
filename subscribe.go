@@ -8,11 +8,11 @@ import (
 
 func NewSubscribe() *Subscribe {
 	// wonder why bit 1 needs to be set? specification doesn't say
-	return &Subscribe{fixed: Bits(SUBSCRIBE | 1<<1)}
+	return &Subscribe{fixed: bits(SUBSCRIBE | 1<<1)}
 }
 
 type Subscribe struct {
-	fixed          Bits
+	fixed          bits
 	packetID       wuint16
 	subscriptionID vbint
 	UserProperties
@@ -44,7 +44,7 @@ func (p *Subscribe) SubscriptionID() int     { return int(p.subscriptionID) }
 func (p *Subscribe) AddFilter(filter string, options Opt) {
 	p.filters = append(p.filters, TopicFilter{
 		filter:  wstring(filter),
-		options: Bits(options),
+		options: bits(options),
 	})
 }
 
@@ -124,13 +124,13 @@ func (p *Subscribe) propertyMap() map[Ident]wireType {
 func NewTopicFilter(filter string, options Opt) TopicFilter {
 	return TopicFilter{
 		filter:  wstring(filter),
-		options: Bits(options),
+		options: bits(options),
 	}
 }
 
 type TopicFilter struct {
 	filter  wstring
-	options Bits
+	options bits
 }
 
 func (c TopicFilter) fill(b []byte, i int) int {

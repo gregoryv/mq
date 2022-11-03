@@ -6,7 +6,7 @@ import (
 )
 
 type Undefined struct {
-	fixed Bits
+	fixed bits
 }
 
 func (p *Undefined) String() string {

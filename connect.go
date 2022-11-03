@@ -20,7 +20,7 @@ var mqtt5 = []byte("MQTT")
 // NewConnect returns an empty MQTT v5 connect packet.
 func NewConnect() *Connect {
 	return &Connect{
-		fixed:           Bits(CONNECT),
+		fixed:           bits(CONNECT),
 		protocolName:    mqtt5,
 		protocolVersion: 5,
 	}
@@ -32,8 +32,8 @@ type Connect struct {
 	// - users don't have to handle dependencies between fields and flags
 
 	// order is optimized for memory padding
-	fixed           Bits
-	flags           Bits
+	fixed           bits
+	flags           bits
 	protocolVersion wuint8
 	keepAlive       wuint16
 	receiveMax      wuint16
@@ -96,7 +96,7 @@ func (c *Connect) SetKeepAlive(v uint16) { c.keepAlive = wuint16(v) }
 func (c *Connect) KeepAlive() uint16     { return uint16(c.keepAlive) }
 
 func (c *Connect) setWillQoS(v uint8) {
-	c.flags &= Bits(^(WillQoS2 | WillQoS1)) // reset
+	c.flags &= bits(^(WillQoS2 | WillQoS1)) // reset
 	c.flags.toggle(v<<3, v < 3)
 }
 func (c *Connect) willQoS() uint8 {
@@ -275,7 +275,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 
 	// payload
 	get(&c.clientID)
-	if Bits(c.flags).Has(WillFlag) {
+	if bits(c.flags).Has(WillFlag) {
 		c.will = NewPublish()
 		c.will.SetQoS(c.willQoS())
 		buf.getAny(c.willPropertyMap(), c.appendWillProperty)
@@ -344,7 +344,7 @@ func (c connectFlags) String() string {
 	flags := bytes.Repeat([]byte("-"), 8)
 
 	mark := func(i int, flag byte, v byte) {
-		if !Bits(c).Has(flag) {
+		if !bits(c).Has(flag) {
 			return
 		}
 		flags[i] = v

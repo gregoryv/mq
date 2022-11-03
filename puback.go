@@ -7,13 +7,13 @@ import (
 
 // NewPubRec returns control packet with type PUBREC
 func NewPubRec() *PubAck {
-	return &PubAck{fixed: Bits(PUBREC)}
+	return &PubAck{fixed: bits(PUBREC)}
 }
 
 // NewPubRel returns control packet with type PUBREL
 func NewPubRel() *PubRel {
 	p := &PubRel{}
-	p.fixed = Bits(PUBREL)
+	p.fixed = bits(PUBREL)
 	return p
 }
 
@@ -23,18 +23,18 @@ type PubRel struct {
 
 // NewPubComp returns control packet with type PUBCOMP
 func NewPubComp() *PubAck {
-	return &PubAck{fixed: Bits(PUBCOMP)}
+	return &PubAck{fixed: bits(PUBCOMP)}
 }
 
 // NewPubAck returns control packet with type PUBACK
 func NewPubAck() *PubAck {
-	return &PubAck{fixed: Bits(PUBACK)}
+	return &PubAck{fixed: bits(PUBACK)}
 }
 
 // A PubAck packet is the response to a Publish packets, depending on
 // the fixed header it can be one of PUBACK, PUBREC, PUBREL or PUBCOMP
 type PubAck struct {
-	fixed Bits
+	fixed bits
 
 	packetID   wuint16
 	reasonCode wuint8

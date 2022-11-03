@@ -15,13 +15,13 @@ func Pub(qos uint8, topic, payload string) *Publish {
 
 func NewPublish() *Publish {
 	return &Publish{
-		fixed: Bits(PUBLISH),
+		fixed: bits(PUBLISH),
 	}
 }
 
 type Publish struct {
 	// first fields are aligned for memory
-	fixed         Bits
+	fixed         bits
 	packetID      wuint16
 	topicAlias    wuint16
 	payloadFormat wbool
@@ -63,7 +63,7 @@ func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
 
 // SetQoS, 1 or 2 other values unset the QoS
 func (p *Publish) SetQoS(v uint8) {
-	p.fixed &= Bits(^(QoS3)) // reset
+	p.fixed &= bits(^(QoS3)) // reset
 	switch v {
 	case 1:
 		p.fixed.toggle(QoS1, true)

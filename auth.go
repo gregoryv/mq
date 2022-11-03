@@ -6,11 +6,11 @@ import (
 )
 
 func NewAuth() *Auth {
-	return &Auth{fixed: Bits(AUTH)}
+	return &Auth{fixed: bits(AUTH)}
 }
 
 type Auth struct {
-	fixed Bits
+	fixed bits
 	// todo missing authMethod, dataData and reasonString
 	reasonCode wuint8
 	UserProperties

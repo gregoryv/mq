@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Hide type Bits
 - Remove Connect.Flag and ConnAck.Flag methods
 - Add Connect.SetWill replacing all will related methods
 - Add type PubRel

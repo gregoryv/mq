@@ -6,11 +6,11 @@ import (
 )
 
 func NewDisconnect() *Disconnect {
-	return &Disconnect{fixed: Bits(DISCONNECT)}
+	return &Disconnect{fixed: bits(DISCONNECT)}
 }
 
 type Disconnect struct {
-	fixed Bits
+	fixed bits
 
 	reasonCode wuint8
 	UserProperties

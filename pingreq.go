@@ -6,11 +6,11 @@ import (
 )
 
 func NewPingReq() *PingReq {
-	return &PingReq{fixed: Bits(PINGREQ)}
+	return &PingReq{fixed: bits(PINGREQ)}
 }
 
 type PingReq struct {
-	fixed Bits
+	fixed bits
 }
 
 func (p *PingReq) String() string {

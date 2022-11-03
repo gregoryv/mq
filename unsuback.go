@@ -9,11 +9,11 @@ import (
 // byte. Keep for now.
 
 func NewUnsubAck() *UnsubAck {
-	return &UnsubAck{fixed: Bits(UNSUBACK)}
+	return &UnsubAck{fixed: bits(UNSUBACK)}
 }
 
 type UnsubAck struct {
-	fixed    Bits
+	fixed    bits
 	packetID wuint16
 	UserProperties
 
