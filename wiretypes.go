@@ -26,8 +26,8 @@ type wireType interface {
 	// actually allocating a buf.
 	fill(buf []byte, i int) int
 
-	// fillProp fills the identified property if not empty as this is
-	// the case for most property values.
+	// fillProp fills the identified UserProp if not empty as this is
+	// the case for most UserProp values.
 	fillProp(buf []byte, i int, id Ident) int
 
 	// returns the width of the wire data in bytes
@@ -63,9 +63,9 @@ func (f firstByte) String() string {
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901013
-type property [2]string
+type UserProp [2]string
 
-func (v property) fillProp(data []byte, i int, id Ident) int {
+func (v UserProp) fillProp(data []byte, i int, id Ident) int {
 	if len(v[0]) == 0 {
 		return 0
 	}
@@ -74,13 +74,13 @@ func (v property) fillProp(data []byte, i int, id Ident) int {
 	i += v.fill(data, i)
 	return i - n
 }
-func (v property) fill(data []byte, i int) int {
+func (v UserProp) fill(data []byte, i int) int {
 	i += wstring(v[0]).fill(data, i)
 	_ = wstring(v[1]).fill(data, i)
 	return v.width()
 }
 
-func (v *property) UnmarshalBinary(data []byte) error {
+func (v *UserProp) UnmarshalBinary(data []byte) error {
 	var key wstring
 	if err := key.UnmarshalBinary(data); err != nil {
 		return unmarshalErr(v, "key", err.(*Malformed))
@@ -95,10 +95,10 @@ func (v *property) UnmarshalBinary(data []byte) error {
 	v[1] = string(val)
 	return nil
 }
-func (v property) String() string {
+func (v UserProp) String() string {
 	return fmt.Sprintf("%s:%s", v[0], v[1])
 }
-func (v property) width() int {
+func (v UserProp) width() int {
 	return wstring(v[0]).width() + wstring(v[1]).width()
 }
 

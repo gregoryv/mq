@@ -143,7 +143,7 @@ func (c *Connect) RequestProblemInfo() bool {
 	return bool(c.requestProblemInfo)
 }
 
-func (c *Connect) appendWillProperty(p property) {
+func (c *Connect) appendWillProperty(p UserProp) {
 	c.will.UserProperties = append(c.will.UserProperties, p)
 }
 

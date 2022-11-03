@@ -211,13 +211,13 @@ func Test_bindata(t *testing.T) {
 
 }
 
-func Test_property(t *testing.T) {
-	b := property{"key", "value"}
+func Test_UserProp(t *testing.T) {
+	b := UserProp{"key", "value"}
 
 	data := make([]byte, b.width())
 	b.fill(data, 0)
 
-	var a property
+	var a UserProp
 	if err := a.UnmarshalBinary(data); err != nil {
 		t.Error("UnmarshalBinary", err, data)
 	}
@@ -231,7 +231,7 @@ func Test_property(t *testing.T) {
 		t.Errorf("%q != %q", got, exp)
 	}
 
-	empty := property{"", "value"} // missing key
+	empty := UserProp{"", "value"} // missing key
 	if v := empty.fillProp(nil, 0, 0); v > 0 {
 		t.Error("empty fillProp", v)
 	}

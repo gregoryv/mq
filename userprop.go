@@ -1,15 +1,16 @@
 package mq
 
-type UserProperties []property
+type UserProperties []UserProp
 
-// AddUserProp adds a user property. The User Property is allowed to
-// appear multiple times to represent multiple name, value pairs. The
-// same name is allowed to appear more than once.
-func (p *UserProperties) AddUserProp(key, val string) {
-	p.AddUserProperty(property{key, val})
+// AddUserProp adds key value pair user properties. The same key is is
+// allowed to appear more than once.
+func (p *UserProperties) AddUserProp(kvPair ...string) {
+	for i := 0; i < len(kvPair); i += 2 {
+		p.AddUserProperty(UserProp{kvPair[i], kvPair[i+1]})
+	}
 }
 
-func (p *UserProperties) AddUserProperty(prop property) {
+func (p *UserProperties) AddUserProperty(prop UserProp) {
 	*p = append(*p, prop)
 }
 

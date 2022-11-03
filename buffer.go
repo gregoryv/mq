@@ -20,9 +20,9 @@ type buffer struct {
 }
 
 // getAny reads all properties from the current offset starting with
-// the variable length.  fields map property identity codes to wire
+// the variable length.  fields map UserProp identity codes to wire
 // type fields and the addProp func is used for each user property.
-func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
+func (b *buffer) getAny(fields map[Ident]wireType, addProp func(UserProp)) {
 	var propLen vbint
 	b.get(&propLen)
 	if b.err != nil {
@@ -42,7 +42,7 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 			b.get(field)
 
 		case id == UserProperty:
-			var p property
+			var p UserProp
 			b.get(&p)
 			addProp(p)
 
@@ -54,7 +54,7 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(property)) {
 			}
 
 		default:
-			b.err = fmt.Errorf("unknown property id 0x%02x", id)
+			b.err = fmt.Errorf("unknown UserProp id 0x%02x", id)
 		}
 	}
 }

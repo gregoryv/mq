@@ -22,7 +22,7 @@ const (
 	AUTH                           // 15 Client to Server or Server to Client Authentication exchange
 )
 
-// MQTT Packet property identifier codes
+// MQTT Packet UserProp identifier codes
 // Ident is the same as wuint16 but is used to name the identifier codes
 type Ident uint8
 

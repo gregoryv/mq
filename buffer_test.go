@@ -4,13 +4,13 @@ import "testing"
 
 func Test_buffer(t *testing.T) {
 	b := &buffer{}
-	b.getAny(map[Ident]wireType{}, func(property) {})
+	b.getAny(map[Ident]wireType{}, func(UserProp) {})
 	if b.err == nil {
 		t.Error("expect getAny to fail on missing data")
 	}
 
 	b = &buffer{data: []byte{2, 0xff, 0}}
-	b.getAny(map[Ident]wireType{}, func(property) {})
+	b.getAny(map[Ident]wireType{}, func(UserProp) {})
 	if b.err == nil {
 		t.Error("expect getAny to fail")
 	}
