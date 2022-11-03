@@ -160,7 +160,7 @@ func (c *ConnAck) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&c.flags)
 	b.get(&c.reasonCode)
-	b.getAny(c.propertyMap(), c.AddUserProperty)
+	b.getAny(c.propertyMap(), c.appendUserProperty)
 	return b.err
 }
 

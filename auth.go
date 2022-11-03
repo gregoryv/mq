@@ -61,7 +61,7 @@ func (p *Auth) variableHeader(b []byte, i int) int {
 func (p *Auth) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.reasonCode)
-	b.getAny(p.propertyMap(), p.AddUserProperty)
+	b.getAny(p.propertyMap(), p.appendUserProperty)
 	return b.err
 }
 

@@ -201,7 +201,7 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 		get(&p.packetID)
 	}
 
-	buf.getAny(p.propertyMap(), p.AddUserProperty)
+	buf.getAny(p.propertyMap(), p.appendUserProperty)
 
 	if len(data) > buf.i {
 		get(&p.payload)

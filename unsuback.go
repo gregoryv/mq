@@ -93,7 +93,7 @@ func (p *UnsubAck) payload(b []byte, i int) int {
 func (p *UnsubAck) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
-	b.getAny(p.propertyMap(), p.AddUserProperty)
+	b.getAny(p.propertyMap(), p.appendUserProperty)
 
 	p.reasonCodes = make([]uint8, len(data)-b.i)
 

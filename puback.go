@@ -117,7 +117,7 @@ func (p *PubAck) UnmarshalBinary(data []byte) error {
 		return b.err
 	}
 	b.get(&p.reasonCode)
-	b.getAny(p.propertyMap(), p.AddUserProperty)
+	b.getAny(p.propertyMap(), p.appendUserProperty)
 	return b.err
 }
 

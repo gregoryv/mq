@@ -83,7 +83,7 @@ func (p *Unsubscribe) payload(b []byte, i int) int {
 func (p *Unsubscribe) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
-	b.getAny(nil, p.AddUserProperty)
+	b.getAny(nil, p.appendUserProperty)
 
 	for {
 		var f wstring

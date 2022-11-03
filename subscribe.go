@@ -99,7 +99,7 @@ func (p *Subscribe) payload(b []byte, i int) int {
 func (p *Subscribe) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
-	b.getAny(p.propertyMap(), p.AddUserProperty)
+	b.getAny(p.propertyMap(), p.appendUserProperty)
 
 	for {
 		var f TopicFilter

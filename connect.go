@@ -271,7 +271,7 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	get(&c.protocolVersion)
 	get(&c.flags)
 	get(&c.keepAlive)
-	buf.getAny(c.propertyMap(), c.AddUserProperty)
+	buf.getAny(c.propertyMap(), c.appendUserProperty)
 
 	// payload
 	get(&c.clientID)

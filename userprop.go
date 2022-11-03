@@ -6,11 +6,11 @@ type UserProperties []UserProp
 // allowed to appear more than once.
 func (p *UserProperties) AddUserProp(kvPair ...string) {
 	for i := 0; i < len(kvPair); i += 2 {
-		p.AddUserProperty(UserProp{kvPair[i], kvPair[i+1]})
+		p.appendUserProperty(UserProp{kvPair[i], kvPair[i+1]})
 	}
 }
 
-func (p *UserProperties) AddUserProperty(prop UserProp) {
+func (p *UserProperties) appendUserProperty(prop UserProp) {
 	*p = append(*p, prop)
 }
 
