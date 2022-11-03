@@ -75,23 +75,25 @@ func TestCompareConnect(t *testing.T) {
 	rm := our.ReceiveMax()
 	the.Properties.ReceiveMaximum = &rm
 
-	will := NewPublish()
-	will.SetRetain(true)
-	will.SetTopicName("topic/dead/clients")
-	will.SetPayload([]byte(`{"clientID": "macy", "message": "died"`))
-	our.SetWill(will)
-
-	the.WillRetain = our.Will().Retain()
+	{
+		will := NewPublish()
+		will.SetRetain(true)
+		will.SetTopicName("topic/dead/clients")
+		will.SetPayload([]byte(`{"clientID": "macy", "message": "died"`))
+		will.SetQoS(2)
+		will.AddUserProp("connected", "2022-01-01 14:44:32")
+		our.SetWill(will)
+	}
+	will := our.Will()
+	the.WillRetain = will.Retain()
 	the.WillFlag = our.HasFlag(WillFlag)
-	the.WillTopic = our.Will().TopicName()
-	the.WillMessage = our.Will().Payload()
+	the.WillTopic = will.TopicName()
+	the.WillMessage = will.Payload()
 
 	// possible bug in Properties.Pack
 	// our.SetWillContentType("application/json")
 	the.WillProperties = &packets.Properties{}
 	the.WillProperties.ContentType = "application/json" // never written
-
-	our.AddWillProp("connected", "2022-01-01 14:44:32")
 	the.WillProperties.User = append(the.WillProperties.User, packets.User{
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
@@ -99,9 +101,7 @@ func TestCompareConnect(t *testing.T) {
 
 	// our.SetPayloadFormat(true)
 	// unsupported in paho
-
-	our.SetWillQoS(2)
-	the.WillQOS = our.WillQoS()
+	the.WillQOS = will.QoS()
 
 	our.SetCleanStart(true)
 	the.CleanStart = our.HasFlag(CleanStart)
