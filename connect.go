@@ -63,14 +63,32 @@ type Connect struct {
 
 	username wstring
 	password bindata
+
+	will *Publish
 }
 
 // Connect fields are exposed using methods to simplify the type
 // conversion.
 
+func (c *Connect) SetWill(p *Publish) {
+	c.will = p
+	c.flags.toggle(WillFlag, true)
+	c.willTopic = p.topicName
+	c.willPayload = p.payload
+	c.willContentType = p.contentType
+	c.willProp = p.UserProperties
+	c.willMessageExpiryInterval = p.messageExpiryInterval
+	c.willPayloadFormat = p.payloadFormat
+}
+
+func (c *Connect) Will() *Publish {
+	return c.will
+}
+
 func (c *Connect) Flags() Bits         { return c.flags }
 func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
 
+// todo remove will related methods
 func (c *Connect) SetWillRetain(v bool) {
 	c.flags.toggle(WillRetain, v)
 	c.flags.toggle(WillFlag, true)

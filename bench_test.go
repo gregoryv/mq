@@ -67,6 +67,70 @@ func BenchmarkConnect(b *testing.B) {
 	})
 }
 
+func BenchmarkConnectWill(b *testing.B) {
+	b.Run("our", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := NewConnect()
+			p.SetKeepAlive(30)
+			p.SetClientID("macy")
+			p.SetUsername("john.doe")
+			p.SetPassword([]byte("secret"))
+			p.SetSessionExpiryInterval(30)
+
+			w := NewPublish()
+			w.SetRetain(true)
+			w.SetQoS(1)
+			w.SetTopicName("topic/name")
+			w.SetMessageExpiryInterval(199)
+			w.SetPayloadFormat(true)
+			w.SetCorrelationData([]byte("corr"))
+			w.AddUserProp("color", "red")
+			w.SetContentType("text/plain")
+			w.SetPayload([]byte("gopher"))
+			p.SetWill(w)
+
+			p.WriteTo(&buf)
+			ReadPacket(&buf)
+		}
+	})
+	b.Run("their", func(b *testing.B) {
+		var buf bytes.Buffer
+		for i := 0; i < b.N; i++ {
+			p := packets.NewControlPacket(packets.CONNECT)
+			c := p.Content.(*packets.Connect)
+			c.KeepAlive = 30
+			c.ClientID = "macy"
+			c.UsernameFlag = true
+			c.Username = "john.doe"
+			c.PasswordFlag = true
+			c.Password = []byte("secret")
+			sExpiry := uint32(30)
+			c.Properties.SessionExpiryInterval = &sExpiry
+			// todo use will
+			c.WillFlag = true
+			c.WillRetain = true
+			c.WillQOS = 1
+			c.WillTopic = "topic/name"
+			c.WillMessage = []byte("gopher")
+			wExpiry := uint32(199)
+			pFormat := byte(1)
+			c.WillProperties = &packets.Properties{
+				MessageExpiry:   &wExpiry,
+				PayloadFormat:   &pFormat,
+				CorrelationData: []byte("corr"),
+				ContentType:     "text/plain",
+				User: []packets.User{
+					{Key: "color", Value: "red"},
+				},
+			}
+
+			p.WriteTo(&buf)
+			packets.ReadPacket(&buf)
+		}
+	})
+}
+
 func BenchmarkConnAck(b *testing.B) {
 	b.Run("our", func(b *testing.B) {
 		var buf bytes.Buffer
