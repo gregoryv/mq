@@ -41,28 +41,22 @@ type Connect struct {
 	sessionExpiryInterval wuint32
 	maxPacketSize         wuint32
 
-	willDelayInterval         wuint32
-	willMessageExpiryInterval wuint32
+	willDelayInterval wuint32
 
 	topicAliasMax       wuint16
 	requestResponseInfo wbool
 	requestProblemInfo  wbool
-	willPayloadFormat   wbool
 
 	protocolName wstring
 	clientID     wstring
 	UserProperties
-	willProp        []property
-	authMethod      wstring
-	authData        bindata
-	willTopic       wstring
-	willPayload     bindata
-	willContentType wstring
-	responseTopic   wstring
-	correlationData bindata
+	authMethod wstring
+	authData   bindata
 
 	username wstring
 	password bindata
+
+	will *Publish
 }
 
 // Connect fields are exposed using methods to simplify the type
@@ -72,36 +66,15 @@ type Connect struct {
 // delays publishing the Client’s Will Message until the Will Delay
 // Interval has passed or the Session ends, whichever happens first.
 func (c *Connect) SetWill(p *Publish, delayInterval uint32) {
+	c.will = p
 	c.flags.toggle(WillFlag, true)
 	c.flags.toggle(WillRetain, p.Retain())
 	c.willDelayInterval = wuint32(delayInterval)
 	c.setWillQoS(p.QoS())
-	c.willTopic = p.topicName
-	c.willPayload = p.payload
-	c.willContentType = p.contentType
-	c.willProp = p.UserProperties
-	c.willMessageExpiryInterval = p.messageExpiryInterval
-	c.willPayloadFormat = p.payloadFormat
-	c.responseTopic = p.responseTopic
-	c.correlationData = p.correlationData
 }
 
 func (c *Connect) Will() *Publish {
-	if !c.HasFlag(WillFlag) {
-		return nil
-	}
-	p := NewPublish()
-	p.SetQoS(c.willQoS())
-	p.SetRetain(c.HasFlag(WillRetain))
-	p.topicName = c.willTopic
-	p.payload = c.willPayload
-	p.contentType = c.willContentType
-	p.UserProperties = c.willProp
-	p.messageExpiryInterval = c.willMessageExpiryInterval
-	p.payloadFormat = c.willPayloadFormat
-	p.responseTopic = c.responseTopic
-	p.correlationData = c.correlationData
-	return p
+	return c.will
 }
 
 func (c *Connect) Flags() Bits         { return c.flags }
@@ -172,7 +145,7 @@ func (c *Connect) RequestProblemInfo() bool {
 }
 
 func (c *Connect) appendWillProperty(p property) {
-	c.willProp = append(c.willProp, p)
+	c.will.UserProperties = append(c.will.UserProperties, p)
 }
 
 func (c *Connect) SetAuthMethod(v string) { c.authMethod = wstring(v) }
@@ -183,6 +156,9 @@ func (c *Connect) AuthData() []byte     { return c.authData }
 
 func (c *Connect) SetUsername(v string) {
 	c.username = wstring(v)
+	if len(v) == 0 {
+		c.username = nil
+	}
 	c.flags.toggle(UsernameFlag, len(c.username) > 0)
 
 }
@@ -265,17 +241,15 @@ func (c *Connect) payload(b []byte, i int) int {
 			for id, v := range c.willPropertyMap() {
 				i += v.fillProp(b, i, id)
 			}
-			for j, _ := range c.willProp {
-				i += c.willProp[j].fillProp(b, i, UserProperty)
-			}
+			i += c.will.UserProperties.properties(b, i)
 
 			return i - n
 		}
 
 		i += vbint(properties(_LEN, 0)).fill(b, i)
 		i += properties(b, i)
-		i += c.willTopic.fill(b, i)   // topic
-		i += c.willPayload.fill(b, i) // payload
+		i += c.will.topicName.fill(b, i)
+		i += c.will.payload.fill(b, i)
 	}
 
 	if c.flags.Has(UsernameFlag) {
@@ -303,9 +277,11 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 	// payload
 	get(&c.clientID)
 	if Bits(c.flags).Has(WillFlag) {
+		c.will = NewPublish()
+		c.will.SetQoS(c.willQoS())
 		buf.getAny(c.willPropertyMap(), c.appendWillProperty)
-		get(&c.willTopic)
-		get(&c.willPayload)
+		get(&c.will.topicName)
+		get(&c.will.payload)
 	}
 	// username
 	if c.flags.Has(UsernameFlag) {
@@ -320,11 +296,11 @@ func (c *Connect) UnmarshalBinary(p []byte) error {
 func (c *Connect) willPropertyMap() map[Ident]wireType {
 	return map[Ident]wireType{
 		WillDelayInterval:      &c.willDelayInterval,
-		PayloadFormatIndicator: &c.willPayloadFormat,
-		MessageExpiryInterval:  &c.willMessageExpiryInterval,
-		ContentType:            &c.willContentType,
-		ResponseTopic:          &c.responseTopic,
-		CorrelationData:        &c.correlationData,
+		PayloadFormatIndicator: &c.will.payloadFormat,
+		MessageExpiryInterval:  &c.will.messageExpiryInterval,
+		ContentType:            &c.will.contentType,
+		ResponseTopic:          &c.will.responseTopic,
+		CorrelationData:        &c.will.correlationData,
 	}
 }
 

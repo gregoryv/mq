@@ -66,12 +66,15 @@ func testControlPacket(t *testing.T, in ControlPacket) {
 	}
 
 	if !reflect.DeepEqual(in, got) {
+		var buf bytes.Buffer
 		got.WriteTo(&buf)
 
 		b := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
 
 		assert := asserter.New(t)
 		assert().Equals(b, a)
+		t.Log(len(data), "bytes\n\n", hex.Dump(data))
+		t.Log(buf.Len(), "bytes\n\n", hex.Dump(buf.Bytes()))
 	}
 
 	// String

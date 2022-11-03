@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -66,10 +67,7 @@ func TestConnect(t *testing.T) {
 	eq(t, c.SetTopicAliasMax, c.TopicAliasMax, 128)
 	eq(t, c.SetRequestResponseInfo, c.RequestResponseInfo, true)
 	eq(t, c.SetRequestProblemInfo, c.RequestProblemInfo, true)
-
 	c.AddUserProp("color", "red")
-
-	// todo add will
 
 	if got := c.String(); !strings.Contains(got, "CONNECT") {
 		t.Error(got)
@@ -79,6 +77,9 @@ func TestConnect(t *testing.T) {
 	}
 	testControlPacket(t, c)
 
+	c.SetWill(Pub(1, "client/gone", "pink"), 3)
+	testControlPacket(t, c)
+
 	// clears it
 	if c.SetUsername(""); c.HasFlag(UsernameFlag) {
 		t.Error("username flag still set")
@@ -86,6 +87,7 @@ func TestConnect(t *testing.T) {
 	if c.SetPassword(nil); c.HasFlag(PasswordFlag) {
 		t.Error("password flag still set")
 	}
+	testControlPacket(t, c)
 }
 
 // eq is used to check equality of set and "get" funcs
@@ -207,11 +209,20 @@ func TestCompareConnect(t *testing.T) {
 		t.Log("our", our.String())
 		t.Log("got", got.String())
 
-		a := strings.ReplaceAll(fmt.Sprintf("%#v", got), ", ", ",\n")
-		b := strings.ReplaceAll(fmt.Sprintf("%#v", our), ", ", ",\n")
+		a := clean(got)
+		b := clean(our)
 		assert := asserter.New(t)
 		assert().Equals(a, b)
 	}
+}
+
+var dropRefs = regexp.MustCompile(`0x([0-9|a-z]+)`)
+
+func clean(in any) string {
+	v := fmt.Sprintf("%#v", in)
+	v = strings.ReplaceAll(v, ", ", ",\n")
+	v = dropRefs.ReplaceAllString(v, "0x")
+	return v
 }
 
 func compare(t *testing.T, our, their io.WriterTo) {
