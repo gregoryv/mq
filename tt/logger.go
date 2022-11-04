@@ -11,6 +11,10 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+func init() {
+	log.SetFlags(0) // quiet by default
+}
+
 // NewLogger returns a logger with max id len 11
 func NewLogger(v Level) *Logger {
 	l := &Logger{
