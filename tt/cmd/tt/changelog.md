@@ -6,3 +6,4 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add tt command "pub", "sub" and "serve"

@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	"github.com/gregoryv/cmdline"
 )
 
 type Serve struct {
-	bind *url.URL
+	bind string
 }
 
 func (s *Serve) ExtraOptions(cli *cmdline.Parser) {
-	s.bind = cli.Option("-b, --bind").Url(":1883")
+	s.bind = cli.Option("-b, --bind, $BIND").String("localhost:1883")
 }
 
 func (s *Serve) Run(ctx context.Context) error {

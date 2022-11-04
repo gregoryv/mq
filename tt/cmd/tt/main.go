@@ -20,19 +20,17 @@ func main() {
 
 		cmd = commands.Selected()
 	)
-
 	u := cli.Usage()
 	u.Preface(
 		"mqtt-v5 server and client by Gregory Vinčić",
 	)
 	cli.Parse()
 
-	if cmd != nil {
-		if err := cmd.(Command).Run(context.Background()); err != nil {
-			cmdline.DefaultShell.Fatal(err)
-		}
+	sh := cmdline.DefaultShell
+	if err := cmd.(Command).Run(context.Background()); err != nil {
+		sh.Fatal(err)
 	}
-	cmdline.DefaultShell.Exit(0)
+	sh.Exit(0)
 }
 
 type Command interface {
