@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	. "context"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gregoryv/mq"
@@ -24,8 +26,11 @@ func InitConn(ctx Context, conn io.ReadWriter) (string, error) {
 		in  = tt.NewInQueue(tt.NoopHandler, connwait, logger)
 		out = tt.NewOutQueue(sender.Out, logger)
 	)
+	defer close(onConnect)
 
-	_ = out // todo register outgoing connection once connected
+	connectTimeout := time.Second // duration until the first Connect packet comes in
+	ctx, cancel := context.WithTimeout(ctx, connectTimeout)
+	defer cancel()
 	go tt.NewReceiver(in, conn).Run(ctx)
 
 	select {
@@ -38,10 +43,8 @@ func InitConn(ctx Context, conn io.ReadWriter) (string, error) {
 		}
 		// todo make sure it's uniq
 		a.SetAssignedClientID(id)
-		if _, err := a.WriteTo(conn); err != nil {
-			return "", err
-		}
-		return id, nil
+		cancel()
+		return id, out(ctx, a)
 
 	case <-ctx.Done():
 		// stopped from the outside
