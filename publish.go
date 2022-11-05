@@ -219,3 +219,7 @@ func (p *Publish) propertyMap() map[Ident]wireType {
 		ContentType:            &p.contentType,
 	}
 }
+
+func (p *Publish) WellFormed() error {
+	return nil
+}

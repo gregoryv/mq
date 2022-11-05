@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/url"
@@ -29,10 +31,6 @@ func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
 }
 
 func (c *Pub) Run(ctx context.Context) error {
-	if c.topic == "" {
-		return fmt.Errorf("empty topic, try --help")
-	}
-
 	conn, err := net.Dial("tcp", c.server.String())
 	if err != nil {
 		return err
@@ -60,6 +58,7 @@ func (c *Pub) Run(ctx context.Context) error {
 						return out(ctx, p)
 
 					}
+
 				case *mq.PubAck:
 					// disconnect
 					_ = out(ctx, mq.NewDisconnect())
@@ -75,9 +74,13 @@ func (c *Pub) Run(ctx context.Context) error {
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+	failed := make(chan error, 0)
 	go func() {
 		if err := tt.NewReceiver(in, conn).Run(ctx); err != nil {
-			log.Fatal(err)
+			if errors.Is(err, io.EOF) {
+				failed <- fmt.Errorf("disconnected without ack")
+			}
+			close(failed)
 		}
 	}()
 
@@ -89,6 +92,10 @@ func (c *Pub) Run(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	case <-done:
+	case err := <-failed:
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	return nil
 }

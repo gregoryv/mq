@@ -30,9 +30,10 @@ func TestReadPacket_broken(t *testing.T) {
 	buf.Reset()
 	p.WriteTo(&buf)
 
-	// break the variable length which should trigger an UnmarshalBinary
+	// break the variable length which should trigger an error in
+	// UnmarshalBinary
 	bad := buf.Bytes()
-	bad[3] = bad[3] + 1
+	bad[3] = bad[3] - 1
 	if _, err := ReadPacket(bytes.NewReader(bad)); err == nil {
 		t.Error("expected error")
 	}

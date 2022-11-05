@@ -5,8 +5,8 @@ import "testing"
 func Test_buffer(t *testing.T) {
 	b := &buffer{}
 	b.getAny(map[Ident]wireType{}, func(UserProp) {})
-	if b.err == nil {
-		t.Error("expect getAny to fail on missing data")
+	if b.err != nil {
+		t.Error("getAny failes on empty data")
 	}
 
 	b = &buffer{data: []byte{2, 0xff, 0}}
