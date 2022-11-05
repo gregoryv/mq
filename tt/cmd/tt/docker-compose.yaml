@@ -15,5 +15,3 @@ services:
         command: /tt sub -s broker:1883
         depends_on:
           - broker
-        
-        
