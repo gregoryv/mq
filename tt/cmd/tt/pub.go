@@ -17,10 +17,11 @@ import (
 type Pub struct {
 	server *url.URL
 
-	topic   string
-	payload string
-	qos     uint8
-	timeout time.Duration
+	topic    string
+	payload  string
+	qos      uint8
+	timeout  time.Duration
+	clientID string
 }
 
 func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
@@ -29,6 +30,7 @@ func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
 	c.payload = cli.Option("-p, --payload").String("hug")
 	c.qos = uint8(cli.Option("-q, --qos").Uint16(0))
 	c.timeout = cli.Option("--timeout").Duration("1s")
+	c.clientID = cli.Option("-cid, --client-id").String("ttpub")
 }
 
 func (c *Pub) Run(ctx context.Context) error {
@@ -49,6 +51,7 @@ func (c *Pub) Run(ctx context.Context) error {
 		handler mq.Handler
 		msg     = mq.Pub(c.qos, c.topic, c.payload)
 	)
+	logger.SetLogPrefix(c.clientID)
 
 	// QoS dictates the logic of packet flows
 	switch c.qos {
@@ -112,8 +115,9 @@ func (c *Pub) Run(ctx context.Context) error {
 	running := tt.Start(ctx, receiver)
 
 	// kick off with a connect
+
 	p := mq.NewConnect()
-	p.SetClientID("tt")
+	p.SetClientID(c.clientID)
 	_ = out(ctx, p)
 
 	select {

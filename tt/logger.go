@@ -62,7 +62,7 @@ func (f *Logger) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(*mq.ConnAck); ok {
 			if v := p.AssignedClientID(); v != "" {
-				f.setLogPrefix(v)
+				f.SetLogPrefix(v)
 			}
 		}
 		// double spaces to align in/out. Usually this is not advised
@@ -86,7 +86,7 @@ func (f *Logger) In(next mq.Handler) mq.Handler {
 func (f *Logger) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(*mq.Connect); ok {
-			f.setLogPrefix(p.ClientID())
+			f.SetLogPrefix(p.ClientID())
 		}
 		f.info.Print("out ", p)
 		err := next(ctx, p)
@@ -100,7 +100,7 @@ func (f *Logger) Out(next mq.Handler) mq.Handler {
 	}
 }
 
-func (f *Logger) setLogPrefix(v string) {
+func (f *Logger) SetLogPrefix(v string) {
 	v = newPrefix(v, f.maxLen)
 	if v == f.prefix {
 		return
