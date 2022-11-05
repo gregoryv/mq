@@ -51,7 +51,9 @@ func (o *IDPool) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.Publish:
-			if p.QoS() > 0 {
+			// Don't set packet id if already set, this is used in
+			// eg. PubRel packets
+			if p.QoS() > 0 && p.PacketID() == 0 {
 				p.SetPacketID(o.next(ctx))
 			}
 

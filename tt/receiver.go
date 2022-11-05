@@ -50,3 +50,20 @@ loop:
 		_ = r.handle(ctx, p)
 	}
 }
+
+func Start(ctx context.Context, r Runner) <-chan error {
+	c := make(chan error, 0)
+	go func() {
+		if err := r.Run(ctx); err != nil {
+			if err != nil {
+				c <- err
+			}
+			close(c)
+		}
+	}()
+	return c
+}
+
+type Runner interface {
+	Run(context.Context) error
+}

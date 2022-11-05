@@ -11,6 +11,17 @@ import (
 	"github.com/gregoryv/mq"
 )
 
+func TestStart(t *testing.T) {
+	receiver := NewReceiver(NoopHandler, &ClosedConn{})
+	running := Start(context.Background(), receiver)
+	select {
+	case err := <-running:
+		if err == nil {
+			t.Fail()
+		}
+	}
+}
+
 func TestReceiver(t *testing.T) {
 	{ // handler is called on packet from server
 		conn, client := Dial()

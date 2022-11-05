@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/url"
 	"time"
@@ -68,33 +67,29 @@ func (c *Pub) Run(ctx context.Context) error {
 			}
 			return nil
 		}
-		in = tt.NewInQueue(handler, pool, logger)
+		in       = tt.NewInQueue(handler, pool, logger)
+		receiver = tt.NewReceiver(in, conn)
 	)
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	failed := make(chan error, 0)
-	go func() {
-		if err := tt.NewReceiver(in, conn).Run(ctx); err != nil {
-			if errors.Is(err, io.EOF) {
-				failed <- fmt.Errorf("disconnected without ack")
-			}
-			close(failed)
-		}
-	}()
+	running := tt.Start(ctx, receiver)
 
 	p := mq.NewConnect()
 	p.SetClientID("tt")
 	_ = out(ctx, p)
 
 	select {
+	case err := <-running:
+		if errors.Is(err, io.EOF) {
+			return fmt.Errorf("disconnected without ack")
+		}
+
 	case <-ctx.Done():
 		return ctx.Err()
+
 	case <-done:
-	case err := <-failed:
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
+
 	return nil
 }
