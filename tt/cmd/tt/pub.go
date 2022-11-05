@@ -57,11 +57,12 @@ func (c *Pub) Run(ctx context.Context) error {
 						p.SetQoS(uint8(c.qos))
 						p.SetTopicName(c.topic)
 						p.SetPayload([]byte(c.payload))
-						if err := out(ctx, p); err != nil {
-							return err
-						}
+						return out(ctx, p)
+
 					}
 				case *mq.PubAck:
+					// disconnect
+					_ = out(ctx, mq.NewDisconnect())
 					close(done)
 
 				default:
