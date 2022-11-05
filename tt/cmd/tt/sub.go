@@ -17,7 +17,7 @@ type Sub struct {
 
 func (c *Sub) ExtraOptions(cli *cmdline.Parser) {
 	c.server = cli.Option("-s, --server").Url("localhost:1883")
-	c.topicFilter = cli.Option("-f, --topic-filter").String("/#")
+	c.topicFilter = cli.Option("-f, --topic-filter").String("#")
 }
 
 func (c *Sub) Run(ctx context.Context) error {
