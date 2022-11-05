@@ -27,12 +27,16 @@ type IDPool struct {
 // returned to the pool before next handler is called.
 func (o *IDPool) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
-		if p, ok := p.(mq.HasPacketID); ok {
+		switch p := p.(type) {
+		case *mq.PubAck:
 			// todo handle dropped acks as that packet is lost. Maybe
 			// a timeout for expected acks to arrive?
-			if p.PacketID() > 0 {
+			switch p.AckType() {
+			case mq.PUBACK:
 				o.reuse(p.PacketID())
-			}
+			case mq.PUBCOMP:
+				o.reuse(p.PacketID())
+			}			
 		}
 		return next(ctx, p)
 	}
