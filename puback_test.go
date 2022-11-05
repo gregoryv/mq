@@ -43,7 +43,7 @@ func ExampleNewPubRel() {
 	p.SetReasonCode(PacketIdentifierNotFound)
 	fmt.Println(p)
 	// output:
-	// PUBREL ---- p9 PacketIdentifierNotFound 5 bytes
+	// PUBREL --1- p9 PacketIdentifierNotFound 5 bytes
 }
 
 func TestPubAck(t *testing.T) {

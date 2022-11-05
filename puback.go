@@ -13,7 +13,7 @@ func NewPubRec() *PubAck {
 // NewPubRel returns control packet with type PUBREL
 func NewPubRel() *PubRel {
 	p := &PubRel{}
-	p.fixed = bits(PUBREL)
+	p.fixed = bits(PUBREL | 1<<1)
 	return p
 }
 
