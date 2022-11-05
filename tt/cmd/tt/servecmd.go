@@ -23,7 +23,7 @@ func (c *ServeCmd) ExtraOptions(cli *cmdline.Parser) {
 // or accepting a connection fails. Accepting new connection can only
 // be interrupted if listener has SetDeadline method.
 func (c *ServeCmd) Run(ctx context.Context) error {
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", c.bind)
 	if err != nil {
 		return err
 	}

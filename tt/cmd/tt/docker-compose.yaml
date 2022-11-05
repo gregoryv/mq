@@ -1,14 +1,18 @@
 version: "3.5"
 services:
     broker: 
-        image: eclipse-mosquitto:1.6
+        # image: eclipse-mosquitto:1.6
+        # ports:
+        #   - 1883:1883
+        # volumes:
+        # - type: bind
+        #   source: ./mosquitto.conf
+        #   target: /mosquitto/config/mosquitto.conf
+        #   read_only: true
+        image: tt:latest
         ports:
           - 1883:1883
-        volumes:
-        - type: bind
-          source: ./mosquitto.conf
-          target: /mosquitto/config/mosquitto.conf
-          read_only: true
+        command: /tt serve -b :1883
 
     ttsub:
         image: tt:latest
