@@ -80,7 +80,7 @@ func (f *fixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	}
 	data := make([]byte, int(f.remainingLen))
 	if _, err := r.Read(data); err != nil {
-		return nil, fmt.Errorf("%s read remaining: %w", firstByte(f.fixed).String(), err)
+		return nil, fmt.Errorf("%s ReadRemaining: %w", firstByte(f.fixed).String(), err)
 	}
 
 	if err := p.UnmarshalBinary(data); err != nil {
