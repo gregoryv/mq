@@ -46,30 +46,29 @@ func (c *Pub) Run(ctx context.Context) error {
 		out  = tt.NewOutQueue(sender.Out, logger, pool)
 		done = make(chan struct{}, 0)
 
-		in = logger.In(pool.In(
-			func(ctx context.Context, p mq.Packet) error {
-				switch p.(type) {
-				case *mq.ConnAck:
-					{ // publish
-						p := mq.NewPublish()
-						p.SetQoS(uint8(c.qos))
-						p.SetTopicName(c.topic)
-						p.SetPayload([]byte(c.payload))
-						return out(ctx, p)
+		handler = func(ctx context.Context, p mq.Packet) error {
+			switch p.(type) {
+			case *mq.ConnAck:
+				{ // publish
+					p := mq.NewPublish()
+					p.SetQoS(uint8(c.qos))
+					p.SetTopicName(c.topic)
+					p.SetPayload([]byte(c.payload))
+					return out(ctx, p)
 
-					}
-
-				case *mq.PubAck:
-					// disconnect
-					_ = out(ctx, mq.NewDisconnect())
-					close(done)
-
-				default:
-					fmt.Println(p)
 				}
-				return nil
-			},
-		))
+
+			case *mq.PubAck:
+				// disconnect
+				_ = out(ctx, mq.NewDisconnect())
+				close(done)
+
+			default:
+				fmt.Println(p)
+			}
+			return nil
+		}
+		in = tt.NewInQueue(handler, pool, logger)
 	)
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
