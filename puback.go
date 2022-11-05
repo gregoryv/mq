@@ -113,11 +113,10 @@ func (p *PubAck) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
 	// no more data, see 3.4.2.1 PUBACK Reason Code
-	if len(data) == b.i {
-		return b.err
+	if len(data) > 2 {
+		b.get(&p.reasonCode)
+		b.getAny(p.propertyMap(), p.appendUserProperty)
 	}
-	b.get(&p.reasonCode)
-	b.getAny(p.propertyMap(), p.appendUserProperty)
 	return b.err
 }
 
