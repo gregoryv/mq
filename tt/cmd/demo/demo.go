@@ -42,12 +42,12 @@ func main() {
 		logLevel = tt.LevelInfo
 	}
 
-	room := "gohpher/chat"
-	pink := NewGopher("pink", broker)
-	pink.Join(room)
+	room := "gophers/chat"
+	pink := NewGopher("pink")
+	pink.Join(broker, room)
 
-	blue := NewGopher("blue", broker)
-	blue.Join(room)
+	blue := NewGopher("blue")
+	blue.Join(broker, room)
 
 	pink.Say("hello friends")
 	blue.Say("hi")
@@ -55,27 +55,25 @@ func main() {
 	<-time.After(10 * time.Millisecond)
 }
 
-func NewGopher(name, broker string) *Gopher {
-	return &Gopher{name: name, broker: broker}
+func NewGopher(name string) *Gopher {
+	return &Gopher{
+		Name: name,
+		Say:  func(string) {}, // noop
+	}
 }
 
 type Gopher struct {
-	name   string
-	broker string
-	room   string
-	net.Conn
+	Name string
 
-	out mq.Handler
+	Say func(v string)
 }
 
-func (g *Gopher) Join(room string) {
-	g.room = room
+func (g *Gopher) Join(broker, room string) {
 	// connect to server
-	conn, err := net.Dial("tcp", g.broker)
+	conn, err := net.Dial("tcp", broker)
 	if err != nil {
 		log.Fatal(err)
 	}
-	g.Conn = conn
 
 	routes := []*tt.Route{
 		tt.NewRoute(room, func(_ context.Context, p *mq.Publish) error {
@@ -97,7 +95,6 @@ func (g *Gopher) Join(room string) {
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
 		out = tt.NewOutQueue(sender, subwait, pool, logger)
 	)
-	g.out = out
 
 	// start handling packet flow
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
@@ -107,13 +104,13 @@ func (g *Gopher) Join(room string) {
 	receiver := tt.NewReceiver(in, conn)
 	go func() {
 		if err := receiver.Run(ctx); errors.Is(err, io.EOF) {
-			fmt.Println(g.name, "disconnected")
+			fmt.Println(g.Name, "disconnected")
 		}
 	}()
 
 	{ // connect
 		p := mq.NewConnect()
-		p.SetClientID(g.name)
+		p.SetClientID(g.Name)
 		_ = out(ctx, p)
 	}
 	<-onConnAck
@@ -125,13 +122,13 @@ func (g *Gopher) Join(room string) {
 		_ = out(ctx, p)
 	}
 	<-subwait.Done(ctx)
-	fmt.Println(g.name, "joined", room)
-}
+	fmt.Println(g.Name, "joined", room)
 
-func (g *Gopher) Say(v string) {
-	fmt.Print(g.name, "> ", v, "\n")
-	p := mq.NewPublish()
-	p.SetTopicName(g.room)
-	p.SetPayload([]byte(g.name + ": " + v))
-	g.out(context.Background(), p)
+	g.Say = func(v string) {
+		fmt.Print(g.Name, "> ", v, "\n")
+		p := mq.NewPublish()
+		p.SetTopicName(room)
+		p.SetPayload([]byte(g.Name + ": " + v))
+		out(context.Background(), p)
+	}
 }
