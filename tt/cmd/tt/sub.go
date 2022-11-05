@@ -37,7 +37,6 @@ func (c *Sub) Run(ctx context.Context) error {
 		handler mq.Handler
 	)
 
-	// QoS dictates the logic of packet flows
 	handler = func(ctx context.Context, p mq.Packet) error {
 		switch p := p.(type) {
 		case *mq.ConnAck:
