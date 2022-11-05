@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/gregoryv/cmdline"
 )
@@ -27,6 +28,12 @@ func main() {
 	cli.Parse()
 
 	sh := cmdline.DefaultShell
+	if cmd == nil {
+		// this shouldn't happen, default should be the first one. When testing it's empty
+		log.Println("empty command")
+		return
+	}
+
 	if err := cmd.(Command).Run(context.Background()); err != nil {
 		sh.Fatal(err)
 	}
