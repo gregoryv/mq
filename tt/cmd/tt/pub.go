@@ -19,14 +19,16 @@ type Pub struct {
 
 	topic   string
 	payload string
-	qos     uint16
+	qos     uint8
+	timeout time.Duration
 }
 
 func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
 	c.server = cli.Option("-s, --server").Url("localhost:1883")
-	c.topic = cli.Option("-t, --topic").String("")
-	c.payload = cli.Option("-p, --payload").String("")
-	c.qos = cli.Option("-q, --qos").Uint16(0)
+	c.topic = cli.Option("-t, --topic").String("gopher/pink")
+	c.payload = cli.Option("-p, --payload").String("hug")
+	c.qos = uint8(cli.Option("-q, --qos").Uint16(0))
+	c.timeout = cli.Option("--timeout").Duration("1s")
 }
 
 func (c *Pub) Run(ctx context.Context) error {
@@ -42,39 +44,42 @@ func (c *Pub) Run(ctx context.Context) error {
 		pool   = tt.NewIDPool(100)
 		logger = tt.NewLogger(tt.LevelInfo)
 
-		out  = tt.NewOutQueue(sender.Out, logger, pool)
-		done = make(chan struct{}, 0)
+		out     = tt.NewOutQueue(sender.Out, logger, pool)
+		done    = make(chan struct{}, 0) // closed by handler on success
+		handler mq.Handler
+		msg     = mq.Pub(c.qos, c.topic, c.payload)
+	)
 
+	// QoS dictates the logic of packet flows
+	switch c.qos {
+	case 1:
 		handler = func(ctx context.Context, p mq.Packet) error {
 			switch p.(type) {
 			case *mq.ConnAck:
-				{ // publish
-					p := mq.NewPublish()
-					p.SetQoS(uint8(c.qos))
-					p.SetTopicName(c.topic)
-					p.SetPayload([]byte(c.payload))
-					return out(ctx, p)
-
-				}
+				return out(ctx, msg)
 
 			case *mq.PubAck:
-				// disconnect
-				_ = out(ctx, mq.NewDisconnect())
 				close(done)
 
 			default:
-				fmt.Println(p)
+				fmt.Println("unexpected:", p)
 			}
 			return nil
 		}
+	default:
+		return fmt.Errorf("cannot handle QoS %v", c.qos)
+	}
+
+	var (
 		in       = tt.NewInQueue(handler, pool, logger)
 		receiver = tt.NewReceiver(in, conn)
 	)
 	// start handling packet flow
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
 	defer cancel()
 	running := tt.Start(ctx, receiver)
 
+	// kick off with a connect
 	p := mq.NewConnect()
 	p.SetClientID("tt")
 	_ = out(ctx, p)
@@ -90,6 +95,6 @@ func (c *Pub) Run(ctx context.Context) error {
 
 	case <-done:
 	}
-
+	_ = out(ctx, mq.NewDisconnect())
 	return nil
 }
