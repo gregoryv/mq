@@ -18,9 +18,6 @@ func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
 	}
 	// remove * from type name
 	t := fmt.Sprintf("%T", v)
-	if t[0] == '*' {
-		t = t[1:]
-	}
 	return &Malformed{
 		t:      t,
 		ref:    ref,

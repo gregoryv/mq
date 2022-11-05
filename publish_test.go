@@ -9,6 +9,16 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
+func ExamplePublish_stringMalformed() {
+	fmt.Println(Pub(0, "", "gopher"))
+	fmt.Println(Pub(3, "a/b", "gopher"))
+	fmt.Println(Pub(1, "a/b", "gopher"))
+	// output:
+	// PUBLISH ---- p0  13 bytes, malformed! empty topic name
+	// PUBLISH -!!- p0 a/b 16 bytes, malformed! invalid QoS
+	// PUBLISH --1- p0 a/b 18 bytes, malformed! empty packet ID
+}
+
 func ExamplePublish_String() {
 	p := Pub(2, "a/b/1", "gopher")
 	p.SetPacketID(3)
@@ -27,10 +37,10 @@ func ExamplePublish_String() {
 }
 
 func ExamplePublish_StringWithoutCorrelation() {
-	p := Pub(1, "a/b/1", "gopher")
+	p := Pub(0, "a/b/1", "gopher")
 	fmt.Println(p)
 	// output:
-	// PUBLISH --1- p0 a/b/1 20 bytes
+	// PUBLISH ---- p0 a/b/1 18 bytes
 }
 
 func TestPublish(t *testing.T) {
@@ -62,8 +72,9 @@ func Test_QoS(t *testing.T) {
 	p := NewPublish()
 	eq(t, p.SetQoS, p.QoS, 1)
 	eq(t, p.SetQoS, p.QoS, 2)
+	eq(t, p.SetQoS, p.QoS, 3)
 
-	if p.SetQoS(3); p.QoS() != 0 {
+	if p.SetQoS(9); p.QoS() != 0 {
 		t.Error("unexpected qos", p.QoS())
 	}
 	p.fixed.toggle(QoS3, true) // can only happen for incoming packets

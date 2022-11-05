@@ -41,7 +41,8 @@ func (p *Publish) String() string {
 	if v := uint16(p.topicAlias); v > 0 {
 		topic = fmt.Sprintf("topic:%v", v)
 	}
-	return fmt.Sprintf("%s p%v %s%s %v bytes",
+
+	return fmt.Sprintf("%s p%v %s%s %v bytes%s",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		topic,
@@ -52,7 +53,29 @@ func (p *Publish) String() string {
 			return " " + string(p.correlationData)
 		}(),
 		p.width(),
+		func() string {
+			if err := p.WellFormed(); err != nil {
+				return fmt.Sprintf(", %v", err)
+			}
+			return ""
+		}(),
 	)
+}
+
+func (p *Publish) WellFormed() error {
+	if len(p.topicName) == 0 {
+		return fmt.Errorf("malformed! empty topic name")
+	}
+	switch p.QoS() {
+	case 1, 2:
+		if p.packetID == 0 {
+			return fmt.Errorf("malformed! empty packet ID")
+		}
+	case 3:
+		return fmt.Errorf("malformed! invalid QoS")
+	}
+
+	return nil
 }
 
 func (p *Publish) SetDuplicate(v bool) { p.fixed.toggle(DUP, v) }
@@ -61,7 +84,8 @@ func (p *Publish) Duplicate() bool     { return p.fixed.Has(DUP) }
 func (p *Publish) SetRetain(v bool) { p.fixed.toggle(RETAIN, v) }
 func (p *Publish) Retain() bool     { return p.fixed.Has(RETAIN) }
 
-// SetQoS, 1 or 2 other values unset the QoS
+// SetQoS, 0,1,2 or 3 other values unset the QoS. 3 is malformed but
+// allowed to be set here.
 func (p *Publish) SetQoS(v uint8) {
 	p.fixed &= bits(^(QoS3)) // reset
 	switch v {
@@ -69,6 +93,8 @@ func (p *Publish) SetQoS(v uint8) {
 		p.fixed.toggle(QoS1, true)
 	case 2:
 		p.fixed.toggle(QoS2, true)
+	case 3:
+		p.fixed.toggle(QoS3, true)
 	}
 }
 
@@ -218,8 +244,4 @@ func (p *Publish) propertyMap() map[Ident]wireType {
 		CorrelationData:        &p.correlationData,
 		ContentType:            &p.contentType,
 	}
-}
-
-func (p *Publish) WellFormed() error {
-	return nil
 }
