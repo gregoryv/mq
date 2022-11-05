@@ -41,8 +41,6 @@ type Logger struct {
 
 	// client ids
 	maxLen uint
-
-	prefix string
 }
 
 // SetMaxIDLen configures the logger to trim the client id to number of
@@ -102,12 +100,8 @@ func (f *Logger) Out(next mq.Handler) mq.Handler {
 
 func (f *Logger) SetLogPrefix(v string) {
 	v = newPrefix(v, f.maxLen)
-	if v == f.prefix {
-		return
-	}
 	f.info.SetPrefix(v + " ")
 	f.debug.SetPrefix(v + " ")
-	f.prefix = v
 }
 
 func (f *Logger) dumpPacket(p mq.Packet) {
