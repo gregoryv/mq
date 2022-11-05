@@ -23,6 +23,9 @@ type buffer struct {
 // the variable length.  fields map UserProp identity codes to wire
 // type fields and the addProp func is used for each user property.
 func (b *buffer) getAny(fields map[Ident]wireType, addProp func(UserProp)) {
+	if b.atEnd() {
+		return
+	}
 	var propLen vbint
 	b.get(&propLen)
 	if b.err != nil {
@@ -71,6 +74,10 @@ func (b *buffer) get(v wireType) {
 		return
 	}
 	b.i += v.width()
+}
+
+func (b *buffer) atEnd() bool {
+	return b.i == len(b.data)
 }
 
 func (b *buffer) Err() error { return b.err }
