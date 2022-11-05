@@ -2,19 +2,30 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io"
+	"net"
 
 	"github.com/gregoryv/cmdline"
 )
 
 type Serve struct {
-	bind string
+	Server
 }
 
-func (s *Serve) ExtraOptions(cli *cmdline.Parser) {
-	s.bind = cli.Option("-b, --bind, $BIND").String("localhost:1883")
+func (c *Serve) ExtraOptions(cli *cmdline.Parser) {
+	c.bind = cli.Option("-b, --bind, $BIND").String("localhost:1883")
+	c.acceptTimeout = cli.Option("-a, --accept-timeout").Duration("1ms")
+	c.connectTimeout = cli.Option("-c, --connect-timeout").Duration("20ms")
+	c.clients = make(map[string]io.ReadWriter)
 }
 
-func (s *Serve) Run(ctx context.Context) error {
-	return fmt.Errorf("serve: todo")
+// Run listens for tcp connections. Blocks until context is cancelled
+// or accepting a connection fails. Accepting new connection can only
+// be interrupted if listener has SetDeadline method.
+func (c *Serve) Run(ctx context.Context) error {
+	ln, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		return err
+	}
+	return c.Server.Run(ln, ctx)
 }
