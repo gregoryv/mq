@@ -17,6 +17,8 @@ func NewPubRel() *PubRel {
 	return p
 }
 
+// todo maybe do the same for PubComp and PubRec, ie. own types
+
 type PubRel struct {
 	PubAck
 }

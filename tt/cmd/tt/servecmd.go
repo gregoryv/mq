@@ -2,21 +2,21 @@ package main
 
 import (
 	"context"
-	"io"
 	"net"
 
 	"github.com/gregoryv/cmdline"
 )
 
 type ServeCmd struct {
-	Server
+	*Server
 }
 
 func (c *ServeCmd) ExtraOptions(cli *cmdline.Parser) {
+	c.Server = NewServer()
 	c.bind = cli.Option("-b, --bind, $BIND").String("localhost:1883")
 	c.acceptTimeout = cli.Option("-a, --accept-timeout").Duration("1ms")
 	c.connectTimeout = cli.Option("-c, --connect-timeout").Duration("20ms")
-	c.clients = make(map[string]io.ReadWriter)
+	c.poolSize = cli.Option("-p, --pool-size").Uint16(200)
 }
 
 // Run listens for tcp connections. Blocks until context is cancelled
