@@ -28,9 +28,6 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(UserProp)) {
 	}
 	var propLen vbint
 	b.get(&propLen)
-	if b.err != nil {
-		return
-	}
 	end := b.i + int(propLen)
 	var id Ident
 	for b.i < end {
