@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/url"
 
@@ -50,6 +51,9 @@ func (c *Sub) Run(ctx context.Context) error {
 				ack.SetPacketID(p.PacketID())
 				return out(ctx, ack)
 			}
+			fmt.Println("PAYLOAD", string(p.Payload()))
+		default:
+
 		}
 		return nil
 	}
