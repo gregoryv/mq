@@ -12,8 +12,6 @@ func Test_IDPool(t *testing.T) {
 	max := uint16(5)
 	pool := NewIDPool(max) // 1 .. 5
 
-	ctx := context.Background()
-
 	// check that ids are reusable
 	used := make(chan uint16, max)
 	drain := func() {
@@ -21,6 +19,7 @@ func Test_IDPool(t *testing.T) {
 			pool.reuse(v)
 		}
 	}
+	ctx := context.Background()
 	for i := uint16(0); i < 2*max; i++ {
 		v := pool.next(ctx)
 		used <- v
@@ -36,6 +35,16 @@ func Test_IDPool(t *testing.T) {
 		mq.Pub(1, "a/b", "gopher"),
 		mq.NewSubscribe(),
 		mq.NewUnsubscribe(),
+		func() mq.Packet {
+			p := mq.NewPubAck()
+			p.SetPacketID(1)
+			return p
+		}(),
+		func() mq.Packet {
+			p := mq.NewPubComp()
+			p.SetPacketID(1)
+			return p
+		}(),
 	}
 
 	for _, p := range packets {

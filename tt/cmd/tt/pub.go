@@ -28,7 +28,7 @@ func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
 	c.server = cli.Option("-s, --server").Url("localhost:1883")
 	c.topic = cli.Option("-t, --topic").String("gopher/pink")
 	c.payload = cli.Option("-p, --payload").String("hug")
-	c.qos = uint8(cli.Option("-q, --qos").Uint16(0))
+	c.qos = cli.Option("-q, --qos").Uint8(0)
 	c.timeout = cli.Option("--timeout").Duration("1s")
 	c.clientID = cli.Option("-cid, --client-id").String("ttpub")
 }
