@@ -64,8 +64,7 @@ func NewGopher(name string) *Gopher {
 
 type Gopher struct {
 	Name string
-
-	Say func(v string)
+	Say  func(v string)
 }
 
 func (g *Gopher) Join(broker, room string) {
@@ -93,7 +92,7 @@ func (g *Gopher) Join(broker, room string) {
 		pool      = tt.NewIDPool(100)
 
 		in  = tt.NewInQueue(router.In, conwait, subwait, pool, logger)
-		out = tt.NewOutQueue(sender, subwait, pool, logger)
+		out = tt.NewOutQueue(sender, logger, subwait, pool)
 	)
 
 	// start handling packet flow
