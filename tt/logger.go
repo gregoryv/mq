@@ -56,8 +56,8 @@ func (l *Logger) SetOutput(w io.Writer) {
 	l.debug.SetOutput(w)
 }
 
-// In logs incoming packets and errors from the stack on the
-// info level.
+// In logs incoming packets. Log prefix is based on
+// mq.ConnAck.AssignedClientID.
 func (f *Logger) In(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(*mq.ConnAck); ok {
@@ -65,7 +65,10 @@ func (f *Logger) In(next mq.Handler) mq.Handler {
 				f.setLogPrefix(v)
 			}
 		}
-		f.info.Print("in ", p)
+		// double spaces to align in/out. Usually this is not advised
+		// but in here it really does aid when scanning for patterns
+		// of packets.
+		f.info.Print("in  ", p)
 		err := next(ctx, p)
 		if err != nil {
 			f.info.Print(err)
@@ -73,16 +76,19 @@ func (f *Logger) In(next mq.Handler) mq.Handler {
 		if f.logLevel == LevelDebug {
 			f.dumpPacket(p)
 		}
-		return err // return error just incase this middleware is not the first
+		// return error just incase this middleware is not the first
+		return err
 	}
 }
 
+// Out logs outgoing packets. Log prefix is based on
+// mq.Connect.ClientID.
 func (f *Logger) Out(next mq.Handler) mq.Handler {
 	return func(ctx context.Context, p mq.Packet) error {
 		if p, ok := p.(*mq.Connect); ok {
 			f.setLogPrefix(p.ClientID())
 		}
-		f.info.Print("ut ", p)
+		f.info.Print("out ", p)
 		err := next(ctx, p)
 		if err != nil {
 			f.info.Print(err)
