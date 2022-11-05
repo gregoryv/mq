@@ -130,6 +130,7 @@ func (c *Pub) Run(ctx context.Context) error {
 		return ctx.Err()
 
 	case <-done:
+		fmt.Println("ok")
 	}
 	_ = out(ctx, mq.NewDisconnect())
 	return nil

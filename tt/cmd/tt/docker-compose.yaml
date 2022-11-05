@@ -13,5 +13,7 @@ services:
     ttsub:
         image: tt:latest
         command: /tt sub -s broker:1883
+        depends_on:
+          - broker
         
         

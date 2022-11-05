@@ -46,9 +46,11 @@ func (c *Sub) Run(ctx context.Context) error {
 			return out(ctx, sub)
 
 		case *mq.Publish:
-			ack := mq.NewPubAck()
-			ack.SetPacketID(p.PacketID())
-			return out(ctx, ack)
+			if p.PacketID() > 0 {
+				ack := mq.NewPubAck()
+				ack.SetPacketID(p.PacketID())
+				return out(ctx, ack)
+			}
 		}
 		return nil
 	}
