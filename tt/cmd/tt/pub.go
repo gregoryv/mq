@@ -52,15 +52,26 @@ func (c *Pub) Run(ctx context.Context) error {
 
 	// QoS dictates the logic of packet flows
 	switch c.qos {
+	case 0:
+		handler = func(ctx context.Context, p mq.Packet) error {
+			switch p.(type) {
+			case *mq.ConnAck:
+				if err := out(ctx, msg); err != nil {
+					return err
+				}
+				close(done)
+			default:
+				fmt.Println("unexpected:", p)
+			}
+			return nil
+		}
 	case 1:
 		handler = func(ctx context.Context, p mq.Packet) error {
 			switch p.(type) {
 			case *mq.ConnAck:
 				return out(ctx, msg)
-
 			case *mq.PubAck:
 				close(done)
-
 			default:
 				fmt.Println("unexpected:", p)
 			}
