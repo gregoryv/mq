@@ -77,6 +77,27 @@ func (c *Pub) Run(ctx context.Context) error {
 			}
 			return nil
 		}
+
+	case 2:
+		handler = func(ctx context.Context, p mq.Packet) error {
+			switch p := p.(type) {
+			case *mq.ConnAck:
+				return out(ctx, msg)
+			case *mq.PubAck:
+				switch p.AckType() {
+				case mq.PUBREC:
+					rel := mq.NewPubRel()
+					rel.SetPacketID(msg.PacketID())
+					return out(ctx, rel)
+				case mq.PUBCOMP:
+					close(done)
+				}
+			default:
+				fmt.Println("unexpected:", p)
+			}
+			return nil
+		}
+
 	default:
 		return fmt.Errorf("cannot handle QoS %v", c.qos)
 	}
@@ -98,7 +119,7 @@ func (c *Pub) Run(ctx context.Context) error {
 	select {
 	case err := <-running:
 		if errors.Is(err, io.EOF) {
-			return fmt.Errorf("disconnected without ack")
+			return fmt.Errorf("FAIL")
 		}
 
 	case <-ctx.Done():
