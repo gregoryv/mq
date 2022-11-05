@@ -10,7 +10,7 @@ import (
 func ReadPacket(r io.Reader) (ControlPacket, error) {
 	var fh fixedHeader
 	if _, err := fh.ReadFrom(r); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("ReadPacket: %w", err)
 	}
 
 	return fh.ReadRemaining(r)

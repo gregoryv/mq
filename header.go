@@ -19,13 +19,10 @@ type fixedHeader struct {
 func (f *fixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
 	if err != nil {
-		return n, fmt.Errorf("ReadFrom: %w", err)
+		return n, err
 	}
 	m, err := f.remainingLen.ReadFrom(r)
-	if err != nil {
-		return n + m, fmt.Errorf("ReadFrom: %w", err)
-	}
-	return n + m, nil
+	return n + m, err
 }
 
 // ReadRemaining is more related to client and server
