@@ -12,11 +12,11 @@ func main() {
 		cli = cmdline.NewBasicParser()
 		// shared options
 
-		// sub commands
+		// SubCmd commands
 		commands = cli.Group("Commands", "COMMAND")
 
 		_ = commands.New("pub", &PubCmd{})
-		_ = commands.New("sub", &Sub{})
+		_ = commands.New("sub", &SubCmd{})
 		_ = commands.New("serve", &ServeCmd{})
 
 		cmd = commands.Selected()

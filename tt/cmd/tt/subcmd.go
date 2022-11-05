@@ -11,17 +11,17 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
-type Sub struct {
+type SubCmd struct {
 	server      *url.URL
 	topicFilter string
 }
 
-func (c *Sub) ExtraOptions(cli *cmdline.Parser) {
+func (c *SubCmd) ExtraOptions(cli *cmdline.Parser) {
 	c.server = cli.Option("-s, --server").Url("localhost:1883")
 	c.topicFilter = cli.Option("-f, --topic-filter").String("#")
 }
 
-func (c *Sub) Run(ctx context.Context) error {
+func (c *SubCmd) Run(ctx context.Context) error {
 	conn, err := net.Dial("tcp", c.server.String())
 	if err != nil {
 		return err
