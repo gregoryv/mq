@@ -1,6 +1,9 @@
 package mq
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 type fixedHeader struct {
 	fixed        bits
@@ -16,10 +19,13 @@ type fixedHeader struct {
 func (f *fixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
 	if err != nil {
-		return n, err
+		return n, fmt.Errorf("ReadFrom: %w", err)
 	}
 	m, err := f.remainingLen.ReadFrom(r)
-	return n + m, err
+	if err != nil {
+		return n + m, fmt.Errorf("ReadFrom: %w", err)
+	}
+	return n + m, nil
 }
 
 // ReadRemaining is more related to client and server
@@ -74,11 +80,11 @@ func (f *fixedHeader) ReadRemaining(r io.Reader) (ControlPacket, error) {
 	}
 	data := make([]byte, int(f.remainingLen))
 	if _, err := r.Read(data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s read remaining: %w", firstByte(f.fixed).String(), err)
 	}
 
 	if err := p.UnmarshalBinary(data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s %v UnmarshalBinary: %w", firstByte(f.fixed).String(), f.remainingLen, err)
 	}
 	return p, nil
 }

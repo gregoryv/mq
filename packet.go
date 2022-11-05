@@ -13,11 +13,7 @@ func ReadPacket(r io.Reader) (ControlPacket, error) {
 		return nil, err
 	}
 
-	got, err := fh.ReadRemaining(r)
-	if err != nil {
-		return nil, err
-	}
-	return got, nil
+	return fh.ReadRemaining(r)
 }
 
 // Packet and ControlPacket can be used interchangebly.
