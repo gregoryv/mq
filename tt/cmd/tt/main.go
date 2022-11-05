@@ -15,7 +15,7 @@ func main() {
 		// sub commands
 		commands = cli.Group("Commands", "COMMAND")
 
-		_ = commands.New("pub", &Pub{})
+		_ = commands.New("pub", &PubCmd{})
 		_ = commands.New("sub", &Sub{})
 		_ = commands.New("serve", &ServeCmd{})
 

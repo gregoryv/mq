@@ -14,7 +14,7 @@ import (
 	"github.com/gregoryv/mq/tt"
 )
 
-type Pub struct {
+type PubCmd struct {
 	server *url.URL
 
 	topic    string
@@ -24,7 +24,7 @@ type Pub struct {
 	clientID string
 }
 
-func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
+func (c *PubCmd) ExtraOptions(cli *cmdline.Parser) {
 	c.server = cli.Option("-s, --server").Url("localhost:1883")
 	c.topic = cli.Option("-t, --topic").String("gopher/pink")
 	c.payload = cli.Option("-p, --payload").String("hug")
@@ -33,7 +33,7 @@ func (c *Pub) ExtraOptions(cli *cmdline.Parser) {
 	c.clientID = cli.Option("-cid, --client-id").String("ttpub")
 }
 
-func (c *Pub) Run(ctx context.Context) error {
+func (c *PubCmd) Run(ctx context.Context) error {
 	conn, err := net.Dial("tcp", c.server.String())
 	if err != nil {
 		return err
