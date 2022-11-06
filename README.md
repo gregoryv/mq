@@ -4,7 +4,7 @@ packets
 
 <img src="./etc/logo.svg" />
 
-For a low level client implementation refer to [tt](https://github.com/gregoryv/mq/tree/main/tt)
+For a low level client implementation refer to [gregoryv/tt](https://github.com/gregoryv/tt)
 
 Naming concepts follow the specification as much as possible.
 
