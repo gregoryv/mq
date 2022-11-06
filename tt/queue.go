@@ -35,9 +35,3 @@ type OutFlow interface {
 
 func NoopHandler(_ context.Context, _ mq.Packet) error { return nil }
 func NoopPub(_ context.Context, _ *mq.Publish) error   { return nil }
-
-type InFunc func(mq.Handler) mq.Handler
-
-func (f InFunc) In(next mq.Handler) mq.Handler {
-	return f(next)
-}
