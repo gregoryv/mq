@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Move tt to github.com/gregoryv/tt
 - Remove tt.Interceptor
 
 ## [0.21.0] 2022-11-05
