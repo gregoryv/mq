@@ -6,6 +6,9 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Remove types Handler, PubHandler and Middleware
+  Their counterparts are found in github.com/gregoryv/tt
+
 ## [0.22.0] 2022-11-06
 
 - Move tt to github.com/gregoryv/tt

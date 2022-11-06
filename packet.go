@@ -1,7 +1,6 @@
 package mq
 
 import (
-	"context"
 	"encoding"
 	"fmt"
 	"io"
@@ -24,15 +23,6 @@ type ControlPacket interface {
 	encoding.BinaryUnmarshaler
 	fmt.Stringer
 }
-
-// Handlers are used for both incoming and outgoing processing of
-// packets.
-type Handler func(context.Context, Packet) error
-
-// PubHandler is specific to publish packets
-type PubHandler func(context.Context, *Publish) error
-
-type Middleware func(next Handler) Handler
 
 type HasPacketID interface {
 	PacketID() uint16
