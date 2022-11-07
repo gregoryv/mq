@@ -55,24 +55,24 @@ func (p *Publish) String() string {
 		p.width(),
 		func() string {
 			if err := p.WellFormed(); err != nil {
-				return fmt.Sprintf(", %v", err)
+				return fmt.Sprintf(", malformed! %s %s", err.reason, err.ref)
 			}
 			return ""
 		}(),
 	)
 }
 
-func (p *Publish) WellFormed() error {
+func (p *Publish) WellFormed() *Malformed {
 	if len(p.topicName) == 0 {
-		return fmt.Errorf("malformed! empty topic name")
+		return newMalformed(p, "topic name", "empty")
 	}
 	switch p.QoS() {
 	case 1, 2:
 		if p.packetID == 0 {
-			return fmt.Errorf("malformed! empty packet ID")
+			return newMalformed(p, "packet ID", "empty")
 		}
 	case 3:
-		return fmt.Errorf("malformed! invalid QoS")
+		return newMalformed(p, "QoS", "invalid")
 	}
 
 	return nil

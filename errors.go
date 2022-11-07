@@ -1,6 +1,9 @@
 package mq
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func unmarshalErr(v interface{}, ref string, err interface{}) *Malformed {
 	e := newMalformed(v, ref, err)
@@ -8,33 +11,45 @@ func unmarshalErr(v interface{}, ref string, err interface{}) *Malformed {
 	return e
 }
 
-func newMalformed(v interface{}, ref string, err interface{}) *Malformed {
-	var reason string
-	switch e := err.(type) {
+func newMalformed(v interface{}, ref string, reason interface{}) *Malformed {
+	var r string
+	switch e := reason.(type) {
 	case *Malformed:
-		reason = e.reason
+		r = e.reason
 	case string:
-		reason = e
+		r = e
 	}
 	// remove * from type name
-	t := fmt.Sprintf("%T", v)
 	return &Malformed{
-		t:      t,
+		t:      fmt.Sprintf("%T", v),
 		ref:    ref,
-		reason: reason,
+		reason: r,
 	}
 }
 
 type Malformed struct {
-	method string // fill or unmarshal
 	t      string // the control packet
+	method string // fill or unmarshal
 	ref    string
 	reason string
 }
 
+func (e *Malformed) SetReason(v string) { e.reason = v }
+
 func (e *Malformed) Error() string {
-	if e.ref == "" {
-		return fmt.Sprintf("malformed %s %s: %s", e.t, e.method, e.reason)
+	var buf strings.Builder
+	buf.WriteString("malformed")
+	add := func(v string) {
+		if v == "" {
+			return
+		}
+		buf.WriteString(" ")
+		buf.WriteString(v)
 	}
-	return fmt.Sprintf("malformed %s %s: %s %s", e.t, e.method, e.ref, e.reason)
+	add(e.t)
+	add(e.method)
+	buf.WriteString(":")
+	add(e.ref)
+	add(e.reason)
+	return buf.String()
 }
