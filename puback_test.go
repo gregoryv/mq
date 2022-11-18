@@ -21,15 +21,6 @@ func ExamplePubAck_String() {
 	// 3-0 reserved
 }
 
-func ExampleNewPubRel() {
-	p := NewPubRel()
-	p.SetPacketID(9)
-	p.SetReasonCode(PacketIdentifierNotFound)
-	fmt.Println(p)
-	// output:
-	// PUBREL --1- p9 PacketIdentifierNotFound 5 bytes
-}
-
 func TestPubAck(t *testing.T) {
 	p := NewPubAck()
 	if v := p.String(); !strings.Contains(v, "PUBACK") {
