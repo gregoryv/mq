@@ -5,32 +5,14 @@ import (
 	"io"
 )
 
-// NewPubRec returns control packet with type PUBREC
-func NewPubRec() *PubAck {
-	return &PubAck{fixed: bits(PUBREC)}
+// NewPubComp returns control packet with type PUBCOMP
+func NewPubComp() *PubComp {
+	return &PubComp{fixed: bits(PUBCOMP)}
 }
 
-// NewPubRel returns control packet with type PUBREL
-func NewPubRel() *PubRel {
-	p := &PubRel{}
-	p.fixed = bits(PUBREL | 1<<1)
-	return p
-}
-
-// todo maybe do the same for PubComp and PubRec, ie. own types
-
-type PubRel struct {
-	PubAck
-}
-
-// NewPubAck returns control packet with type PUBACK
-func NewPubAck() *PubAck {
-	return &PubAck{fixed: bits(PUBACK)}
-}
-
-// A PubAck packet is the response to a Publish packets, depending on
+// A PubComp packet is the response to a Publish packets, depending on
 // the fixed header it can be one of PUBACK, PUBREC, PUBREL or PUBCOMP
-type PubAck struct {
+type PubComp struct {
 	fixed bits
 
 	packetID   wuint16
@@ -39,7 +21,7 @@ type PubAck struct {
 	UserProperties
 }
 
-func (p *PubAck) String() string {
+func (p *PubComp) String() string {
 	return fmt.Sprintf("%s p%v %s%s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
@@ -54,31 +36,31 @@ func (p *PubAck) String() string {
 	)
 }
 
-func (p *PubAck) AckType() byte {
+func (p *PubComp) AckType() byte {
 	return byte(p.fixed) & 0b1111_0000
 }
 
-func (p *PubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
-func (p *PubAck) PacketID() uint16     { return uint16(p.packetID) }
+func (p *PubComp) SetPacketID(v uint16) { p.packetID = wuint16(v) }
+func (p *PubComp) PacketID() uint16     { return uint16(p.packetID) }
 
-func (p *PubAck) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
-func (p *PubAck) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
+func (p *PubComp) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
+func (p *PubComp) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
 
-func (p *PubAck) SetReason(v string) { p.reason = wstring(v) }
-func (p *PubAck) Reason() string     { return string(p.reason) }
+func (p *PubComp) SetReason(v string) { p.reason = wstring(v) }
+func (p *PubComp) Reason() string     { return string(p.reason) }
 
-func (p *PubAck) WriteTo(w io.Writer) (int64, error) {
+func (p *PubComp) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.fill(_LEN, 0))
 	p.fill(b, 0)
 	n, err := w.Write(b)
 	return int64(n), err
 }
 
-func (p *PubAck) width() int {
+func (p *PubComp) width() int {
 	return p.fill(_LEN, 0)
 }
 
-func (p *PubAck) fill(b []byte, i int) int {
+func (p *PubComp) fill(b []byte, i int) int {
 	remainingLen := vbint(p.variableHeader(_LEN, 0))
 	i += p.fixed.fill(b, i)      // firstByte header
 	i += remainingLen.fill(b, i) // remaining length
@@ -86,7 +68,7 @@ func (p *PubAck) fill(b []byte, i int) int {
 	return i
 }
 
-func (p *PubAck) variableHeader(b []byte, i int) int {
+func (p *PubComp) variableHeader(b []byte, i int) int {
 	n := i
 	i += p.packetID.fill(b, i)
 	i += p.reasonCode.fillOpt(b, i)
@@ -99,14 +81,14 @@ func (p *PubAck) variableHeader(b []byte, i int) int {
 	return i - n
 }
 
-func (p *PubAck) properties(b []byte, i int) int {
+func (p *PubComp) properties(b []byte, i int) int {
 	n := i
 	i += p.reason.fillProp(b, i, ReasonString)
 	i += p.UserProperties.properties(b, i)
 	return i - n
 }
 
-func (p *PubAck) UnmarshalBinary(data []byte) error {
+func (p *PubComp) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
 	// no more data, see 3.4.2.1 PUBACK Reason Code
@@ -117,7 +99,7 @@ func (p *PubAck) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *PubAck) propertyMap() map[Ident]wireType {
+func (p *PubComp) propertyMap() map[Ident]wireType {
 	return map[Ident]wireType{
 		ReasonString: &p.reason,
 	}

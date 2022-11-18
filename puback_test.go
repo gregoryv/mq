@@ -21,14 +21,6 @@ func ExamplePubAck_String() {
 	// 3-0 reserved
 }
 
-func ExampleNewPubComp() {
-	p := NewPubComp()
-	p.SetPacketID(9)
-	fmt.Println(p)
-	// output:
-	// PUBCOMP ---- p9 Success 4 bytes
-}
-
 func ExampleNewPubRec() {
 	p := NewPubRec()
 	p.SetPacketID(9)
