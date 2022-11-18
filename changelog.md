@@ -6,7 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
-- Add type PubComp
+- Add separate types PubComp, PubRec
 - Returned *Malformed from Publish.WellFormed
 - Remove types Handler, PubHandler and Middleware
   Their counterparts are found in github.com/gregoryv/tt

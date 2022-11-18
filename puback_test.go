@@ -21,14 +21,6 @@ func ExamplePubAck_String() {
 	// 3-0 reserved
 }
 
-func ExampleNewPubRec() {
-	p := NewPubRec()
-	p.SetPacketID(9)
-	fmt.Println(p)
-	// output:
-	// PUBREC ---- p9 Success 4 bytes
-}
-
 func ExampleNewPubRel() {
 	p := NewPubRel()
 	p.SetPacketID(9)
