@@ -41,20 +41,6 @@ func TestPubAck(t *testing.T) {
 	if v := p.String(); !strings.Contains(v, "name too long") {
 		t.Error(v)
 	}
-
-	// variations
-	{
-		p := NewPubRel()
-		testControlPacket(t, p)
-		if v := p.String(); !strings.Contains(v, "PUBREL") {
-			t.Error(v)
-		}
-	}
-
-	// type
-	if a, b := NewPubAck(), NewPubRel(); a.AckType() == b.AckType() {
-		t.Error("PubAck byte same as PubRel byte")
-	}
 }
 
 func BenchmarkPubAck(b *testing.B) {

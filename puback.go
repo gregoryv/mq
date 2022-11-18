@@ -36,10 +36,6 @@ func (p *PubAck) String() string {
 	)
 }
 
-func (p *PubAck) AckType() byte {
-	return byte(p.fixed) & 0b1111_0000
-}
-
 func (p *PubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *PubAck) PacketID() uint16     { return uint16(p.packetID) }
 
