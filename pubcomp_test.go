@@ -34,30 +34,4 @@ func TestPubComp(t *testing.T) {
 	if v := p.String(); !strings.Contains(v, "name too long") {
 		t.Error(v)
 	}
-
-	// variations
-	{
-		p := NewPubRel()
-		testControlPacket(t, p)
-		if v := p.String(); !strings.Contains(v, "PUBREL") {
-			t.Error(v)
-		}
-	}
-	{
-		p := NewPubRec()
-		if v := p.String(); !strings.Contains(v, "PUBREC") {
-			t.Error(v)
-		}
-	}
-	{
-		p := NewPubComp()
-		if v := p.String(); !strings.Contains(v, "PUBCOMP") {
-			t.Error(v)
-		}
-	}
-
-	// type
-	if a, b := NewPubComp(), NewPubRel(); a.AckType() == b.AckType() {
-		t.Error("PubComp byte same as PubRel byte")
-	}
 }

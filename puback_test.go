@@ -59,18 +59,6 @@ func TestPubAck(t *testing.T) {
 			t.Error(v)
 		}
 	}
-	{
-		p := NewPubRec()
-		if v := p.String(); !strings.Contains(v, "PUBREC") {
-			t.Error(v)
-		}
-	}
-	{
-		p := NewPubComp()
-		if v := p.String(); !strings.Contains(v, "PUBCOMP") {
-			t.Error(v)
-		}
-	}
 
 	// type
 	if a, b := NewPubAck(), NewPubRel(); a.AckType() == b.AckType() {
