@@ -29,7 +29,11 @@ func _() {
 	_ = x[ServerUnavailable-136]
 	_ = x[ServerBusy-137]
 	_ = x[Banned-138]
+	_ = x[ServerShuttingDown-139]
 	_ = x[BadAuthenticationMethod-140]
+	_ = x[KeepAliveTimeout-141]
+	_ = x[SessionTakenOver-142]
+	_ = x[TopicFilterInvalid-143]
 	_ = x[TopicNameInvalid-144]
 	_ = x[PacketIdentifierInUse-145]
 	_ = x[PacketIdentifierNotFound-146]
@@ -56,17 +60,14 @@ const (
 	_ReasonCode_name_1 = "DisconnectWithWill"
 	_ReasonCode_name_2 = "NoMatchingSubscribersNoSubscriptionExisted"
 	_ReasonCode_name_3 = "ContinueAuthReAuthenticate"
-	_ReasonCode_name_4 = "UnspecifiedErrorMalformedPacketProtocolErrorImplementationSpecificErrorUnsupportedProtocolVersionClientIdentifierNotValidBadUserNameOrPasswordNotAuthorizedServerUnavailableServerBusyBanned"
-	_ReasonCode_name_5 = "BadAuthenticationMethod"
-	_ReasonCode_name_6 = "TopicNameInvalidPacketIdentifierInUsePacketIdentifierNotFoundReceiveMaximumExceededTopicAliasInvalidPacketTooLargeMessageRateToHighQuotaExceededAdministrativeActionPayloadFormatInvalidRetainNotSupportedQoSNotSupportedUseAnotherServerServerMovedSharedSubscriptionsNotSupportedConnectionRateExceededMaximumConnectTimeSubscriptionIdentifiersNotSupportedWildcardSubscriptionsNotSupported"
+	_ReasonCode_name_4 = "UnspecifiedErrorMalformedPacketProtocolErrorImplementationSpecificErrorUnsupportedProtocolVersionClientIdentifierNotValidBadUserNameOrPasswordNotAuthorizedServerUnavailableServerBusyBannedServerShuttingDownBadAuthenticationMethodKeepAliveTimeoutSessionTakenOverTopicFilterInvalidTopicNameInvalidPacketIdentifierInUsePacketIdentifierNotFoundReceiveMaximumExceededTopicAliasInvalidPacketTooLargeMessageRateToHighQuotaExceededAdministrativeActionPayloadFormatInvalidRetainNotSupportedQoSNotSupportedUseAnotherServerServerMovedSharedSubscriptionsNotSupportedConnectionRateExceededMaximumConnectTimeSubscriptionIdentifiersNotSupportedWildcardSubscriptionsNotSupported"
 )
 
 var (
 	_ReasonCode_index_0 = [...]uint8{0, 7, 18, 29}
 	_ReasonCode_index_2 = [...]uint8{0, 21, 42}
 	_ReasonCode_index_3 = [...]uint8{0, 12, 26}
-	_ReasonCode_index_4 = [...]uint8{0, 16, 31, 44, 71, 97, 121, 142, 155, 172, 182, 188}
-	_ReasonCode_index_6 = [...]uint16{0, 16, 37, 61, 83, 100, 114, 131, 144, 164, 184, 202, 217, 233, 244, 275, 297, 315, 350, 383}
+	_ReasonCode_index_4 = [...]uint16{0, 16, 31, 44, 71, 97, 121, 142, 155, 172, 182, 188, 206, 229, 245, 261, 279, 295, 316, 340, 362, 379, 393, 410, 423, 443, 463, 481, 496, 512, 523, 554, 576, 594, 629, 662}
 )
 
 func (i ReasonCode) String() string {
@@ -81,14 +82,9 @@ func (i ReasonCode) String() string {
 	case 24 <= i && i <= 25:
 		i -= 24
 		return _ReasonCode_name_3[_ReasonCode_index_3[i]:_ReasonCode_index_3[i+1]]
-	case 128 <= i && i <= 138:
+	case 128 <= i && i <= 162:
 		i -= 128
 		return _ReasonCode_name_4[_ReasonCode_index_4[i]:_ReasonCode_index_4[i+1]]
-	case i == 140:
-		return _ReasonCode_name_5
-	case 144 <= i && i <= 162:
-		i -= 144
-		return _ReasonCode_name_6[_ReasonCode_index_6[i]:_ReasonCode_index_6[i+1]]
 	default:
 		return "ReasonCode(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
