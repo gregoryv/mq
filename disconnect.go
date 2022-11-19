@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+// NewDisconnect returns a disconnect packet with reason code
+// NormalDisconnect.
 func NewDisconnect() *Disconnect {
 	return &Disconnect{fixed: bits(DISCONNECT)}
 }

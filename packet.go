@@ -1,3 +1,10 @@
+/*
+Package mq provides a mqtt-v5.0 protocol implementation
+
+The specification is found at
+https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
+
+*/
 package mq
 
 import (
@@ -6,6 +13,8 @@ import (
 	"io"
 )
 
+// ReadPacket reads one packet from the reader. Returns a io.EOF or
+// Malformed error on failure.
 func ReadPacket(r io.Reader) (ControlPacket, error) {
 	var fh fixedHeader
 	if _, err := fh.ReadFrom(r); err != nil {
@@ -19,11 +28,17 @@ func ReadPacket(r io.Reader) (ControlPacket, error) {
 type Packet = ControlPacket
 
 type ControlPacket interface {
+	// Write the packet in wireformat to a writer
 	io.WriterTo
+
+	// Unmarshal wireformat
 	encoding.BinaryUnmarshaler
+
+	// Return a short readable string suitable for logging
 	fmt.Stringer
 }
 
+// HasPacketID is implemented by packets carrying a packet ID.
 type HasPacketID interface {
 	PacketID() uint16
 }
@@ -36,9 +51,8 @@ type fixedHeader struct {
 // ReadFrom reads the fixed byte and the remaining length, use
 // ReadRemaining for the rest.
 //
-// Note: Reason for splitting this up is, pahos Unpack works on the
-// remaining only. Also it gives us possible ways of optimizing memory
-// usage when reading packets, i.e. using shared FixedHeaders.
+// Note: Reason for splitting this up is so we can compare
+// performance as pahos Unpack works on the remaining only.
 func (f *fixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)
 	if err != nil {

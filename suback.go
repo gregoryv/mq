@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// NewSubAck returns a suback packet without reason codes.
 func NewSubAck() *SubAck {
 	return &SubAck{fixed: bits(SUBACK)}
 }
@@ -34,10 +35,7 @@ func (p *SubAck) ReasonString() string     { return string(p.reasonString) }
 func (p *SubAck) AddReasonCode(v ReasonCode) {
 	p.reasonCodes = append(p.reasonCodes, uint8(v))
 }
-
 func (p *SubAck) ReasonCodes() []uint8 { return p.reasonCodes }
-
-// ---------------------------------------- end settings
 
 func (p *SubAck) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.width())
