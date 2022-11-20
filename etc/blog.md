@@ -229,44 +229,21 @@ which can be argued is the control packet that will flow the most
 between a client and server.
 
 <pre>
-BenchmarkPublish/our-16            813364       1667 ns/op      688 B/op       31 allocs/op
-BenchmarkPublish/their-16          459866       6305 ns/op     5792 B/op       43 allocs/op
-BenchmarkPublish/write/our-16     2817781        393.7 ns/op       80 B/op        1 allocs/op
-BenchmarkPublish/write/their-16   1587978        711.8 ns/op      472 B/op       10 allocs/op
-BenchmarkPublish/wqos0/our-16     9936145        120.9 ns/op       24 B/op        1 allocs/op
-BenchmarkPublish/wqos0/their-16   2453695        481.3 ns/op      408 B/op        9 allocs/op
-</pre>
-
-## benchmark tt.Client
-
-Initial benchmark, the QoS1 is a lot less efficient but that is due to
-the fact that we have to wait for an ack from the server. These
-benchmarks do not include any network latencies.
-
-<pre>
-goos: linux
-goarch: amd64
-pkg: github.com/gregoryv/mq/tt
-cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
-BenchmarkClient_PubQoS0-16       1000000              1002 ns/op             560 B/op         11 allocs/op
-BenchmarkClient_PubQoS1-16        105883             12934 ns/op            1072 B/op         24 allocs/op
-PASS
-ok      github.com/gregoryv/mq/tt       3.481s
-</pre>
-
-after improving the pool allocation of next packet id
-
-<pre>
-BenchmarkClient_PubQoS0-16       1304368              1016 ns/op             560 B/op         11 allocs/op
-BenchmarkClient_PubQoS1-16        231313             11030 ns/op            1072 B/op         24 allocs/op
+BenchmarkPublish/our-16            813364    1667 ns/op      688 B/op       31 allocs/op
+BenchmarkPublish/their-16          459866    6305 ns/op     5792 B/op       43 allocs/op
+BenchmarkPublish/write/our-16     2817781     393 ns/op       80 B/op        1 allocs/op
+BenchmarkPublish/write/their-16   1587978     711 ns/op      472 B/op       10 allocs/op
+BenchmarkPublish/wqos0/our-16     9936145     120 ns/op       24 B/op        1 allocs/op
+BenchmarkPublish/wqos0/their-16   2453695     481 ns/op      408 B/op        9 allocs/op
 </pre>
 
 <a name="conclusion"></a>
 ## Conclusion <a class="link" href="#conclusion">§</a>
 
-After D days, C commits and R
-releases [gregoryv/mq](https://github.com/gregoryv/mq) is ready for
-the scrutiny of the community.
+After D days and C commits,
+packages [gregoryv/mq](https://github.com/gregoryv/mq)
+and [gregoryv/mq](https://github.com/gregoryv/mq) are ready for the
+scrutiny of the community.
 
 <a name="references"></a>
 ## References <a class="link" href="#references">§</a>
