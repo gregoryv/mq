@@ -10,14 +10,25 @@ func NewAuth() *Auth {
 }
 
 type Auth struct {
-	fixed bits
-	// todo missing authMethod, dataData and reasonString
-	reasonCode wuint8
+	fixed        bits
+	reasonCode   wuint8
+	reasonString wstring
+	authMethod   wstring
+	authData     bindata
 	UserProperties
 }
 
 func (p *Auth) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
 func (p *Auth) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
+
+func (p *Auth) SetAuthMethod(v string) { p.authMethod = wstring(v) }
+func (p *Auth) AuthMethod() string     { return string(p.authMethod) }
+
+func (p *Auth) SetAuthData(v []byte) { p.authData = bindata(v) }
+func (p *Auth) AuthData() []byte     { return []byte(p.authData) }
+
+func (p *Auth) SetReasonString(v string) { p.reasonString = wstring(v) }
+func (p *Auth) ReasonString() string     { return string(p.reasonString) }
 
 func (p *Auth) String() string {
 	return fmt.Sprintf("%s %v bytes",
@@ -31,6 +42,13 @@ func (p *Auth) WriteTo(w io.Writer) (int64, error) {
 	p.fill(b, 0)
 	n, err := w.Write(b)
 	return int64(n), err
+}
+
+func (p *Auth) UnmarshalBinary(data []byte) error {
+	b := &buffer{data: data}
+	b.get(&p.reasonCode)
+	b.getAny(p.propertyMap(), p.appendUserProperty)
+	return b.err
 }
 
 func (p *Auth) width() int {
@@ -58,13 +76,21 @@ func (p *Auth) variableHeader(b []byte, i int) int {
 	return i - n
 }
 
-func (p *Auth) UnmarshalBinary(data []byte) error {
-	b := &buffer{data: data}
-	b.get(&p.reasonCode)
-	b.getAny(p.propertyMap(), p.appendUserProperty)
-	return b.err
+func (p *Auth) properties(b []byte, i int) int {
+	n := i
+
+	// using c.propertyMap is slow compared to direct field access
+	i += p.authMethod.fillProp(b, i, AuthMethod)
+	i += p.authData.fillProp(b, i, AuthData)
+	i += p.reasonString.fillProp(b, i, ReasonString)
+	i += p.UserProperties.properties(b, i)
+	return i - n
 }
 
 func (p *Auth) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{}
+	return map[Ident]wireType{
+		AuthMethod:   &p.authMethod,
+		AuthData:     &p.authData,
+		ReasonString: &p.reasonString,
+	}
 }

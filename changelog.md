@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add missing Auth properties
 - Update blog
 
 ## [0.23.0] 2022-11-19

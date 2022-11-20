@@ -21,15 +21,17 @@ func ExampleAuth_String() {
 
 func TestAuth(t *testing.T) {
 	p := NewAuth()
-	// normal disconnect
-	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, MalformedPacket)
+	eq(t, p.SetAuthMethod, p.AuthMethod, "digest")
+	eq(t, p.SetAuthData, p.AuthData, []byte("sha"))
+	eq(t, p.SetReasonString, p.ReasonString, "some reason")
+
 	p.AddUserProp("color", "red")
 	testControlPacket(t, p)
 
 	// String
-	if v := p.String(); v != "AUTH ---- 17 bytes" {
+	if v := p.String(); v != "AUTH ---- 46 bytes" {
 		t.Error(v)
 	}
 }
