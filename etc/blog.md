@@ -26,9 +26,6 @@ way.
 		<li><a href="#goal">Goal</a></li>
 		<li><a href="#approach">Approach</a></li>
 		<li><a href="#design">Design</a></li>
-		<ul>
-			<li><a href="#packageName">Package Name</a></li>
-		</ul>
 		<li><a href="#performance">Performance</a></li>
 		<li><a href="#conclusion">Conclusion</a></li>
 		<li><a href="#references">References</a></li>
@@ -244,6 +241,16 @@ After D days and C commits,
 packages [gregoryv/mq](https://github.com/gregoryv/mq)
 and [gregoryv/mq](https://github.com/gregoryv/mq) are ready for the
 scrutiny of the community.
+
+What did I learn from doing this? Having a specification is great in
+that there is a source of truth which your implementation should
+follow. The format of the specification is good, though could use more
+fixed anchors e.g. for referencing directly from the implementation. I
+opted Not to referenece sections by their, what to me looked like
+generated anchor names. Those will probably change if the document is
+regenerated. Referencing would be very nice to have in both tests
+supporting specified requirements and code documentation explaining
+concepts.
 
 <a name="references"></a>
 ## References <a class="link" href="#references">§</a>
