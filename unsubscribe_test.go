@@ -1,9 +1,25 @@
 package mq
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
+
+func ExampleDump_unsubscribe() {
+	s := NewUnsubscribe()
+	s.AddUserProp("color", "purple")
+	s.AddFilter("a/b/c")
+	s.AddFilter("d/e")
+	Dump(os.Stdout, s)
+	// output:
+	// PacketID: 0
+	// Filters
+	//   0. a/b/c
+	//   1. d/e
+	// UserProperties
+	//   0. color: "purple"
+}
 
 func TestUnsubscribe(t *testing.T) {
 	s := NewUnsubscribe()

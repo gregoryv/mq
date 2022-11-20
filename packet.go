@@ -24,6 +24,12 @@ func ReadPacket(r io.Reader) (ControlPacket, error) {
 	return fh.ReadRemaining(r)
 }
 
+func Dump(w io.Writer, p Packet) {
+	if p, ok := p.(interface{ dump(io.Writer) }); ok {
+		p.dump(w)
+	}
+}
+
 // Packet and ControlPacket can be used interchangebly.
 type Packet = ControlPacket
 

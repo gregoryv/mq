@@ -4,11 +4,43 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"testing"
 	"unsafe"
 
 	"github.com/eclipse/paho.golang/packets"
 )
+
+func ExampleDump_ConnAck() {
+	a := NewConnAck()
+	a.SetSessionPresent(true)
+	a.SetReasonCode(NotAuthorized)
+	a.SetAssignedClientID("123-123-123")
+	a.AddUserProp("color", "red")
+
+	Dump(os.Stdout, a)
+	// output:
+	// AssignedClientID: "123-123-123"
+	// AuthData: ""
+	// AuthMethod: ""
+	// MaxPacketSize: 0
+	// MaxQoS: 0
+	// ReasonCode: NotAuthorized
+	// ReasonString: ""
+	// ReceiveMax: 0
+	// ResponseInformation: ""
+	// RetainAvailable: false
+	// ServerKeepAlive: 0
+	// ServerReference: ""
+	// SessionExpiryInterval: 0
+	// SessionPresent: true
+	// SharedSubAvailable: false
+	// SubIdentifiersAvailable: false
+	// TopicAliasMax: 0
+	// WildcardSubAvailable: false
+	// UserProperties
+	//   0. color: "red"
+}
 
 func ExampleConnAck() {
 	a := NewConnAck()

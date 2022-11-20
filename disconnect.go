@@ -28,6 +28,11 @@ func (p *Disconnect) String() string {
 	)
 }
 
+func (p *Disconnect) dump(w io.Writer) {
+	fmt.Fprintf(w, "ReasonCode: %v\n", p.ReasonCode())
+	p.UserProperties.dump(w)
+}
+
 func (p *Disconnect) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.width())
 	p.fill(b, 0)

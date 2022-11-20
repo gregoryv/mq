@@ -11,6 +11,33 @@ import (
 	"github.com/gregoryv/asserter"
 )
 
+func TestDump(t *testing.T) {
+	packets := []Packet{
+		NewAuth(),
+		NewConnAck(),
+		NewConnect(),
+		NewDisconnect(),
+		// NewPingReq(), empty by definition
+		// NewPingResp(), empty by definition
+		NewPubAck(),
+		NewPubComp(),
+		NewPublish(),
+		NewPubRec(),
+		NewPubRel(),
+		NewSubAck(),
+		NewSubscribe(),
+		NewUnsubAck(),
+		NewUnsubscribe(),
+	}
+	for _, p := range packets {
+		var buf bytes.Buffer
+		Dump(&buf, p)
+		if buf.Len() == 0 {
+			t.Errorf("%T is empty", p)
+		}
+	}
+}
+
 func TestReadPacket_broken(t *testing.T) {
 	var r brokenRW
 	if _, err := ReadPacket(&r); err == nil {

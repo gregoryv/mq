@@ -37,6 +37,14 @@ func (p *Auth) String() string {
 	)
 }
 
+func (p *Auth) dump(w io.Writer) {
+	fmt.Fprintf(w, "AuthData: %q\n", string(p.AuthData()))
+	fmt.Fprintf(w, "AuthMethod: %q\n", p.AuthMethod())
+	fmt.Fprintf(w, "ReasonCode: %v\n", p.ReasonCode())
+	fmt.Fprintf(w, "ReasonString: %q\n", p.ReasonString())
+	p.UserProperties.dump(w)
+}
+
 func (p *Auth) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.width())
 	p.fill(b, 0)

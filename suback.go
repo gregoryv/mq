@@ -26,6 +26,14 @@ func (p *SubAck) String() string {
 		p.width(),
 	)
 }
+
+func (p *SubAck) dump(w io.Writer) {
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+	fmt.Fprintf(w, "ReasonString: %v\n", p.ReasonString())
+	fmt.Fprintf(w, "ReasonCodes: %v\n", p.ReasonCodes())
+	p.UserProperties.dump(w)
+}
+
 func (p *SubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *SubAck) PacketID() uint16     { return uint16(p.packetID) }
 

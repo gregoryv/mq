@@ -62,6 +62,24 @@ func (p *Publish) String() string {
 	)
 }
 
+func (p *Publish) dump(w io.Writer) {
+	fmt.Fprintf(w, "ContentType: %v\n", p.ContentType())
+	fmt.Fprintf(w, "CorrelationData: %v\n", p.CorrelationData())
+	fmt.Fprintf(w, "Duplicate: %v\n", p.Duplicate())
+	fmt.Fprintf(w, "MessageExpiryInterval: %v\n", p.MessageExpiryInterval())
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+	fmt.Fprintf(w, "Payload: %v\n", p.Payload())
+	fmt.Fprintf(w, "PayloadFormat: %v\n", p.PayloadFormat())
+	fmt.Fprintf(w, "QoS: %v\n", p.QoS())
+	fmt.Fprintf(w, "ResponseTopic: %v\n", p.ResponseTopic())
+	fmt.Fprintf(w, "Retain: %v\n", p.Retain())
+	fmt.Fprintf(w, "SubscriptionIDs: %v\n", p.SubscriptionIDs())
+	fmt.Fprintf(w, "TopicAlias: %v\n", p.TopicAlias())
+	fmt.Fprintf(w, "TopicName: %v\n", p.TopicName())
+
+	p.UserProperties.dump(w)
+}
+
 func (p *Publish) WellFormed() *Malformed {
 	if len(p.topicName) == 0 {
 		return newMalformed(p, "topic name", "empty")

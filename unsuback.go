@@ -28,6 +28,14 @@ func (p *UnsubAck) String() string {
 		p.width(),
 	)
 }
+
+func (p *UnsubAck) dump(w io.Writer) {
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+	fmt.Fprintf(w, "ReasonString: %v\n", p.ReasonString())
+	fmt.Fprintf(w, "ReasonCodes: %v\n", p.ReasonCodes())
+	p.UserProperties.dump(w)
+}
+
 func (p *UnsubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *UnsubAck) PacketID() uint16     { return uint16(p.packetID) }
 
@@ -37,10 +45,7 @@ func (p *UnsubAck) ReasonString() string     { return string(p.reasonString) }
 func (p *UnsubAck) AddReasonCode(v ReasonCode) {
 	p.reasonCodes = append(p.reasonCodes, uint8(v))
 }
-
 func (p *UnsubAck) ReasonCodes() []uint8 { return p.reasonCodes }
-
-// ---------------------------------------- end settings
 
 func (p *UnsubAck) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.width())

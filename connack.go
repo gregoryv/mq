@@ -112,6 +112,28 @@ func (c *ConnAck) String() string {
 	)
 }
 
+func (c *ConnAck) dump(w io.Writer) {
+	fmt.Fprintf(w, "AssignedClientID: %q\n", c.AssignedClientID())
+	fmt.Fprintf(w, "AuthData: %q\n", string(c.AuthData()))
+	fmt.Fprintf(w, "AuthMethod: %q\n", c.AuthMethod())
+	fmt.Fprintf(w, "MaxPacketSize: %v\n", c.MaxPacketSize())
+	fmt.Fprintf(w, "MaxQoS: %v\n", c.MaxQoS())
+	fmt.Fprintf(w, "ReasonCode: %v\n", c.ReasonCode())
+	fmt.Fprintf(w, "ReasonString: %q\n", c.ReasonString())
+	fmt.Fprintf(w, "ReceiveMax: %v\n", c.ReceiveMax())
+	fmt.Fprintf(w, "ResponseInformation: %q\n", c.ResponseInformation())
+	fmt.Fprintf(w, "RetainAvailable: %v\n", c.RetainAvailable())
+	fmt.Fprintf(w, "ServerKeepAlive: %v\n", c.ServerKeepAlive())
+	fmt.Fprintf(w, "ServerReference: %q\n", c.ServerReference())
+	fmt.Fprintf(w, "SessionExpiryInterval: %v\n", c.SessionExpiryInterval())
+	fmt.Fprintf(w, "SessionPresent: %v\n", c.SessionPresent())
+	fmt.Fprintf(w, "SharedSubAvailable: %v\n", c.SharedSubAvailable())
+	fmt.Fprintf(w, "SubIdentifiersAvailable: %v\n", c.SubIdentifiersAvailable())
+	fmt.Fprintf(w, "TopicAliasMax: %v\n", c.TopicAliasMax())
+	fmt.Fprintf(w, "WildcardSubAvailable: %v\n", c.WildcardSubAvailable())
+	c.UserProperties.dump(w)
+}
+
 // ---------------------------------------- protocol
 
 // WriteTo writes this connect control packet in wire format to the

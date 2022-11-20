@@ -28,6 +28,20 @@ func (p *Subscribe) String() string {
 	)
 }
 
+func (p *Subscribe) dump(w io.Writer) {
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+	fmt.Fprintf(w, "SubscriptionID: %v\n", p.SubscriptionID())
+
+	if len(p.filters) > 0 {
+		fmt.Fprintln(w, "Filters")
+		for i, f := range p.filters {
+			fmt.Fprintf(w, "  %v. %s\n", i, f)
+		}
+	}
+	p.UserProperties.dump(w)
+}
+
+// filterString returns string representing filters for use in String
 func (p *Subscribe) filterString() string {
 	if len(p.filters) == 0 {
 		return "no filters!" // malformed
@@ -46,6 +60,9 @@ func (p *Subscribe) AddFilter(filter string, options Opt) {
 		filter:  wstring(filter),
 		options: bits(options),
 	})
+}
+func (p *Subscribe) Filters() []TopicFilter {
+	return p.filters
 }
 
 func (p *Subscribe) WriteTo(w io.Writer) (int64, error) {

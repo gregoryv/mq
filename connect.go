@@ -79,9 +79,8 @@ func (c *Connect) Will() *Publish {
 
 func (c *Connect) HasFlag(v byte) bool { return c.flags.Has(v) }
 
-func (c *Connect) SetCleanStart(v bool) {
-	c.flags.toggle(CleanStart, v)
-}
+func (c *Connect) SetCleanStart(v bool) { c.flags.toggle(CleanStart, v) }
+func (c *Connect) CleanStart() bool     { return c.flags.Has(CleanStart) }
 
 func (c *Connect) SetProtocolVersion(v uint8) { c.protocolVersion = wuint8(v) }
 func (c *Connect) ProtocolVersion() uint8     { return uint8(c.protocolVersion) }
@@ -168,6 +167,50 @@ func (c *Connect) SetPassword(v []byte) {
 	c.flags.toggle(PasswordFlag, len(c.password) > 0)
 }
 func (c *Connect) Password() []byte { return c.password }
+
+// String returns a short string describing the connect packet.
+func (c *Connect) String() string {
+	return fmt.Sprintf("%s %s %s%v %s %s %v bytes",
+		firstByte(c.fixed).String(), connectFlags(c.flags),
+		c.protocolName,
+		c.protocolVersion,
+		c.ClientID(),
+		time.Duration(c.keepAlive)*time.Second,
+		c.fill(_LEN, 0),
+	)
+}
+
+func (p *Connect) dump(w io.Writer) {
+	fmt.Fprintf(w, "AuthData: %v\n", p.AuthData())
+	fmt.Fprintf(w, "AuthMethod: %v\n", p.AuthMethod())
+	fmt.Fprintf(w, "CleanStart: %v\n", p.CleanStart())
+	fmt.Fprintf(w, "ClientID: %v\n", p.ClientID())
+	fmt.Fprintf(w, "KeepAlive: %v\n", p.KeepAlive())
+	fmt.Fprintf(w, "MaxPacketSize: %v\n", p.MaxPacketSize())
+	fmt.Fprintf(w, "Password: %q\n", stars(len(p.Password())))
+	fmt.Fprintf(w, "ProtocolName: %v\n", p.ProtocolName())
+	fmt.Fprintf(w, "ProtocolVersion: %v\n", p.ProtocolVersion())
+	fmt.Fprintf(w, "ReceiveMax: %v\n", p.ReceiveMax())
+	fmt.Fprintf(w, "RequestProblemInfo: %v\n", p.RequestProblemInfo())
+	fmt.Fprintf(w, "RequestResponseInfo: %v\n", p.RequestResponseInfo())
+	fmt.Fprintf(w, "SessionExpiryInterval: %v\n", p.SessionExpiryInterval())
+	fmt.Fprintf(w, "TopicAliasMax: %v\n", p.TopicAliasMax())
+	fmt.Fprintf(w, "Username: %v\n", stars(len(p.Username())))
+
+	if p.will != nil {
+		fmt.Fprintln(w, "Will")
+		p.will.dump(w)
+	}
+
+	p.UserProperties.dump(w)
+}
+
+func stars(v int) string {
+	if v == 0 {
+		return ""
+	}
+	return "*********"
+}
 
 // WriteTo writes this connect control packet in wire format to the
 // given writer.
@@ -314,18 +357,6 @@ func (c *Connect) propertyMap() map[Ident]wireType {
 		AuthMethod:            &c.authMethod,
 		AuthData:              &c.authData,
 	}
-}
-
-// String returns a short string describing the connect packet.
-func (c *Connect) String() string {
-	return fmt.Sprintf("%s %s %s%v %s %s %v bytes",
-		firstByte(c.fixed).String(), connectFlags(c.flags),
-		c.protocolName,
-		c.protocolVersion,
-		c.ClientID(),
-		time.Duration(c.keepAlive)*time.Second,
-		c.fill(_LEN, 0),
-	)
 }
 
 type connectFlags byte

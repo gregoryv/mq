@@ -1,5 +1,10 @@
 package mq
 
+import (
+	"fmt"
+	"io"
+)
+
 type UserProperties []UserProp
 
 // AddUserProp adds key value pair user properties. The same key is is
@@ -20,4 +25,14 @@ func (p *UserProperties) properties(b []byte, i int) int {
 		i += v.fillProp(b, i, UserProperty)
 	}
 	return i - n
+}
+
+func (p *UserProperties) dump(w io.Writer) {
+	if len(*p) == 0 {
+		return
+	}
+	fmt.Fprintln(w, "UserProperties")
+	for i, prop := range *p {
+		fmt.Fprintf(w, "  %v. %s: %q\n", i, prop[0], prop[1])
+	}
 }

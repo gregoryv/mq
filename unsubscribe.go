@@ -27,6 +27,18 @@ func (p *Unsubscribe) String() string {
 	)
 }
 
+func (p *Unsubscribe) dump(w io.Writer) {
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+
+	if len(p.filters) > 0 {
+		fmt.Fprintln(w, "Filters")
+		for i, f := range p.filters {
+			fmt.Fprintf(w, "  %v. %s\n", i, f)
+		}
+	}
+	p.UserProperties.dump(w)
+}
+
 func (p *Unsubscribe) filterString() string {
 	if len(p.filters) == 0 {
 		return "no filters!" // malformed

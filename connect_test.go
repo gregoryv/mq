@@ -100,6 +100,27 @@ func eq[T any](t *testing.T, set func(T), get func() T, value T) {
 	}
 }
 
+func TestDump_connect(t *testing.T) {
+	c := NewConnect()
+	c.SetClientID("macy")
+	c.SetKeepAlive(299)
+	c.SetUsername("john.doe")
+	c.SetPassword([]byte("secret"))
+	c.SetWill(Pub(0, "client/gone", "macy"), 300)
+	c.AddUserProp("color", "red")
+
+	var buf bytes.Buffer
+	Dump(&buf, c)
+
+	if v := buf.String(); strings.Contains(v, "john.doe") {
+		t.Error("username not masked")
+	}
+	if v := buf.String(); strings.Contains(v, "secret") {
+		t.Error("password not masked")
+	}
+
+}
+
 func Test_connectFlags(t *testing.T) {
 	f := connectFlags(0b11110110)
 	// QoS2

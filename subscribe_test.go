@@ -1,9 +1,26 @@
 package mq
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
+
+func ExampleSubscribe() {
+	s := NewSubscribe()
+	s.AddUserProp("color", "purple")
+	s.AddFilter("a/b/c", OptQoS2|OptNL|OptRAP)
+	s.AddFilter("d/e", OptQoS1)
+	Dump(os.Stdout, s)
+	// output:
+	// PacketID: 0
+	// SubscriptionID: 0
+	// Filters
+	//   0. a/b/c --r0pn2-
+	//   1. d/e --r0---1
+	// UserProperties
+	//   0. color: "purple"
+}
 
 func TestSubscribe(t *testing.T) {
 	s := NewSubscribe()
@@ -20,6 +37,9 @@ func TestSubscribe(t *testing.T) {
 	s.AddFilter("a/b/c", OptQoS2|OptNL|OptRAP)
 	s.AddFilter("d/e", OptQoS1)
 
+	if v := s.Filters(); len(v) != 2 {
+		t.Error("expect 2 filters, got", v)
+	}
 	if v := s.String(); !strings.Contains(v, "SUBSCRIBE --1-") {
 		t.Errorf("%q expect to contain %q", v, "SUBSCRIBE --1-")
 	}

@@ -36,6 +36,13 @@ func (p *PubAck) String() string {
 	)
 }
 
+func (p *PubAck) dump(w io.Writer) {
+	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
+	fmt.Fprintf(w, "Reason: %v\n", p.Reason())
+	fmt.Fprintf(w, "ReasonCode: %v\n", p.ReasonCode())
+	p.UserProperties.dump(w)
+}
+
 func (p *PubAck) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *PubAck) PacketID() uint16     { return uint16(p.packetID) }
 
