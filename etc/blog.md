@@ -224,7 +224,18 @@ BenchmarkPublish/their          479336       2846 ns/op     4064 B/op      41 al
 
 Not a huge difference, but still in the right direction.
 
+Finally let me group benchmarks related to the publish control packet
+which can be argued is the control packet that will flow the most
+between a client and server.
 
+<pre>
+BenchmarkPublish/our-16            813364       1667 ns/op      688 B/op       31 allocs/op
+BenchmarkPublish/their-16          459866       6305 ns/op     5792 B/op       43 allocs/op
+BenchmarkPublish/write/our-16     2817781        393.7 ns/op       80 B/op        1 allocs/op
+BenchmarkPublish/write/their-16   1587978        711.8 ns/op      472 B/op       10 allocs/op
+BenchmarkPublish/wqos0/our-16     9936145        120.9 ns/op       24 B/op        1 allocs/op
+BenchmarkPublish/wqos0/their-16   2453695        481.3 ns/op      408 B/op        9 allocs/op
+</pre>
 
 ## benchmark tt.Client
 
