@@ -1,6 +1,6 @@
 <a name="top"></a>
 
-# MQTT - exploring alternatives
+# MQTT - Exploring Alternatives
 
 <div id="about">
 Gregory Vin&ccaron;i&cacute;<br>
@@ -12,9 +12,11 @@ xx January 2023
 
 On Aug 3, 2022 efforts began to implement <a
 href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">mqtt-v5.0</a>
-in Go. [gregoryv/mq](https://github.com/gregoryv/mq) is the
-result and this article documents the thoughts around it's design and
-efforts of writing it.
+in Go, resulting in
+packages [gregoryv/mq](https://github.com/gregoryv/mq)
+and [gregoryv/tt](https://github.com/gregoryv/tt). This article
+documents efforts of writing it and design decisions taken along the
+way.
 
 <a name="toc"></a>
 <div class="anchored">Table of contents <a class="link" href="#toc">§</a></div>
@@ -25,8 +27,7 @@ efforts of writing it.
 		<li><a href="#approach">Approach</a></li>
 		<li><a href="#design">Design</a></li>
 		<ul>
-			<li><a href="#queues">Queues</a></li>
-			<li><a href="#packageName">Package name</a></li>
+			<li><a href="#packageName">Package Name</a></li>
 		</ul>
 		<li><a href="#performance">Performance</a></li>
 		<li><a href="#conclusion">Conclusion</a></li>
@@ -37,38 +38,35 @@ efforts of writing it.
 <a name="background"></a>
 ## Background <a class="link" href="#background">§</a>
 
-MQTT is widely used in connected devices or internet of things
-(IoT). It is simple and of low bandwidth. In the Go community a few
-options are available,
-like
-[huin/mqtt](https://pkg.go.dev/github.com/huin/mqtt),
-[surgemq/message](https://pkg.go.dev/github.com/surgemq/message)
-or
-[eclipse/paho](https://github.com/eclipse/paho.mqtt.golang).
-The latter comes up on top in number of imports and is the one I have
-been using.
+In a world of connected devices or internet of things (IoT), the MQTT
+protocol is used for device to cloud communication.  Its compact size
+makes it effective for asynchronous telemetry messaging.
 
 In one project difficulties where encountered and I needed to learn
-more about the protocol details. There where simply to many
-abstractions on top of the wire format and I wanted to *simplify*
-things. 
-
-The specification is well written with requirements clearly stated.
-You can divide the specification into two main areas, 
-
-- wire format and 
-- behavior of clients and servers
-
-The wire format is very concrete but the behavior has many optional
+more about the protocol details. While digging into the specification
+I realized there where to many abstractions on top of the wire format
+and I needed a way to *simplify* things.  The wire format is concrete
+though the behavior of clients and servers contains optional
 capabilities. As such, maybe writing your own client, with only the
 things you need, is *simpler* than using a generic one?
 
-Looking into alternatives I found that some packages do provided the
-wire format features, though most of them are for mqtt-v3.1.  I could
-have opted used e.g. the eclipse/paho package, which has support for
+The specification is well written with requirements clearly stated.
+You can divide the specification into two main areas, (1) wire format
+and (2) behavior of clients and servers.  Looking into alternatives I
+found that some
+packages,
+[huin/mqtt](https://pkg.go.dev/github.com/huin/mqtt),
+[surgemq/message](https://pkg.go.dev/github.com/surgemq/message)
+or [eclipse/paho](https://github.com/eclipse/paho.mqtt.golang), do
+provided the wire format features, though most are for mqtt-v3.1.
+
+I could have opted to used eclipse/paho, which has support for
 mqtt-v5, though I also wanted to experience and learn more about the
 process of implementing a package according to the specification,
 something you rarely get to do these days.
+
+Putting other projects on hold, I decided to do this thing and set my
+goals accordingly.
 
 
 
@@ -85,7 +83,7 @@ Its design aims for
 3. Simplicity - optional abstractions
 
 With these goals in mind approaching the solution is a tricky thing,
-though rewarding.
+though rewarding and fun.
 
 
 
@@ -94,9 +92,8 @@ though rewarding.
 
 The entire specification is 137 pages. This is quite a lot of
 information to read before actually starting anything. Luckily the
-first section is *terminology*. Especially useful as it provides the
-necessary vocabulary and a general feel for what concepts are
-*large* and which are small.
+first section is *terminology*. It provides the necessary vocabulary
+and a general feel for what concepts are *large* and which are small.
 
 Having poor experience with a top-down development approach I looked
 for the smallest concepts to implement first, like constants and error
@@ -104,53 +101,66 @@ codes. However these are spread out throughout the specification so I
 stopped after a while and decided to move on with the first control
 packet, connect. 
 
-Representing the control packet with public fields felt wrong.  I
-already knew that in some cases the fields where related and would
-make it hard to fulfill the *Correctness*. So I went with the
-getter/setter approach, hiding all the fields. The downside being the
-documentation is now quite long. Benchmarks between the initial
+Representing the control packet with public fields felt idiomic. This
+approach is used in other packages and I was inclined to follow suit.
+However I already knew that in some cases the fields where
+related. Setting them from the outside would make it hard to fulfill
+the *Correctness* goal. So I went with the getter/setter approach,
+hiding all the fields. 
+
+Having pahos implementation I opted to early on write benchmark tests
+comparing my approach to theirs. Benchmarks between the initial
 implementation and pahos showed poor results in several areas, I
 needed a redesign.
-
-
 
 <a name="design"></a>
 ## Design <a class="link" href="#design">§</a>
 
-At this point design was limited to performance of control packet
+At this point my design was limited to performance of control packet
 conversion to and from the wire format. But I really wanted to
 have a design that was at least in par with pahos, performance wise.
 The hidden fields with getter and setter methods had no affect on the
 performance so they stayed. But a lot of effort went into designing
-the wire types described in the specification in an efficient way but
-also somewhat readable. 
+the wire types described in the specification in an efficient yet readable.
 
 Reading and writing packets is deterministic as the length is
-provided.  This trait is used in all the wire types to minimize
-allocations.
+provided. This trait is used in all the wire types to minimize
+allocations. Once the performance was adequate the remaining packets
+where fairly quickly implemented.
 
-Once the performance was adequate the remaining packets where fairly
-quickly implemented.
+### Package Name
 
-<a name="queues"></a>
-### Queues <a class="link" href="#queues">§</a>
+The module started out as <code>mqtt</code>, obvious choice which
+initially worked fine. Once the control packet types where implemented
+focus shifted to clients and servers. This amount of code in package
+mqtt was quite large already so I went with a subdirectory `mqtt/x`
+and later renamed it to `mqtt/proto`. The more I worked on client
+behavior the naming felt wrong. Not only the naming, also the day to
+day work where working in a subdirectory of the package was not
+optimal, at least not in my setup. I want to quickly select the
+project I work on and stay in that directory for most of the
+time. This lead to another round of package renaming. Finally I
+decided it was time to split the packages
 
-### Package name
+1. gregoryv/mq
+1. gregoryv/tt
 
-The module started out as <code>mqtt</code>, obvious choice which initially worked fine.
-Focusing on implementing the control packets.
+Short and concise names, that are related but do not have to
+be. I.e. someone else may want to write a generic client of sorts
+using `gregoryv/mq`. The packages also reflect the two major areas in
+the specification (1) wire format and (2) behavior of clients and
+servers.
 
-<pre>
-mqtt
-mqtt/x
-mqtt/proto
-
-mq/x
-mq/tt
-</pre>
 
 <a name="performance"></a>
 ## Performance <a class="link" href="#performance">§</a>
+
+Before I go on, let me first say thank you to the eclipse/paho
+developers for their great work and I hope these results may give
+ideas to improving their already great package.
+
+Initial comparison was on creation, writing and reading as separate
+tests.
 
 <pre>
 goos: linux
@@ -159,22 +169,20 @@ pkg: github.com/gregoryv/mq
 cpu: Intel(R) Xeon(R) E-2288G CPU @ 3.70GHz
 BenchmarkConnect/make/our     15082816        77.58 ns/op      24 B/op       3 allocs/op
 BenchmarkConnect/make/their    3935006       279.30 ns/op     512 B/op       5 allocs/op
-<em>BenchmarkConnect/write/our      483277      2096.00 ns/op     48 B/op       1 allocs/op</em>
+<em>BenchmarkConnect/write/our      483277      2096.00 ns/op      48 B/op       1 allocs/op</em>
 BenchmarkConnect/write/their   2359382       862.40 ns/op     368 B/op      10 allocs/op
-<em>BenchmarkConnect/read/our      1553311       859.40 ns/op    440 B/op       8 allocs/op</em>
+<em>BenchmarkConnect/read/our      1553311       859.40 ns/op     440 B/op       8 allocs/op</em>
 BenchmarkConnect/read/their     549508      2507.00 ns/op    3288 B/op      24 allocs/op
 </pre>
 
 Writing a control packet uses one allocation but is still a lot slower
 than their version when it comes to writing. Though in the reading the
 roles are reversed, our version has fewer allocations and is quicker.
-We'll have to do an overall test, i.e. reading And writing messages,
-and maybe focus on the Publish message.
 
 
 Using pprof I could find that the slowest part of writing a control
-packet was when writing fields defined in the propertyMap. Replacing
-the loop with direct access yielded quite an improvement
+packet was when writing fields defined as properties. Replacing a loop
+with direct access yielded quite an improvement
 
 <pre>
 BenchmarkConnect/write/our       483277     2096.00 ns/op      48 B/op       1 allocs/op
@@ -187,26 +195,10 @@ BenchmarkAuth is faster when successful in pahos favor, though when
 including e.g. a reauthenticate with some user properties our
 implementation is faster. In the successful case we could optimize it
 even further I guess, though that could affect reading of other
-control packages. FixedHeader.ReadRemaining was optimised for this
-case, though the one allocation in difference was actually incorrectly
-calculated as ReadRemaining creates the packet during testing whereas
-in their case it was already instantiated outside.
+control packages. 
 
-To compare our and their side I'll have to use a more complete test
-where a control packet is created, written on the wire and then read
-back as another packet.
-
-Weird result when writing the same packet, this could be signifficant
-later as pahos implementation may require a new packet each time,
-though unlikely.
-
-<pre>
-BenchmarkCompare/Auth/our     1789131           798 ns/op       232 B/op   16 allocs/op
-BenchmarkCompare/Auth/their    120936        197728 ns/op   1063672 B/op   22 allocs/op
-</pre>
-
-
-A more reasonable comparison
+At this point I decided to write a more complete benchmark that creates, writes and reads
+a control packet. A more reasonable comparison
 
 <pre>
 Benchmark/Auth/our            1595908         850 ns/op       296 B/op     18 allocs/op
@@ -271,6 +263,6 @@ the scrutiny of the community.
 <ol>
 	<li><a href="https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html">mqtt-v5.0</a> specification</li>
 	<li><a href="https://pkg.go.dev/github.com/eclipse/paho.mqtt.golang">paho.mqtt.golang</a> implementation</li>
-	<li><a href="http://www.rfc-editor.org/info/rfc2119">RFC2119</a></li>
-	<li>[huin/mqtt](https://pkg.go.dev/github.com/huin/mqtt) - wire format package for mqtt-v3.1</li>
+	<li><a href="http://www.rfc-editor.org/info/rfc2119">RFC2119</a> - Key words for use in RFCs to Indicate Requirement Levels</li>
+	<li><a href="https://pkg.go.dev/github.com/huin/mqtt">huin/mqtt</a> - wire format package for mqtt-v3.1</li>
 </ol>
