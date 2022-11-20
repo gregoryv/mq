@@ -19,7 +19,6 @@ func newMalformed(v interface{}, ref string, reason interface{}) *Malformed {
 	case string:
 		r = e
 	}
-	// remove * from type name
 	return &Malformed{
 		t:      fmt.Sprintf("%T", v),
 		ref:    ref,
@@ -32,6 +31,10 @@ type Malformed struct {
 	method string // fill or unmarshal
 	ref    string
 	reason string
+}
+
+func (e *Malformed) SetPacket(p Packet) {
+	e.t = fmt.Sprintf("%T", p)
 }
 
 func (e *Malformed) SetReason(v string) { e.reason = v }

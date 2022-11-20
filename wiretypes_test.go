@@ -253,20 +253,6 @@ func Test_Ident(t *testing.T) {
 
 var large = wstring(strings.Repeat(" ", maxUint16+1))
 
-func ExampleMalformed_Error() {
-	e := Malformed{
-		method: "unmarshal",
-		t:      fmt.Sprintf("%T", Connect{}),
-		reason: "missing data",
-	}
-	fmt.Println(e.Error())
-	e.ref = "remaining length"
-	fmt.Println(e.Error())
-	// output:
-	// malformed mq.Connect unmarshal: missing data
-	// malformed mq.Connect unmarshal: remaining length missing data
-}
-
 type brokenRW struct{}
 
 func (w *brokenRW) Write(data []byte) (int, error) {
