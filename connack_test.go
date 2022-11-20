@@ -13,10 +13,11 @@ import (
 func ExampleConnAck() {
 	a := NewConnAck()
 	a.SetSessionPresent(true)
+	a.SetReasonCode(NotAuthorized)
 
 	fmt.Print(a.String())
 	// output:
-	// CONNACK ---- -------s  5 bytes
+	// CONNACK ---- -------s  NotAuthorized 5 bytes
 }
 
 func ExampleConnAck_String() {

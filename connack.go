@@ -98,10 +98,16 @@ func (c *ConnAck) AuthData() []byte     { return []byte(c.authData) }
 // ----------------------------------------
 
 func (c *ConnAck) String() string {
-	return fmt.Sprintf("%s %s %s %v bytes",
+	return fmt.Sprintf("%s %s %s%s %v bytes",
 		firstByte(c.fixed).String(),
 		connAckFlags(c.flags),
 		c.assignedClientID,
+		func() string {
+			if c.ReasonCode() >= 0x80 {
+				return " " + c.ReasonCode().String()
+			}
+			return ""
+		}(),
 		c.width(),
 	)
 }
