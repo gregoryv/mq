@@ -68,6 +68,11 @@ func TestReadPacket_broken(t *testing.T) {
 	data := []byte{0, 3, 0, 0, 0}
 	if v, err := ReadPacket(bytes.NewReader(data)); err != nil {
 		t.Error("undefined should not fail", err, v)
+	} else {
+		v := v.(*Undefined)
+		if len(v.Data()) != 3 {
+			t.Error(v.Data())
+		}
 	}
 }
 

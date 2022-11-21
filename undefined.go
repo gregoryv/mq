@@ -5,8 +5,10 @@ import (
 	"io"
 )
 
+// Undefined represents a packet with type value of 0.
 type Undefined struct {
 	fixed bits
+	data  []byte
 }
 
 func (p *Undefined) String() string {
@@ -15,11 +17,13 @@ func (p *Undefined) String() string {
 	)
 }
 
+func (p *Undefined) Data() []byte { return p.data }
+
 func (p *Undefined) WriteTo(w io.Writer) (int64, error) {
-	return 0, fmt.Errorf("Undefined cannot be written")
+	return 0, fmt.Errorf("cannot write %T", p)
 }
 
 func (p *Undefined) UnmarshalBinary(data []byte) error {
-	// there should not be any data
+	p.data = data
 	return nil
 }

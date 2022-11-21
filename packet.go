@@ -24,6 +24,8 @@ func ReadPacket(r io.Reader) (ControlPacket, error) {
 	return fh.ReadRemaining(r)
 }
 
+// Dump writes all packet fields to the given writer, including empty
+// value ones.
 func Dump(w io.Writer, p Packet) {
 	if p, ok := p.(interface{ dump(io.Writer) }); ok {
 		p.dump(w)
