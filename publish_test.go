@@ -155,7 +155,7 @@ func BenchmarkPublish(b *testing.B) {
 
 			// not fully supported as there can be multiple
 			// subscription identifiers
-			// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901117
+			// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901117
 			c.Properties.SubscriptionIdentifier = &subid
 			c.Properties.ContentType = "text/plain"
 			c.Payload = []byte("gopher")
@@ -212,7 +212,7 @@ func BenchmarkPublish(b *testing.B) {
 
 			// not fully supported as there can be multiple
 			// subscription identifiers
-			// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_Toc3901117
+			// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901117
 			c.Properties.SubscriptionIdentifier = &subid
 			c.Properties.ContentType = "text/plain"
 			c.Payload = []byte("gopher")

@@ -2,7 +2,7 @@ package mq
 
 // 2.1.2 MQTT Control Packet type
 //
-// https://docs.oasis-open.org/mq/mq/v5.0/os/mq-v5.0-os.html#_MQTT_Control_Packet
+// https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_MQTT_Control_Packet
 const (
 	UNDEFINED   byte = (iota << 4) // 0 Forbidden Reserved
 	CONNECT                        // 1 Client to Server Connection request
