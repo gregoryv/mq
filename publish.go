@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+// Pub is a convenience method for creating a publish packet.
 func Pub(qos uint8, topic, payload string) *Publish {
 	p := NewPublish()
 	p.SetQoS(qos)
