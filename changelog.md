@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Update logo
 - Add func Dump
 - Include reason code in ConnAck.String
 - Add missing Auth properties
