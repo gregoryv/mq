@@ -4,7 +4,7 @@
 
 <div id="about">
 Gregory Vin&ccaron;i&cacute;<br>
-xx January 2023
+24 November 2022
 </div>
 
 <img src="logo.svg" alt="logo" />
@@ -237,16 +237,15 @@ BenchmarkPublish/wqos0/their-16   2453695     481 ns/op      408 B/op        9 a
 <a name="conclusion"></a>
 ## Conclusion <a class="link" href="#conclusion">§</a>
 
-After D days and C commits,
-packages [gregoryv/mq](https://github.com/gregoryv/mq)
-and [gregoryv/mq](https://github.com/gregoryv/mq) are ready for the
-scrutiny of the community.
+Packages [gregoryv/mq](https://github.com/gregoryv/mq)
+and [gregoryv/tt](https://github.com/gregoryv/tt) are still a work in
+progress though they are already useful.
 
 What did I learn from doing this? Having a specification is great in
 that there is a source of truth which your implementation should
 follow. The format of the specification is good, though could use more
 fixed anchors e.g. for referencing directly from the implementation. I
-opted Not to referenece sections by their, what to me looked like
+opted Not to referenece sections by their, what to me looks like
 generated anchor names. Those will probably change if the document is
 regenerated. Referencing would be very nice to have in both tests
 supporting specified requirements and code documentation explaining
@@ -260,4 +259,5 @@ concepts.
 	<li><a href="https://pkg.go.dev/github.com/eclipse/paho.mqtt.golang">paho.mqtt.golang</a> implementation</li>
 	<li><a href="http://www.rfc-editor.org/info/rfc2119">RFC2119</a> - Key words for use in RFCs to Indicate Requirement Levels</li>
 	<li><a href="https://pkg.go.dev/github.com/huin/mqtt">huin/mqtt</a> - wire format package for mqtt-v3.1</li>
+	<li><a href="https://pkg.go.dev/github.com/surgemq/message">surgemq/message</a> - another design</li>
 </ol>
