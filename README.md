@@ -1,4 +1,4 @@
-mq - package implements
+[gregoryv/mq](https://pkg.go.dev/github.com/gregoryv/mq) - package implements
 [mqtt-v5.0](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html) control
 packets
 
