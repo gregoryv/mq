@@ -8,3 +8,4 @@ For a low level client implementation refer to [gregoryv/tt](https://github.com/
 
 Naming concepts follow the specification as much as possible.
 
+Initial work and design is discussed in [etc/blog.md](./etc/blog.md).
