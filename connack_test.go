@@ -42,26 +42,37 @@ func ExampleDump_ConnAck() {
 	//   0. color: "red"
 }
 
-func ExampleConnAck() {
+func ExampleConnAck_withReasonCode() {
 	a := NewConnAck()
 	a.SetSessionPresent(true)
 	a.SetReasonCode(NotAuthorized)
 
 	fmt.Print(a.String())
 	// output:
-	// CONNACK ---- -------s  NotAuthorized 5 bytes
+	// CONNACK ---- -------s  5 bytes NotAuthorized!
+}
+
+func ExampleConnAck() {
+	a := NewConnAck()
+	a.SetSessionPresent(true)
+
+	fmt.Print(a.String())
+	// output:
+	// CONNACK ---- -------s  5 bytes
 }
 
 func ExampleConnAck_String() {
 	a := NewConnAck()
 	a.SetSessionPresent(true)
 	a.SetAssignedClientID("pink")
+	a.SetReasonCode(QoSNotSupported)
+	a.SetReasonString("please select max 1")
 
 	fmt.Println(a.String())
 	fmt.Print(DocumentFlags(a))
 	// output:
-	// CONNACK ---- -------s pink 12 bytes
-	//         3210 76543210 AssignedClientID Size
+	// CONNACK ---- -------s pink 34 bytes QoSNotSupported! please select max 1
+	//         3210 76543210 AssignedClientID Size [ReasonCode and ReasonString if error]
 	//
 	// 3-0 reserved
 	//

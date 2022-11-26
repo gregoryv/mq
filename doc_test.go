@@ -28,7 +28,7 @@ func DocumentFlags(p Packet) string {
 0     reserved
 `)
 	case *ConnAck:
-		buf.WriteString(`3210 76543210 AssignedClientID Size
+		buf.WriteString(`3210 76543210 AssignedClientID Size [ReasonCode and ReasonString if error]
 
 3-0 reserved
 

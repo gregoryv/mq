@@ -98,18 +98,22 @@ func (p *ConnAck) AuthData() []byte     { return []byte(p.authData) }
 // ----------------------------------------
 
 func (p *ConnAck) String() string {
-	return fmt.Sprintf("%s %s %s%s %v bytes",
+	return withReason(p, fmt.Sprintf("%s %s %s %v bytes",
 		firstByte(p.fixed).String(),
 		connAckFlags(p.flags),
 		p.assignedClientID,
-		func() string {
-			if p.ReasonCode() >= 0x80 {
-				return " " + p.ReasonCode().String()
-			}
-			return ""
-		}(),
 		p.width(),
-	)
+	))
+}
+
+func withReason(p HasReason, v string) string {
+	if code := p.ReasonCode(); code >= 0x80 {
+		if r := p.ReasonString(); r != "" {
+			return fmt.Sprintf("%s %s! %s", v, code.String(), r)
+		}
+		return fmt.Sprintf("%s %s!", v, code.String())
+	}
+	return v
 }
 
 func (p *ConnAck) dump(w io.Writer) {

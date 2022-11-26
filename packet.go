@@ -3,7 +3,6 @@ Package mq provides a mqtt-v5.0 protocol implementation
 
 The specification is found at
 https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html
-
 */
 package mq
 
@@ -49,6 +48,12 @@ type ControlPacket interface {
 // HasPacketID is implemented by packets carrying a packet ID.
 type HasPacketID interface {
 	PacketID() uint16
+}
+
+// HasReason is implemented by packets carrying a reason code.
+type HasReason interface {
+	ReasonCode() ReasonCode
+	ReasonString() string
 }
 
 type fixedHeader struct {
