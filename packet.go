@@ -53,7 +53,6 @@ type HasPacketID interface {
 // HasReason is implemented by packets carrying a reason code.
 type HasReason interface {
 	ReasonCode() ReasonCode
-	ReasonString() string
 }
 
 type fixedHeader struct {

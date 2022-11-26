@@ -22,10 +22,10 @@ func (p *Disconnect) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
 func (p *Disconnect) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
 
 func (p *Disconnect) String() string {
-	return fmt.Sprintf("%s %v bytes",
+	return withReason(p, fmt.Sprintf("%s %v bytes",
 		firstByte(p.fixed).String(),
 		p.width(),
-	)
+	))
 }
 
 func (p *Disconnect) dump(w io.Writer) {

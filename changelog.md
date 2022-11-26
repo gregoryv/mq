@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add reason to Disconnect.String
 - Add type HasReason interface
 
 ## [0.24.0] 2022-11-25

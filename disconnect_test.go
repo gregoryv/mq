@@ -17,6 +17,19 @@ func ExampleDisconnect_String() {
 	// 3-0 reserved
 }
 
+func ExampleDisconnect_StringWithReason() {
+	p := NewDisconnect()
+	p.SetReasonCode(QoSNotSupported)
+
+	fmt.Println(p)
+	fmt.Print(DocumentFlags(p))
+	// output:
+	// DISCONNECT ---- 4 bytes QoSNotSupported!
+	//            3210 Size
+	//
+	// 3-0 reserved
+}
+
 func TestDisconnect(t *testing.T) {
 	p := NewDisconnect()
 	// normal disconnect

@@ -108,8 +108,10 @@ func (p *ConnAck) String() string {
 
 func withReason(p HasReason, v string) string {
 	if code := p.ReasonCode(); code >= 0x80 {
-		if r := p.ReasonString(); r != "" {
-			return fmt.Sprintf("%s %s! %s", v, code.String(), r)
+		if p, ok := p.(interface{ ReasonString() string }); ok {
+			if r := p.ReasonString(); r != "" {
+				return fmt.Sprintf("%s %s! %s", v, code.String(), r)
+			}
 		}
 		return fmt.Sprintf("%s %s!", v, code.String())
 	}
