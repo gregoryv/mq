@@ -38,7 +38,7 @@ func (p *PubComp) String() string {
 
 func (p *PubComp) dump(w io.Writer) {
 	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
-	fmt.Fprintf(w, "Reason: %v\n", p.Reason())
+	fmt.Fprintf(w, "Reason: %v\n", p.ReasonString())
 	fmt.Fprintf(w, "ReasonCode: %v\n", p.ReasonCode())
 	p.UserProperties.dump(w)
 }
@@ -49,8 +49,8 @@ func (p *PubComp) PacketID() uint16     { return uint16(p.packetID) }
 func (p *PubComp) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
 func (p *PubComp) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
 
-func (p *PubComp) SetReason(v string) { p.reason = wstring(v) }
-func (p *PubComp) Reason() string     { return string(p.reason) }
+func (p *PubComp) SetReasonString(v string) { p.reason = wstring(v) }
+func (p *PubComp) ReasonString() string     { return string(p.reason) }
 
 func (p *PubComp) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.fill(_LEN, 0))

@@ -24,23 +24,16 @@ type PubRel struct {
 }
 
 func (p *PubRel) String() string {
-	return fmt.Sprintf("%s p%v %s%s %v bytes",
+	return withReason(p, fmt.Sprintf("%s p%v %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
-		ReasonCode(p.reasonCode).String(),
-		func() string {
-			if p.reasonCode > 0 && len(p.reason) > 0 {
-				return " " + string(p.reason)
-			}
-			return ""
-		}(),
 		p.width(),
-	)
+	))
 }
 
 func (p *PubRel) dump(w io.Writer) {
 	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
-	fmt.Fprintf(w, "Reason: %v\n", p.Reason())
+	fmt.Fprintf(w, "ReasonString: %v\n", p.ReasonString())
 	fmt.Fprintf(w, "ReasonCode: %v\n", p.ReasonCode())
 	p.UserProperties.dump(w)
 }
@@ -51,8 +44,8 @@ func (p *PubRel) PacketID() uint16     { return uint16(p.packetID) }
 func (p *PubRel) SetReasonCode(v ReasonCode) { p.reasonCode = wuint8(v) }
 func (p *PubRel) ReasonCode() ReasonCode     { return ReasonCode(p.reasonCode) }
 
-func (p *PubRel) SetReason(v string) { p.reason = wstring(v) }
-func (p *PubRel) Reason() string     { return string(p.reason) }
+func (p *PubRel) SetReasonString(v string) { p.reason = wstring(v) }
+func (p *PubRel) ReasonString() string     { return string(p.reason) }
 
 func (p *PubRel) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.fill(_LEN, 0))

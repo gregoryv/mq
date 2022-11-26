@@ -133,7 +133,7 @@ func (p *Connect) RequestResponseInfo() bool {
 	return bool(p.requestResponseInfo)
 }
 
-// The Client uses this value to indicate whether the Reason String or
+// The Client uses this value to indicate whether the ReasonString String or
 // User Properties are sent in the case of failures.
 func (p *Connect) SetRequestProblemInfo(v bool) {
 	p.requestProblemInfo = wbool(v)

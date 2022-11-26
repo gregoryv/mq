@@ -25,7 +25,7 @@ func TestPubRec(t *testing.T) {
 	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, TopicNameInvalid)
-	eq(t, p.SetReason, p.Reason, "name too long")
+	eq(t, p.SetReasonString, p.ReasonString, "name too long")
 
 	p.AddUserProp("color", "red")
 

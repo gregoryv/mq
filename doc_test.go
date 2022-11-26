@@ -37,7 +37,7 @@ func DocumentFlags(p Packet) string {
 `)
 
 	case *PubAck:
-		buf.WriteString(`3210 PacketID Reason [reason text] Size
+		buf.WriteString(`3210 PacketID ReasonString Size [reason text]
 
 3-0 reserved
 `)

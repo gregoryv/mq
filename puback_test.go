@@ -15,8 +15,8 @@ func ExamplePubAck_String() {
 	fmt.Println(p)
 	fmt.Print(DocumentFlags(p))
 	// output:
-	// PUBACK ---- p9 Success 4 bytes
-	//        3210 PacketID Reason [reason text] Size
+	// PUBACK ---- p9 4 bytes
+	//        3210 PacketID ReasonString Size [reason text]
 	//
 	// 3-0 reserved
 }
@@ -32,7 +32,7 @@ func TestPubAck(t *testing.T) {
 	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, TopicNameInvalid)
-	eq(t, p.SetReason, p.Reason, "name too long")
+	eq(t, p.SetReasonString, p.ReasonString, "name too long")
 
 	p.AddUserProp("color", "red")
 

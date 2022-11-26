@@ -6,6 +6,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Rename methods Reason to ReasonString
+- Rename methods SetReason to SetReasonString
 - Add reason to Disconnect.String
 - Add type HasReason interface
 

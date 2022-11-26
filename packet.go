@@ -63,7 +63,7 @@ type fixedHeader struct {
 // ReadFrom reads the fixed byte and the remaining length, use
 // ReadRemaining for the rest.
 //
-// Note: Reason for splitting this up is so we can compare
+// Note: ReasonString for splitting this up is so we can compare
 // performance as pahos Unpack works on the remaining only.
 func (f *fixedHeader) ReadFrom(r io.Reader) (int64, error) {
 	n, err := f.fixed.ReadFrom(r)

@@ -37,7 +37,7 @@ func (e *Malformed) SetPacket(p Packet) {
 	e.t = fmt.Sprintf("%T", p)
 }
 
-func (e *Malformed) SetReason(v string) { e.reason = v }
+func (e *Malformed) SetReasonString(v string) { e.reason = v }
 
 func (e *Malformed) Error() string {
 	var buf strings.Builder

@@ -12,7 +12,7 @@ func ExampleNewPubRel() {
 	p.SetReasonCode(PacketIdentifierNotFound)
 	fmt.Println(p)
 	// output:
-	// PUBREL --1- p9 PacketIdentifierNotFound 5 bytes
+	// PUBREL --1- p9 5 bytes PacketIdentifierNotFound!
 }
 
 func TestPubRel(t *testing.T) {
@@ -26,7 +26,7 @@ func TestPubRel(t *testing.T) {
 	testControlPacket(t, p)
 
 	eq(t, p.SetReasonCode, p.ReasonCode, TopicNameInvalid)
-	eq(t, p.SetReason, p.Reason, "name too long")
+	eq(t, p.SetReasonString, p.ReasonString, "name too long")
 
 	p.AddUserProp("color", "red")
 
