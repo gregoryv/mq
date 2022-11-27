@@ -7,7 +7,20 @@ import (
 	"testing"
 )
 
-func ExampleSubscribe() {
+func ExampleSubscribe_String() {
+	s := NewSubscribe()
+	s.AddUserProp("color", "purple")
+	s.AddFilters(
+		NewTopicFilter("a/b/c", OptQoS2|OptNL|OptRAP),
+		NewTopicFilter("d/e", OptQoS1),
+	)
+	fmt.Println(s)
+	// output:
+	// SUBSCRIBE --1- p0 a/b/c --r0pn2- 35 bytes
+
+}
+
+func ExampleSubscribe_Dump() {
 	s := NewSubscribe()
 	s.AddUserProp("color", "purple")
 	s.AddFilters(
@@ -26,10 +39,22 @@ func ExampleSubscribe() {
 }
 
 func ExampleSubscribe_malformed() {
-	s := NewSubscribe()
-	fmt.Println(s)
+	// no filters
+	fmt.Println(NewSubscribe())
+	{ // bad qos
+		s := NewSubscribe()
+		s.AddFilters(NewTopicFilter("a/b", OptQoS3))
+		fmt.Println(s)
+	}
+	{ // empty filter
+		s := NewSubscribe()
+		s.AddFilters(NewTopicFilter("", OptQoS1))
+		fmt.Println(s)
+	}
 	// output:
 	// SUBSCRIBE --1- p0  5 bytes, malformed! no filters
+	// SUBSCRIBE --1- p0 a/b --r0--!! 11 bytes, malformed! invalid QoS
+	// SUBSCRIBE --1- p0  --r0---1 8 bytes, malformed! empty filter
 }
 
 func TestSubscribe(t *testing.T) {

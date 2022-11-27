@@ -31,7 +31,11 @@ func (p *Subscribe) WellFormed() *Malformed {
 	if len(p.filters) == 0 {
 		return newMalformed(p, "filters", "no")
 	}
-	// todo check each filter, ie. for QoS3
+	for _, f := range p.filters {
+		if err := f.WellFormed(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

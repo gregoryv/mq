@@ -23,6 +23,16 @@ func (c *TopicFilter) Filter() string     { return string(c.filter) }
 func (c *TopicFilter) SetOptions(v Opt) { c.options = bits(v) }
 func (c *TopicFilter) Options() Opt     { return Opt(c.options) }
 
+func (c *TopicFilter) WellFormed() *Malformed {
+	if len(c.filter) == 0 {
+		return newMalformed(c, "filter", "empty")
+	}
+	if c.options.Has(byte(OptQoS3)) {
+		return newMalformed(c, "QoS", "invalid")
+	}
+	return nil
+}
+
 func (c TopicFilter) fill(b []byte, i int) int {
 	n := i
 	i += c.filter.fill(b, i)
