@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Replace Subscribe.AddFilter with AddFilters
 - Add method Subscribe.Wellformed
 
 ## [0.25.0] 2022-11-26

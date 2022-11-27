@@ -62,11 +62,8 @@ func (p *Subscribe) PacketID() uint16     { return uint16(p.packetID) }
 func (p *Subscribe) SetSubscriptionID(v int) { p.subscriptionID = vbint(v) }
 func (p *Subscribe) SubscriptionID() int     { return int(p.subscriptionID) }
 
-func (p *Subscribe) AddFilter(filter string, options Opt) {
-	p.filters = append(p.filters, TopicFilter{
-		filter:  wstring(filter),
-		options: bits(options),
-	})
+func (p *Subscribe) AddFilters(v ...TopicFilter) {
+	p.filters = append(p.filters, v...)
 }
 func (p *Subscribe) Filters() []TopicFilter {
 	return p.filters
@@ -156,6 +153,12 @@ type TopicFilter struct {
 	filter  wstring
 	options bits
 }
+
+func (c *TopicFilter) SetFilter(v string) { c.filter = wstring(v) }
+func (c *TopicFilter) Filter() string     { return string(c.filter) }
+
+func (c *TopicFilter) SetOptions(v Opt) { c.options = bits(v) }
+func (c *TopicFilter) Options() Opt     { return Opt(c.options) }
 
 func (c TopicFilter) fill(b []byte, i int) int {
 	n := i

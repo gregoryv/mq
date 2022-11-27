@@ -10,8 +10,10 @@ import (
 func ExampleSubscribe() {
 	s := NewSubscribe()
 	s.AddUserProp("color", "purple")
-	s.AddFilter("a/b/c", OptQoS2|OptNL|OptRAP)
-	s.AddFilter("d/e", OptQoS1)
+	s.AddFilters(
+		NewTopicFilter("a/b/c", OptQoS2|OptNL|OptRAP),
+		NewTopicFilter("d/e", OptQoS1),
+	)
 	Dump(os.Stdout, s)
 	// output:
 	// PacketID: 0
@@ -42,8 +44,10 @@ func TestSubscribe(t *testing.T) {
 		t.Error("expect note on missing filters")
 	}
 
-	s.AddFilter("a/b/c", OptQoS2|OptNL|OptRAP)
-	s.AddFilter("d/e", OptQoS1)
+	s.AddFilters(
+		NewTopicFilter("a/b/c", OptQoS2|OptNL|OptRAP),
+		NewTopicFilter("d/e", OptQoS1),
+	)
 
 	if v := s.Filters(); len(v) != 2 {
 		t.Error("expect 2 filters, got", v)
