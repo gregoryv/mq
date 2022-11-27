@@ -55,6 +55,11 @@ type HasReason interface {
 	ReasonCode() ReasonCode
 }
 
+// HasWellFormed is implemented by packets that implement WellFormed.
+type HasWellFormed interface {
+	WellFormed() *Malformed
+}
+
 type fixedHeader struct {
 	fixed        bits
 	remainingLen vbint

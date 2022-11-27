@@ -20,12 +20,19 @@ type Subscribe struct {
 }
 
 func (p *Subscribe) String() string {
-	return fmt.Sprintf("%s p%v, %s %v bytes",
+	return withForm(p, fmt.Sprintf("%s p%v %s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		p.filterString(),
 		p.width(),
-	)
+	))
+}
+
+func (p *Subscribe) WellFormed() *Malformed {
+	if len(p.filters) == 0 {
+		return newMalformed(p, "filters", "no")
+	}
+	return nil
 }
 
 func (p *Subscribe) dump(w io.Writer) {
@@ -44,7 +51,7 @@ func (p *Subscribe) dump(w io.Writer) {
 // filterString returns string representing filters for use in String
 func (p *Subscribe) filterString() string {
 	if len(p.filters) == 0 {
-		return "no filters!" // malformed
+		return "" // malformed
 	}
 	return p.filters[0].String()
 }

@@ -1,6 +1,7 @@
 package mq
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -22,6 +23,13 @@ func ExampleSubscribe() {
 	//   0. color: "purple"
 }
 
+func ExampleSubscribe_malformed() {
+	s := NewSubscribe()
+	fmt.Println(s)
+	// output:
+	// SUBSCRIBE --1- p0  5 bytes, malformed! no filters
+}
+
 func TestSubscribe(t *testing.T) {
 	s := NewSubscribe()
 
@@ -30,7 +38,7 @@ func TestSubscribe(t *testing.T) {
 
 	s.AddUserProp("color", "purple")
 
-	if v := s.String(); !strings.Contains(v, "no filters!") {
+	if v := s.String(); !strings.Contains(v, "malformed! no filters") {
 		t.Error("expect note on missing filters")
 	}
 

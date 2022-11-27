@@ -56,3 +56,10 @@ func (e *Malformed) Error() string {
 	add(e.reason)
 	return buf.String()
 }
+
+func withForm(p HasWellFormed, v string) string {
+	if err := p.WellFormed(); err != nil {
+		return fmt.Sprintf("%s, malformed! %s %s", v, err.reason, err.ref)
+	}
+	return v
+}

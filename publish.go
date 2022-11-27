@@ -43,7 +43,7 @@ func (p *Publish) String() string {
 		topic = fmt.Sprintf("topic:%v", v)
 	}
 
-	return fmt.Sprintf("%s p%v %s%s %v bytes%s",
+	return withForm(p, fmt.Sprintf("%s p%v %s%s %v bytes",
 		firstByte(p.fixed).String(),
 		p.packetID,
 		topic,
@@ -54,13 +54,7 @@ func (p *Publish) String() string {
 			return " " + string(p.correlationData)
 		}(),
 		p.width(),
-		func() string {
-			if err := p.WellFormed(); err != nil {
-				return fmt.Sprintf(", malformed! %s %s", err.reason, err.ref)
-			}
-			return ""
-		}(),
-	)
+	))
 }
 
 func (p *Publish) dump(w io.Writer) {
