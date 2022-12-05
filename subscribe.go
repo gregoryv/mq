@@ -31,6 +31,12 @@ func (p *Subscribe) WellFormed() *Malformed {
 	if len(p.filters) == 0 {
 		return newMalformed(p, "filters", "no")
 	}
+	if p.subscriptionID == 0 {
+		return newMalformed(p, "sub ID", "missing")
+	}
+	if p.subscriptionID > 268_435_455 {
+		return newMalformed(p, "sub ID", "too large")
+	}
 	for _, f := range p.filters {
 		if err := f.WellFormed(); err != nil {
 			return err

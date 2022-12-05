@@ -9,6 +9,7 @@ import (
 
 func ExampleSubscribe_String() {
 	s := NewSubscribe()
+	s.SetSubscriptionID(39)
 	s.AddUserProp("color", "purple")
 	s.AddFilters(
 		NewTopicFilter("a/b/c", OptQoS2|OptNL|OptRAP),
@@ -16,8 +17,7 @@ func ExampleSubscribe_String() {
 	)
 	fmt.Println(s)
 	// output:
-	// SUBSCRIBE --1- p0 a/b/c --r0pn2- 35 bytes
-
+	// SUBSCRIBE --1- p0 a/b/c --r0pn2- 37 bytes
 }
 
 func ExampleSubscribe_Dump() {
@@ -43,18 +43,34 @@ func ExampleSubscribe_malformed() {
 	fmt.Println(NewSubscribe())
 	{ // bad qos
 		s := NewSubscribe()
+		s.SetSubscriptionID(1)
 		s.AddFilters(NewTopicFilter("a/b", OptQoS3))
 		fmt.Println(s)
 	}
 	{ // empty filter
 		s := NewSubscribe()
+		s.SetSubscriptionID(1)
 		s.AddFilters(NewTopicFilter("", OptQoS1))
+		fmt.Println(s)
+	}
+	{ // missing subscription id
+		s := NewSubscribe()
+		s.SetSubscriptionID(0)
+		s.AddFilters(NewTopicFilter("#", OptQoS1))
+		fmt.Println(s)
+	}
+	{ // too large subscription id
+		s := NewSubscribe()
+		s.SetSubscriptionID(268_435_455 + 1)
+		s.AddFilters(NewTopicFilter("#", OptQoS1))
 		fmt.Println(s)
 	}
 	// output:
 	// SUBSCRIBE --1- p0  5 bytes, malformed! no filters
-	// SUBSCRIBE --1- p0 a/b --r0--!! 11 bytes, malformed! invalid QoS
-	// SUBSCRIBE --1- p0  --r0---1 8 bytes, malformed! empty filter
+	// SUBSCRIBE --1- p0 a/b --r0--!! 13 bytes, malformed! invalid QoS
+	// SUBSCRIBE --1- p0  --r0---1 10 bytes, malformed! empty filter
+	// SUBSCRIBE --1- p0 # --r0---1 9 bytes, malformed! missing sub ID
+	// SUBSCRIBE --1- p0 # --r0---1 15 bytes, malformed! too large sub ID
 }
 
 func TestSubscribe(t *testing.T) {
