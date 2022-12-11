@@ -37,10 +37,10 @@ func NewPacketsDiagram() *design.ClassDiagram {
 		suback      = d.Struct(mq.SubAck{})
 
 		all = []design.VRecord{
-			connect, connack, auth, publish, disconnect,
+			connect, connack, auth, disconnect,
 			pingreq, pingresp,
+			publish, puback, pubrec, pubrel, pubcomp,
 			subscribe, suback, unsubscribe, unsuback,
-			puback, pubrec, pubrel, pubcomp,
 		}
 	)
 	d.Style.Spacing = 40
@@ -73,6 +73,7 @@ func NewPacketsDiagram() *design.ClassDiagram {
 
 	// note with indexed packets
 	var buf bytes.Buffer
+	buf.WriteString("Control Packets\n\n")
 	for i, p := range all {
 		v := strings.ReplaceAll(p.Title, " struct", "")
 		v = strings.ReplaceAll(v, "mq.", "")
