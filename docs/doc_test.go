@@ -71,6 +71,7 @@ func NewPacketsDiagram() *design.ClassDiagram {
 	d.Place(unsuback).LeftOf(unsubscribe, 20)
 	shape.Move(suback, 30, 0)
 
+	// note with indexed packets
 	var buf bytes.Buffer
 	for i, p := range all {
 		v := strings.ReplaceAll(p.Title, " struct", "")

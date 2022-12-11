@@ -1,0 +1,132 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  font-family="Arial,Helvetica,sans-serif" width="860" height="487">
+<path stroke="black" d="M96,88 L94,218" />
+<g transform="rotate(91 96 88)"><path stroke="black" fill="#ffffff" d="M96,88 l 6,-4 6,4 -6,4 -6,-4" /></g>
+<g transform="rotate(181 94 218)"><path stroke="black" fill="#ffffff" d="M90,226 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M610,356 L403,274" />
+<g transform="rotate(291 403 274)"><path stroke="black" fill="#ffffff" d="M399,282 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M464,424 L354,284" />
+<g transform="rotate(321 354 284)"><path stroke="black" fill="#ffffff" d="M350,292 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M607,424 L387,284" />
+<g transform="rotate(302 387 284)"><path stroke="black" fill="#ffffff" d="M383,292 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M580,293 L403,258" />
+<g transform="rotate(281 403 258)"><path stroke="black" fill="#ffffff" d="M399,266 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M550,214 L403,232" />
+<g transform="rotate(264 403 232)"><path stroke="black" fill="#ffffff" d="M399,240 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M561,174 L403,218" />
+<g transform="rotate(255 403 218)"><path stroke="black" fill="#ffffff" d="M399,226 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M267,434 L309,284" />
+<g transform="rotate(16 309 284)"><path stroke="black" fill="#ffffff" d="M305,292 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M147,434 L283,284" />
+<g transform="rotate(43 283 284)"><path stroke="black" fill="#ffffff" d="M279,292 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M136,362 L256,284" />
+<g transform="rotate(57 256 284)"><path stroke="black" fill="#ffffff" d="M252,292 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M150,297 L240,268" />
+<g transform="rotate(73 240 268)"><path stroke="black" fill="#ffffff" d="M236,276 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M149,243 L240,242" />
+<g transform="rotate(90 240 242)"><path stroke="black" fill="#ffffff" d="M236,250 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M468,88 L361,200" />
+<g transform="rotate(224 361 200)"><path stroke="black" fill="#ffffff" d="M357,208 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M355,88 L330,200" />
+<g transform="rotate(193 330 200)"><path stroke="black" fill="#ffffff" d="M326,208 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M245,88 L300,200" />
+<g transform="rotate(153 300 200)"><path stroke="black" fill="#ffffff" d="M296,208 l4,-8 l 4,8 Z" /></g>
+
+<path stroke="black" stroke-dasharray="5,5,5" d="M129,88 L268,200" />
+<g transform="rotate(128 268 200)"><path stroke="black" fill="#ffffff" d="M264,208 l4,-8 l 4,8 Z" /></g>
+
+<rect stroke="#d3d3d3" fill="#ffffff" x="240" y="200" width="163" height="84"/>
+<path stroke="#d3d3d3" d="M240,226 L403,226" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="246" y="242">String()</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="246" y="258">UnmarshalBinary()</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="246" y="274">WriteTo()</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="246" y="216">mq.ControlPacket interface</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="40" y="36" width="114" height="52"/>
+<path stroke="#d3d3d3" d="M40,62 L154,62" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="78">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="52">mq.Connect struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="174" y="36" width="118" height="52"/>
+<path stroke="#d3d3d3" d="M174,62 L292,62" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="180" y="78">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="180" y="52">mq.ConnAck struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="312" y="36" width="98" height="52"/>
+<path stroke="#d3d3d3" d="M312,62 L410,62" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="318" y="78">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="318" y="52">mq.Auth struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="430" y="36" width="129" height="52"/>
+<path stroke="#d3d3d3" d="M430,62 L559,62" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="436" y="78">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="436" y="52">mq.Disconnect struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="40" y="218" width="109" height="52"/>
+<path stroke="#d3d3d3" d="M40,244 L149,244" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="260">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="234">mq.Publish struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="40" y="290" width="110" height="52"/>
+<path stroke="#d3d3d3" d="M40,316 L150,316" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="332">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="306">mq.PubAck struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="40" y="362" width="112" height="52"/>
+<path stroke="#d3d3d3" d="M40,388 L152,388" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="404">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="46" y="378">mq.PubRec struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="70" y="434" width="109" height="52"/>
+<path stroke="#d3d3d3" d="M70,460 L179,460" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="76" y="476">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="76" y="450">mq.PubRel struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="199" y="434" width="123" height="52"/>
+<path stroke="#d3d3d3" d="M199,460 L322,460" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="205" y="476">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="205" y="450">mq.PubComp struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="550" y="148" width="116" height="26"/>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="556" y="164">mq.PingReq struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="550" y="194" width="122" height="26"/>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="556" y="210">mq.PingResp struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="580" y="280" width="123" height="52"/>
+<path stroke="#d3d3d3" d="M580,306 L703,306" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="586" y="322">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="586" y="296">mq.Subscribe struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="610" y="352" width="110" height="52"/>
+<path stroke="#d3d3d3" d="M610,378 L720,378" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="616" y="394">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="616" y="368">mq.SubAck struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="580" y="424" width="137" height="52"/>
+<path stroke="#d3d3d3" d="M580,450 L717,450" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="586" y="466">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="586" y="440">mq.Unsubscribe struct</text>
+<rect stroke="#d3d3d3" fill="#ffffff" x="423" y="424" width="124" height="52"/>
+<path stroke="#d3d3d3" d="M423,450 L547,450" />
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="429" y="466">UserProperties</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="429" y="440">mq.UnsubAck struct</text>
+<path stroke="#d3d3d3" fill="#ffffcc" d="M750,30 v 249 h 109 v -239 l -10,-10 L 750,30 M859,40 h -10 v -10"/>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="46">1. Connect</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="62">2. ConnAck</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="78">3. Auth</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="94">4. Publish</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="110">5. Disconnect</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="126">6. PingReq</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="142">7. PingResp</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="158">8. Subscribe</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="174">9. SubAck</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="190">10. Unsubscribe</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="206">11. UnsubAck</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="222">12. PubAck</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="238">13. PubRec</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="254">14. PubRel</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="760" y="270">15. PubComp</text>
+</svg>
