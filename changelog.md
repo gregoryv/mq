@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
-## [unreleased]
+## [0.26.0] 2022-12-13
 
 - Subscribe is malformed on bad subscriptionID
 - Replace Subscribe.AddFilter with AddFilters
