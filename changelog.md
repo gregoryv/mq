@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Fix Publish.WriteTo - encoding payload as raw data, not binary data
 - Add wiretype rawdata
 
 ## [0.26.0] 2022-12-13
