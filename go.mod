@@ -10,7 +10,9 @@ require (
 )
 
 require (
+	github.com/gregoryv/align v0.0.0-20181202204830-e033382fb988 // indirect
 	github.com/gregoryv/find v0.4.0 // indirect
+	github.com/gregoryv/matrix v0.0.0-20180221041633-bc065ffea423 // indirect
 	github.com/gregoryv/nexus v0.5.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect

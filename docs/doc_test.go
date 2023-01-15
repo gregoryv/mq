@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/eclipse/paho.golang/packets"
+	"github.com/gregoryv/align"
 	"github.com/gregoryv/draw/design"
 	"github.com/gregoryv/draw/shape"
 	"github.com/gregoryv/mq"
@@ -35,15 +36,17 @@ func NewIndex() *Page {
 
 		nav,
 
-		H2("Publish"),
+		H2("mq.Publish"),
 		docPacket(
 			"doc_test.go", "examplePublish", examplePublish(),
 		),
 
-		H3("publish their"),
+		H2("packets.Publish"),
 		docPacket(
 			"doc_test.go", "examplePublishTheir", examplePublishTheir(),
 		),
+
+		Pre(alignPackets(examplePublish(), examplePublishTheir())),
 	)
 	toc.MakeTOC(nav, article, "h2")
 
@@ -61,6 +64,26 @@ func NewIndex() *Page {
 			),
 		),
 	)
+}
+
+func alignPackets(a mq.ControlPacket, b *packets.ControlPacket) string {
+	var abuf bytes.Buffer
+	a.WriteTo(&abuf)
+
+	var bbuf bytes.Buffer
+	b.WriteTo(&bbuf)
+
+	result := align.NeedlemanWunsch(
+		[]rune(
+			hex.EncodeToString(abuf.Bytes()),
+		),
+		[]rune(
+			hex.EncodeToString(bbuf.Bytes()),
+		),
+	)
+	var buf bytes.Buffer
+	result.PrintAlignment(&buf)
+	return buf.String()
 }
 
 func docPacket(file, fn string, p io.WriterTo) *Element {
@@ -141,7 +164,7 @@ func examplePublish() *mq.Publish {
 	p := mq.NewPublish()
 	p.SetTopicName("gopher/pink")
 	p.SetPayload([]byte("hug"))
-	p.SetPayloadFormat(true) // utf-8
+	//p.SetPayloadFormat(true) // utf-8
 	return p
 }
 
@@ -149,9 +172,9 @@ func examplePublishTheir() *packets.ControlPacket {
 	p := packets.NewControlPacket(packets.PUBLISH)
 	c := p.Content.(*packets.Publish)
 	c.Topic = "gopher/pink"
-	c.Properties = &packets.Properties{}
-	pformat := byte(1)
-	c.Properties.PayloadFormat = &pformat
+	//c.Properties = &packets.Properties{}
+	//pformat := byte(1)
+	//c.Properties.PayloadFormat = &pformat
 	c.Payload = []byte("hug")
 	return p
 }
