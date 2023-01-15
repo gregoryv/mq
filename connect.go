@@ -56,7 +56,8 @@ type Connect struct {
 	username wstring
 	password bindata
 
-	will *Publish
+	will        *Publish
+	willPayload bindata // as the one in Publish.payload is raw
 }
 
 // Connect fields are exposed using methods to simplify the type
@@ -70,6 +71,7 @@ func (p *Connect) SetWill(will *Publish, delayInterval uint32) {
 	p.flags.toggle(WillFlag, true)
 	p.flags.toggle(WillRetain, will.Retain())
 	p.willDelayInterval = wuint32(delayInterval)
+	p.willPayload = bindata(will.payload)
 	p.setWillQoS(will.QoS())
 }
 
@@ -291,7 +293,9 @@ func (p *Connect) payload(b []byte, i int) int {
 		i += vbint(properties(_LEN, 0)).fill(b, i)
 		i += properties(b, i)
 		i += p.will.topicName.fill(b, i)
-		i += p.will.payload.fill(b, i)
+		// don't use p.will.payload as its rawdata, here it needs to
+		// be bindata
+		i += p.willPayload.fill(b, i)
 	}
 
 	if p.flags.Has(UsernameFlag) {
@@ -323,7 +327,7 @@ func (p *Connect) UnmarshalBinary(data []byte) error {
 		p.will.SetQoS(p.willQoS())
 		buf.getAny(p.willPropertyMap(), p.appendWillProperty)
 		get(&p.will.topicName)
-		get(&p.will.payload)
+		get(&p.willPayload)
 	}
 	// username
 	if p.flags.Has(UsernameFlag) {
@@ -333,6 +337,7 @@ func (p *Connect) UnmarshalBinary(data []byte) error {
 	if p.flags.Has(PasswordFlag) {
 		get(&p.password)
 	}
+
 	return buf.Err()
 }
 func (p *Connect) willPropertyMap() map[Ident]wireType {

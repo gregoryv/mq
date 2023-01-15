@@ -164,7 +164,7 @@ func examplePublish() *mq.Publish {
 	p := mq.NewPublish()
 	p.SetTopicName("gopher/pink")
 	p.SetPayload([]byte("hug"))
-	//p.SetPayloadFormat(true) // utf-8
+	p.SetPayloadFormat(true) // utf-8
 	return p
 }
 
@@ -172,9 +172,9 @@ func examplePublishTheir() *packets.ControlPacket {
 	p := packets.NewControlPacket(packets.PUBLISH)
 	c := p.Content.(*packets.Publish)
 	c.Topic = "gopher/pink"
-	//c.Properties = &packets.Properties{}
-	//pformat := byte(1)
-	//c.Properties.PayloadFormat = &pformat
+	c.Properties = &packets.Properties{}
+	pformat := byte(1)
+	c.Properties.PayloadFormat = &pformat
 	c.Payload = []byte("hug")
 	return p
 }
