@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"io"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -30,6 +30,7 @@ func NewIndex() *Page {
 	nav := Nav(
 		"Table of contents",
 	)
+	a, b := examplePublish()
 	article := Article(
 		H1("mqtt-v5 Packet Examples"),
 		//NewPacketsDiagram().Inline(),
@@ -38,15 +39,8 @@ func NewIndex() *Page {
 
 		H2("mq.Publish"),
 		docPacket(
-			"doc_test.go", "examplePublish", examplePublish(),
+			"doc_test.go", "examplePublish", a, b,
 		),
-
-		H2("packets.Publish"),
-		docPacket(
-			"doc_test.go", "examplePublishTheir", examplePublishTheir(),
-		),
-
-		Pre(alignPackets(examplePublish(), examplePublishTheir())),
 	)
 	toc.MakeTOC(nav, article, "h2")
 
@@ -61,6 +55,38 @@ func NewIndex() *Page {
 			),
 			Body(
 				article,
+			),
+		),
+	)
+}
+
+func docPacket(file, fn string, a mq.ControlPacket, b *packets.ControlPacket) *Element {
+	example := files.MustLoadFunc(file, fn)
+	var A bytes.Buffer
+	a.WriteTo(&A)
+
+	var B bytes.Buffer
+	b.WriteTo(&B)
+
+	return Table(
+		Tr(
+			Td(
+				// Content of the func, without signature and final return
+				Code(Pre(stripFirstTab(sublines(example, 1, -2)))),
+			),
+		),
+
+		Tr(
+			Td(
+				"Compare a and b",
+				Pre("a \n", hex.Dump(A.Bytes())),
+				Pre("b \n", hex.Dump(B.Bytes())),
+
+				Pre(fmt.Sprintf("a %v\nb %v", A.Bytes(), B.Bytes())),
+				map[bool]string{
+					true:  "a == b",
+					false: "a != b",
+				}[reflect.DeepEqual(A.Bytes(), B.Bytes())],
 			),
 		),
 	)
@@ -83,58 +109,10 @@ func alignPackets(a mq.ControlPacket, b *packets.ControlPacket) string {
 	)
 	var buf bytes.Buffer
 	result.PrintAlignment(&buf)
-	return buf.String()
-}
+	return hex.EncodeToString(bbuf.Bytes())
+	res := "a: " + buf.String()
 
-func docPacket(file, fn string, p io.WriterTo) *Element {
-	example := files.MustLoadFunc(file, fn)
-	var buf bytes.Buffer
-	p.WriteTo(&buf)
-	return Table(
-		Tr(
-			Td(
-				// Content of the func, without signature and final return
-				Code(Pre(stripFirstTab(sublines(example, 1, -2)))),
-			),
-			Td(
-				Attr("rowspan", "2"),
-				Pre(
-					func() string {
-						if p, ok := p.(fmt.Stringer); ok {
-							return p.String()
-						}
-						return ""
-					}(),
-
-					Br(), Br(), func() string {
-						lines := make([]string, buf.Len())
-						for i, b := range buf.Bytes() {
-							lines[i] = fmt.Sprintf("%2v %02x", i+1, b)
-						}
-						return strings.Join(lines, "\n")
-					}()),
-			),
-		),
-		Tr(
-			Td(
-				B("Dump"),
-				Pre(func() string {
-					if p, ok := p.(mq.ControlPacket); ok {
-						var buf bytes.Buffer
-						mq.Dump(&buf, p)
-						return buf.String()
-					}
-					return "no dump"
-				}()),
-			),
-		),
-		Tr(
-			Td(
-				Attr("colspan", "2"),
-				Pre(hex.Dump(buf.Bytes())),
-			),
-		),
-	)
+	return strings.Replace(res, "\n", "\nb: ", 1)
 }
 
 func docTheme() *CSS {
@@ -160,25 +138,22 @@ func sublines(block string, fromStart, fromEnd int) string {
 	return strings.Join(lines[fromStart:len(lines)+fromEnd], "\n")
 }
 
-func examplePublish() *mq.Publish {
-	p := mq.NewPublish()
-	p.SetTopicName("gopher/pink")
-	p.SetPayload([]byte("hug"))
-	p.SetPayloadFormat(true) // utf-8
-	return p
-}
+func examplePublish() (*mq.Publish, *packets.ControlPacket) {
+	a := mq.NewPublish()
+	a.SetTopicName("gopher/pink")
+	a.SetPayload([]byte("hug"))
+	a.SetPayloadFormat(true) // utf-8
 
-func examplePublishTheir() *packets.ControlPacket {
-	p := packets.NewControlPacket(packets.PUBLISH)
-	c := p.Content.(*packets.Publish)
+	b := packets.NewControlPacket(packets.PUBLISH)
+	c := b.Content.(*packets.Publish)
 	c.Topic = "gopher/pink"
 	c.Properties = &packets.Properties{}
 	pformat := byte(1)
 	c.Properties.PayloadFormat = &pformat
 	c.Payload = []byte("hug")
-	return p
-}
 
+	return a, b
+}
 func TestDesignDiagram(t *testing.T) {
 	NewPacketsDiagram().SaveAs("packets_diagram.svg")
 }
