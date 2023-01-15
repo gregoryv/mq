@@ -32,7 +32,7 @@ type Publish struct {
 	responseTopic         wstring
 	correlationData       bindata
 	contentType           wstring
-	payload               bindata
+	payload               rawdata
 	UserProperties
 	subscriptionIDs []uint32
 }
@@ -166,7 +166,7 @@ func (p *Publish) SubscriptionIDs() []uint32 {
 func (p *Publish) SetContentType(v string) { p.contentType = wstring(v) }
 func (p *Publish) ContentType() string     { return string(p.contentType) }
 
-func (p *Publish) SetPayload(v []byte) { p.payload = bindata(v) }
+func (p *Publish) SetPayload(v []byte) { p.payload = rawdata(v) }
 func (p *Publish) Payload() []byte     { return []byte(p.payload) }
 
 // end settings

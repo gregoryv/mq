@@ -15,9 +15,9 @@ func ExamplePublish_stringMalformed() {
 	fmt.Println(Pub(3, "a/b", "gopher"))
 	fmt.Println(Pub(1, "a/b", "gopher"))
 	// output:
-	// PUBLISH ---- p0  13 bytes, malformed! empty topic name
-	// PUBLISH -!!- p0 a/b 16 bytes, malformed! invalid QoS
-	// PUBLISH --1- p0 a/b 18 bytes, malformed! empty packet ID
+	// PUBLISH ---- p0  11 bytes, malformed! empty topic name
+	// PUBLISH -!!- p0 a/b 14 bytes, malformed! invalid QoS
+	// PUBLISH --1- p0 a/b 16 bytes, malformed! empty packet ID
 }
 
 func ExamplePublish_String() {
@@ -28,7 +28,7 @@ func ExamplePublish_String() {
 	fmt.Println(p)
 	fmt.Print(DocumentFlags(p))
 	// output:
-	// PUBLISH -2-r p3 a/b/1 1111-222222-3333333 42 bytes
+	// PUBLISH -2-r p3 a/b/1 1111-222222-3333333 40 bytes
 	//         3210 PacketID Topic [CorrelationData] Size
 	//
 	// 3 d   Duplicate
@@ -41,7 +41,7 @@ func ExamplePublish_StringWithoutCorrelation() {
 	p := Pub(0, "a/b/1", "gopher")
 	fmt.Println(p)
 	// output:
-	// PUBLISH ---- p0 a/b/1 18 bytes
+	// PUBLISH ---- p0 a/b/1 16 bytes
 }
 
 func TestPublish(t *testing.T) {
