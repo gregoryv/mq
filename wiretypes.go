@@ -137,8 +137,6 @@ func (v bindata) width() int {
 	return 2 + len(v)
 }
 
-// ----------------------------------------
-
 type rawdata []byte
 
 func (v *rawdata) UnmarshalBinary(data []byte) error {
@@ -155,17 +153,14 @@ func (v rawdata) fill(data []byte, i int) int {
 func (v rawdata) width() int {
 	return len(v)
 }
-func (v rawdata) fillProp(data []byte, i int, id Ident) int {
-	if len(v) == 0 {
-		return 0
-	}
-	n := i
-	i += id.fill(data, i)
-	i += v.fill(data, i)
-	return i - n
-}
 
-// ----------------------------------------
+// fillProp is here to fullfill the wireType interface, though it
+// cannot be used as a property as the length is not written. fillProp
+// always panics.
+func (v rawdata) fillProp(data []byte, i int, id Ident) int {
+	panic("cannot use rawdata as property")
+	return 0
+}
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011
 type vbint uint
