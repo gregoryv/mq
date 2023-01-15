@@ -2,14 +2,159 @@ package docs
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
+	"io"
+	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/eclipse/paho.golang/packets"
 	"github.com/gregoryv/draw/design"
 	"github.com/gregoryv/draw/shape"
 	"github.com/gregoryv/mq"
+	. "github.com/gregoryv/web"
+	"github.com/gregoryv/web/files"
+	"github.com/gregoryv/web/theme"
+	"github.com/gregoryv/web/toc"
 )
+
+func TestIndex(t *testing.T) {
+	if err := NewIndex().SaveAs("index.html"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func NewIndex() *Page {
+	nav := Nav(
+		"Table of contents",
+	)
+	article := Article(
+		H1("mqtt-v5 Packet Examples"),
+		//NewPacketsDiagram().Inline(),
+
+		nav,
+
+		H2("Publish"),
+		docPacket(
+			"doc_test.go", "examplePublish", examplePublish(),
+		),
+
+		H3("publish their"),
+		docPacket(
+			"doc_test.go", "examplePublishTheir", examplePublishTheir(),
+		),
+	)
+	toc.MakeTOC(nav, article, "h2")
+
+	return NewPage(
+		Html(
+			Head(
+				Style(
+					theme.GoldenSpace(),
+					theme.GoishColors(),
+					docTheme(),
+				),
+			),
+			Body(
+				article,
+			),
+		),
+	)
+}
+
+func docPacket(file, fn string, p io.WriterTo) *Element {
+	example := files.MustLoadFunc(file, fn)
+	var buf bytes.Buffer
+	p.WriteTo(&buf)
+	return Table(
+		Tr(
+			Td(
+				// Content of the func, without signature and final return
+				Code(Pre(stripFirstTab(sublines(example, 1, -2)))),
+			),
+			Td(
+				Attr("rowspan", "2"),
+				Pre(
+					func() string {
+						if p, ok := p.(fmt.Stringer); ok {
+							return p.String()
+						}
+						return ""
+					}(),
+
+					Br(), Br(), func() string {
+						lines := make([]string, buf.Len())
+						for i, b := range buf.Bytes() {
+							lines[i] = fmt.Sprintf("%2v %02x", i+1, b)
+						}
+						return strings.Join(lines, "\n")
+					}()),
+			),
+		),
+		Tr(
+			Td(
+				B("Dump"),
+				Pre(func() string {
+					if p, ok := p.(mq.ControlPacket); ok {
+						var buf bytes.Buffer
+						mq.Dump(&buf, p)
+						return buf.String()
+					}
+					return "no dump"
+				}()),
+			),
+		),
+		Tr(
+			Td(
+				Attr("colspan", "2"),
+				Pre(hex.Dump(buf.Bytes())),
+			),
+		),
+	)
+}
+
+func docTheme() *CSS {
+	css := NewCSS()
+	css.Style("td",
+		"vertical-align: top",
+	)
+	return css
+}
+
+var dropFirst = regexp.MustCompile("^\t")
+
+func stripFirstTab(block string) string {
+	lines := strings.Split(block, "\n")
+	for i, line := range lines {
+		lines[i] = dropFirst.ReplaceAllString(line, "")
+	}
+	return strings.Join(lines, "\n")
+}
+
+func sublines(block string, fromStart, fromEnd int) string {
+	lines := strings.Split(block, "\n")
+	return strings.Join(lines[fromStart:len(lines)+fromEnd], "\n")
+}
+
+func examplePublish() *mq.Publish {
+	p := mq.NewPublish()
+	p.SetTopicName("gopher/pink")
+	p.SetPayload([]byte("hug"))
+	p.SetPayloadFormat(true) // utf-8
+	return p
+}
+
+func examplePublishTheir() *packets.ControlPacket {
+	p := packets.NewControlPacket(packets.PUBLISH)
+	c := p.Content.(*packets.Publish)
+	c.Topic = "gopher/pink"
+	c.Properties = &packets.Properties{}
+	pformat := byte(1)
+	c.Properties.PayloadFormat = &pformat
+	c.Payload = []byte("hug")
+	return p
+}
 
 func TestDesignDiagram(t *testing.T) {
 	NewPacketsDiagram().SaveAs("packets_diagram.svg")

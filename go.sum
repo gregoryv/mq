@@ -15,6 +15,7 @@ github.com/gregoryv/asserter v0.4.2/go.mod h1:mJPm04j3XH8husxMfxiRd3m+5YBMZkd2UO
 github.com/gregoryv/cmdline v0.7.0/go.mod h1:HMy8QMZfta+VoVCmU97HFm+UR5/Cj03n9uA+7sQyuJU=
 github.com/gregoryv/draw v0.25.0 h1:fG6j1+JVk9I+UZNhteor38eJWiy9FuI6x1PBvHNeWQ8=
 github.com/gregoryv/draw v0.25.0/go.mod h1:vbc5fYnAkO2i8lj8lMPKaSVWGqTqKzf2aSv4VlPReJM=
+github.com/gregoryv/english v0.4.1 h1:XqsVT1RK6dUOtmP8B+fuiuPmXfKrfHPBEmmzbf14qrw=
 github.com/gregoryv/english v0.4.1/go.mod h1:5kcVzgVHvYWLxmJ/ymSmMhW30EHaP11iB5kWOx5FChw=
 github.com/gregoryv/find v0.0.0-20180328085109-1bbc2d70c482/go.mod h1:/xxQlO62bzxhyabf2iKJzGJa+VAJy25spLI/6ICTrxU=
 github.com/gregoryv/find v0.2.0/go.mod h1:ZxH/FkVt6VM//T7edeCqCc2dJRrLAtCYvtvdM6Hk398=
@@ -40,6 +41,7 @@ github.com/gregoryv/web v0.19.0/go.mod h1:DRjHH1V0vwEGHpzEhb9Y3XrQWioSSOGBz6nJMn
 github.com/gregoryv/web v0.21.0/go.mod h1:wAsePq4XiIuLmEOI9qNpgaK3rdXY3huHkwNGjUuvngw=
 github.com/gregoryv/web v0.22.0 h1:SzcU048ibWFzeQIovDCQ4RBEhkr8UMkIonzSsAmt3qg=
 github.com/gregoryv/web v0.22.0/go.mod h1:ZNxc8oE709qkkeVZw377xfpsR/kgCu+TRIfRsF4hXEY=
+github.com/gregoryv/workdir v0.2.0 h1:a0V87TpJpda5rHPj+lrJTiUD7pqdddUERYPWEJY8ufc=
 github.com/gregoryv/workdir v0.2.0/go.mod h1:qX7yFN0yqysNfEr2F5Tta9+5K8oueS/sqBmdiExBoYA=
 github.com/lucasb-eyer/go-colorful v1.0.3/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/mattn/go-runewidth v0.0.7/go.mod h1:H031xJmbD/WCDINGzjvQ9THkh0rPKHF+m2gUSrubnMI=

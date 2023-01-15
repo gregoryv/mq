@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<style>html, body {
+margin: 0 0;
+padding: 0 0;
+}
+body {
+padding: 1em 1.612em;
+}
+p, li {
+line-height: 1.3em;
+}
+a:link {
+color: #0000EE;
+}
+a:visited {
+color: #551A8B;
+}
+a:link, a:visited {
+color: #007d9c;
+text-decoration: none;
+}
+a:hover {
+text-decoration: underline;
+}
+td {
+vertical-align: top;
+}
+</style>
+</head>
+<body>
+<article>
+<h1>mqtt-v5 Packet Examples</h1>
+<nav>Table of contents<ul>
+<li class="h2"><a href="#publish">Publish</a></li>
+</ul>
+</nav>
+<h2 id="publish"><a href="#publish">Publish</a></h2>
+<table>
+<tr><td><code><pre>p := mq.NewPublish()
+p.SetTopicName("gopher/pink")
+p.SetPayload([]byte("hug"))
+p.SetPayloadFormat(true)</pre></code></td><td rowspan="2"><pre>PUBLISH ---- p0 gopher/pink 23 bytes<br/><br/> 1 30
+ 2 15
+ 3 00
+ 4 0b
+ 5 67
+ 6 6f
+ 7 70
+ 8 68
+ 9 65
+10 72
+11 2f
+12 70
+13 69
+14 6e
+15 6b
+16 02
+17 01
+18 01
+19 00
+20 03
+21 68
+22 75
+23 67</pre></td></tr>
+<tr><td><b>Dump</b><pre>ContentType: 
+CorrelationData: []
+Duplicate: false
+MessageExpiryInterval: 0
+PacketID: 0
+Payload: [104 117 103]
+PayloadFormat: true
+QoS: 0
+ResponseTopic: 
+Retain: false
+SubscriptionIDs: []
+TopicAlias: 0
+TopicName: gopher/pink
+</pre></td></tr>
+<tr><td colspan="2"><pre>00000000  30 15 00 0b 67 6f 70 68  65 72 2f 70 69 6e 6b 02  |0...gopher/pink.|
+00000010  01 01 00 03 68 75 67                              |....hug|
+</pre></td></tr>
+</table>
+<h3>publish their</h3>
+<table>
+<tr><td><code><pre>p := packets.NewControlPacket(packets.PUBLISH)
+c := p.Content.(*packets.Publish)
+c.Topic = "gopher/pink"
+c.Properties = &packets.Properties{}
+pformat := byte(1)
+c.Properties.PayloadFormat = &pformat
+c.Payload = []byte("hug")</pre></code></td><td rowspan="2"><pre><br/><br/> 1 30
+ 2 13
+ 3 00
+ 4 0b
+ 5 67
+ 6 6f
+ 7 70
+ 8 68
+ 9 65
+10 72
+11 2f
+12 70
+13 69
+14 6e
+15 6b
+16 02
+17 01
+18 01
+19 68
+20 75
+21 67</pre></td></tr>
+<tr><td><b>Dump</b><pre>no dump</pre></td></tr>
+<tr><td colspan="2"><pre>00000000  30 13 00 0b 67 6f 70 68  65 72 2f 70 69 6e 6b 02  |0...gopher/pink.|
+00000010  01 01 68 75 67                                    |..hug|
+</pre></td></tr>
+</table>
+</article>
+</body>
+</html>
