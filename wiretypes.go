@@ -159,7 +159,6 @@ func (v rawdata) width() int {
 // always panics.
 func (v rawdata) fillProp(data []byte, i int, id Ident) int {
 	panic("cannot use rawdata as property")
-	return 0
 }
 
 // https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html#_Toc3901011

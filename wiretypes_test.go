@@ -244,6 +244,16 @@ func Test_UserProp(t *testing.T) {
 	}
 }
 
+func Test_rawdata(t *testing.T) {
+	defer func() {
+		if e := recover(); e == nil {
+			t.Error("expect panic")
+		}
+	}()
+	var v rawdata
+	v.fillProp(nil, 0, 0)
+}
+
 func Test_Ident(t *testing.T) {
 	empty := Ident(9)
 	if v := empty.fillProp(nil, 0, 0); v > 0 {
