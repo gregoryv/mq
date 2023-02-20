@@ -15,5 +15,5 @@ require (
 	github.com/gregoryv/matrix v0.0.0-20180221041633-bc065ffea423 // indirect
 	github.com/gregoryv/nexus v0.5.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/net v0.7.0 // indirect
 )
