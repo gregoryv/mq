@@ -75,6 +75,8 @@ func (p *Publish) dump(w io.Writer) {
 	p.UserProperties.dump(w)
 }
 
+// WellFormed returns a Malformed error if the packet does not follow
+// the specification.
 func (p *Publish) WellFormed() *Malformed {
 	if len(p.topicName) == 0 {
 		return newMalformed(p, "topic name", "empty")
