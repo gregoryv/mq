@@ -89,6 +89,7 @@
 <path stroke="#d3d3d3" d="M70,460 L179,460" />
 <text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="76" y="476">UserProperties</text>
 <text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="76" y="450">mq.PubRel struct</text>
+<text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="100" y="144">will</text>
 <rect stroke="#d3d3d3" fill="#ffffff" x="199" y="434" width="123" height="52"/>
 <path stroke="#d3d3d3" d="M199,460 L322,460" />
 <text font-family="Arial,Helvetica,sans-serif" font-size="12px" x="205" y="476">UserProperties</text>
