@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add func Unsubscribe.Filters
 - Update dependencies
 
 ## [0.27.0] 2023-01-15

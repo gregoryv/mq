@@ -52,6 +52,13 @@ func (p *Unsubscribe) PacketID() uint16     { return uint16(p.packetID) }
 func (p *Unsubscribe) AddFilter(filter string) {
 	p.filters = append(p.filters, wstring(filter))
 }
+func (p *Unsubscribe) Filters() []string {
+	res := make([]string, len(p.filters))
+	for i, v := range p.filters {
+		res[i] = string(v)
+	}
+	return res
+}
 
 func (p *Unsubscribe) WriteTo(w io.Writer) (int64, error) {
 	b := make([]byte, p.width())
