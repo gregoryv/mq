@@ -1,6 +1,6 @@
 module github.com/gregoryv/mq
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/eclipse/paho.golang v0.11.0
