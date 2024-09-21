@@ -37,7 +37,7 @@ func TestUnsubscribe(t *testing.T) {
 
 	if v := s.Filters(); len(v) != 2 {
 		t.Error("expect 2 filters, got", v)
-	}	
+	}
 	if v := s.String(); !strings.Contains(v, "SUBSCRIBE --1-") {
 		t.Errorf("%q expect to contain %q", v, "SUBSCRIBE --1-")
 	}

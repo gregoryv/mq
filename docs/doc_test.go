@@ -202,7 +202,7 @@ func NewPacketsDiagram() *design.ClassDiagram {
 	d.Place(
 		publish, puback, pubrec, pubrel,
 	).Below(connect, 20).Move(0, 110)
-	d.Place(shape.NewLabel("will")).Below(connect).Move(60,0)
+	d.Place(shape.NewLabel("will")).Below(connect).Move(60, 0)
 	shape.Move(pubrel, 30, 0)
 
 	d.Place(pubcomp).RightOf(pubrel, 20)
