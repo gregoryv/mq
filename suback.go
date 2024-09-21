@@ -79,7 +79,7 @@ func (p *SubAck) variableHeader(b []byte, i int) int {
 func (p *SubAck) properties(b []byte, i int) int {
 	n := i
 	for id, v := range p.propertyMap() {
-		i += v.fillProp(b, i, id)
+		i += v().fillProp(b, i, id)
 	}
 	i += p.UserProperties.properties(b, i)
 	return i - n
@@ -108,8 +108,8 @@ func (p *SubAck) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *SubAck) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		ReasonString: &p.reasonString,
+func (p *SubAck) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		ReasonString: func() wireType { return &p.reasonString },
 	}
 }

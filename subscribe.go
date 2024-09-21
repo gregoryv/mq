@@ -13,7 +13,7 @@ func NewSubscribe() *Subscribe {
 type Subscribe struct {
 	fixed          bits
 	packetID       wuint16
-	subscriptionID vbint
+	subscriptionID *vbint
 	UserProperties
 	filters []TopicFilter
 }
@@ -31,10 +31,7 @@ func (p *Subscribe) WellFormed() *Malformed {
 	if len(p.filters) == 0 {
 		return newMalformed(p, "filters", "no")
 	}
-	if p.subscriptionID == 0 {
-		return newMalformed(p, "sub ID", "missing")
-	}
-	if p.subscriptionID > 268_435_455 {
+	if v := p.subscriptionID; v != nil && *v > 268_435_455 {
 		return newMalformed(p, "sub ID", "too large")
 	}
 	for _, f := range p.filters {
@@ -47,7 +44,9 @@ func (p *Subscribe) WellFormed() *Malformed {
 
 func (p *Subscribe) dump(w io.Writer) {
 	fmt.Fprintf(w, "PacketID: %v\n", p.PacketID())
-	fmt.Fprintf(w, "SubscriptionID: %v\n", p.SubscriptionID())
+	if p.subscriptionID != nil {
+		fmt.Fprintf(w, "SubscriptionID: %v\n", p.SubscriptionID())
+	}
 
 	if len(p.filters) > 0 {
 		fmt.Fprintln(w, "Filters")
@@ -69,8 +68,18 @@ func (p *Subscribe) filterString() string {
 func (p *Subscribe) SetPacketID(v uint16) { p.packetID = wuint16(v) }
 func (p *Subscribe) PacketID() uint16     { return uint16(p.packetID) }
 
-func (p *Subscribe) SetSubscriptionID(v int) { p.subscriptionID = vbint(v) }
-func (p *Subscribe) SubscriptionID() int     { return int(p.subscriptionID) }
+func (p *Subscribe) SetSubscriptionID(v int) {
+	if p.subscriptionID == nil {
+		p.subscriptionID = new(vbint)
+	}
+	*p.subscriptionID = vbint(v)
+}
+func (p *Subscribe) SubscriptionID() int {
+	if p.subscriptionID == nil {
+		return -1
+	}
+	return int(*p.subscriptionID)
+}
 
 func (p *Subscribe) AddFilters(v ...TopicFilter) {
 	p.filters = append(p.filters, v...)
@@ -112,8 +121,12 @@ func (p *Subscribe) variableHeader(b []byte, i int) int {
 
 func (p *Subscribe) properties(b []byte, i int) int {
 	n := i
-	for id, v := range p.propertyMap() {
-		i += v.fillProp(b, i, id)
+	for id, v := range p.propertyMap(false) {
+		out := v()
+		if out == nil {
+			continue
+		}
+		i += out.fillProp(b, i, id)
 	}
 	i += p.UserProperties.properties(b, i)
 	return i - n
@@ -130,7 +143,7 @@ func (p *Subscribe) payload(b []byte, i int) int {
 func (p *Subscribe) UnmarshalBinary(data []byte) error {
 	b := &buffer{data: data}
 	b.get(&p.packetID)
-	b.getAny(p.propertyMap(), p.appendUserProperty)
+	b.getAny(p.propertyMap(true), p.appendUserProperty)
 
 	for {
 		var f TopicFilter
@@ -144,8 +157,16 @@ func (p *Subscribe) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *Subscribe) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		SubscriptionID: &p.subscriptionID,
+func (p *Subscribe) propertyMap(unmarshal bool) map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		SubscriptionID: func() wireType {
+			if unmarshal {
+				p.subscriptionID = new(vbint)
+			}
+			if p.subscriptionID == nil {
+				return nil
+			}
+			return p.subscriptionID
+		},
 	}
 }

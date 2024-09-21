@@ -72,6 +72,6 @@ func (p *Disconnect) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *Disconnect) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{}
+func (p *Disconnect) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{}
 }

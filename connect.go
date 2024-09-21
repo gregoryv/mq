@@ -283,7 +283,7 @@ func (p *Connect) payload(b []byte, i int) int {
 			n := i
 
 			for id, v := range p.willPropertyMap() {
-				i += v.fillProp(b, i, id)
+				i += v().fillProp(b, i, id)
 			}
 			i += p.will.UserProperties.properties(b, i)
 
@@ -340,27 +340,27 @@ func (p *Connect) UnmarshalBinary(data []byte) error {
 
 	return buf.Err()
 }
-func (p *Connect) willPropertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		WillDelayInterval:      &p.willDelayInterval,
-		PayloadFormatIndicator: &p.will.payloadFormat,
-		MessageExpiryInterval:  &p.will.messageExpiryInterval,
-		ContentType:            &p.will.contentType,
-		ResponseTopic:          &p.will.responseTopic,
-		CorrelationData:        &p.will.correlationData,
+func (p *Connect) willPropertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		WillDelayInterval:      func() wireType { return &p.willDelayInterval },
+		PayloadFormatIndicator: func() wireType { return &p.will.payloadFormat },
+		MessageExpiryInterval:  func() wireType { return &p.will.messageExpiryInterval },
+		ContentType:            func() wireType { return &p.will.contentType },
+		ResponseTopic:          func() wireType { return &p.will.responseTopic },
+		CorrelationData:        func() wireType { return &p.will.correlationData },
 	}
 }
 
-func (p *Connect) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		ReceiveMax:            &p.receiveMax,
-		SessionExpiryInterval: &p.sessionExpiryInterval,
-		MaxPacketSize:         &p.maxPacketSize,
-		TopicAliasMax:         &p.topicAliasMax,
-		RequestResponseInfo:   &p.requestResponseInfo,
-		RequestProblemInfo:    &p.requestProblemInfo,
-		AuthMethod:            &p.authMethod,
-		AuthData:              &p.authData,
+func (p *Connect) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		ReceiveMax:            func() wireType { return &p.receiveMax },
+		SessionExpiryInterval: func() wireType { return &p.sessionExpiryInterval },
+		MaxPacketSize:         func() wireType { return &p.maxPacketSize },
+		TopicAliasMax:         func() wireType { return &p.topicAliasMax },
+		RequestResponseInfo:   func() wireType { return &p.requestResponseInfo },
+		RequestProblemInfo:    func() wireType { return &p.requestProblemInfo },
+		AuthMethod:            func() wireType { return &p.authMethod },
+		AuthData:              func() wireType { return &p.authData },
 	}
 }
 

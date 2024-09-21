@@ -95,10 +95,10 @@ func (p *Auth) properties(b []byte, i int) int {
 	return i - n
 }
 
-func (p *Auth) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		AuthMethod:   &p.authMethod,
-		AuthData:     &p.authData,
-		ReasonString: &p.reasonString,
+func (p *Auth) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		AuthMethod:   func() wireType { return &p.authMethod },
+		AuthData:     func() wireType { return &p.authData },
+		ReasonString: func() wireType { return &p.reasonString },
 	}
 }

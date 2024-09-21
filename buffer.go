@@ -22,7 +22,7 @@ type buffer struct {
 // getAny reads all properties from the current offset starting with
 // the variable length.  fields map UserProp identity codes to wire
 // type fields and the addProp func is used for each user property.
-func (b *buffer) getAny(fields map[Ident]wireType, addProp func(UserProp)) {
+func (b *buffer) getAny(fields map[Ident]func() wireType, addProp func(UserProp)) {
 	if b.atEnd() {
 		return
 	}
@@ -39,7 +39,7 @@ func (b *buffer) getAny(fields map[Ident]wireType, addProp func(UserProp)) {
 		field, hasField := fields[id]
 		switch {
 		case hasField:
-			b.get(field)
+			b.get(field())
 
 		case id == UserProperty:
 			var p UserProp

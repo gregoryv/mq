@@ -198,24 +198,24 @@ func (p *ConnAck) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *ConnAck) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		ReceiveMax:            &p.receiveMax,
-		SessionExpiryInterval: &p.sessionExpiryInterval,
-		MaxQoS:                &p.maxQoS,
-		RetainAvailable:       &p.retainAvailable,
-		MaxPacketSize:         &p.maxPacketSize,
-		AssignedClientID:      &p.assignedClientID,
-		TopicAliasMax:         &p.topicAliasMax,
-		ReasonString:          &p.reasonString,
-		WildcardSubAvailable:  &p.wildcardSubAvailable,
-		SubIDsAvailable:       &p.subIdentifiersAvailable,
-		SharedSubAvailable:    &p.sharedSubAvailable,
-		ServerKeepAlive:       &p.serverKeepAlive,
-		ResponseInformation:   &p.responseInformation,
-		ServerReference:       &p.serverReference,
-		AuthMethod:            &p.authMethod,
-		AuthData:              &p.authData,
+func (p *ConnAck) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		ReceiveMax:            func() wireType { return &p.receiveMax },
+		SessionExpiryInterval: func() wireType { return &p.sessionExpiryInterval },
+		MaxQoS:                func() wireType { return &p.maxQoS },
+		RetainAvailable:       func() wireType { return &p.retainAvailable },
+		MaxPacketSize:         func() wireType { return &p.maxPacketSize },
+		AssignedClientID:      func() wireType { return &p.assignedClientID },
+		TopicAliasMax:         func() wireType { return &p.topicAliasMax },
+		ReasonString:          func() wireType { return &p.reasonString },
+		WildcardSubAvailable:  func() wireType { return &p.wildcardSubAvailable },
+		SubIDsAvailable:       func() wireType { return &p.subIdentifiersAvailable },
+		SharedSubAvailable:    func() wireType { return &p.sharedSubAvailable },
+		ServerKeepAlive:       func() wireType { return &p.serverKeepAlive },
+		ResponseInformation:   func() wireType { return &p.responseInformation },
+		ServerReference:       func() wireType { return &p.serverReference },
+		AuthMethod:            func() wireType { return &p.authMethod },
+		AuthData:              func() wireType { return &p.authData },
 	}
 }
 

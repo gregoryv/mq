@@ -97,8 +97,8 @@ func (p *PubRel) UnmarshalBinary(data []byte) error {
 	return b.err
 }
 
-func (p *PubRel) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		ReasonString: &p.reason,
+func (p *PubRel) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		ReasonString: func() wireType { return &p.reason },
 	}
 }

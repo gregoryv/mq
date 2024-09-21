@@ -173,6 +173,7 @@ func (v vbint) fillProp(data []byte, i int, id Ident) int {
 	i += v.fill(data, i)
 	return i - n
 }
+
 func (v vbint) fill(data []byte, i int) int {
 	x := v
 	n := i

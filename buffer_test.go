@@ -8,14 +8,14 @@ import (
 func Test_buffer(t *testing.T) {
 	{ // missing data
 		b := &buffer{}
-		b.getAny(map[Ident]wireType{}, func(UserProp) {})
+		b.getAny(map[Ident]func() wireType{}, func(UserProp) {})
 		if b.err != nil {
 			t.Error("getAny failes on empty data")
 		}
 	}
 	{ // unknown user property
 		b := &buffer{data: []byte{2, 0xff, 0}}
-		b.getAny(map[Ident]wireType{}, func(UserProp) {})
+		b.getAny(map[Ident]func() wireType{}, func(UserProp) {})
 		if b.err == nil {
 			t.Error("expect getAny to fail")
 		}

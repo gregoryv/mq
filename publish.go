@@ -250,13 +250,13 @@ func (p *Publish) UnmarshalBinary(data []byte) error {
 	return buf.err
 }
 
-func (p *Publish) propertyMap() map[Ident]wireType {
-	return map[Ident]wireType{
-		PayloadFormatIndicator: &p.payloadFormat,
-		MessageExpiryInterval:  &p.messageExpiryInterval,
-		TopicAlias:             &p.topicAlias,
-		ResponseTopic:          &p.responseTopic,
-		CorrelationData:        &p.correlationData,
-		ContentType:            &p.contentType,
+func (p *Publish) propertyMap() map[Ident]func() wireType {
+	return map[Ident]func() wireType{
+		PayloadFormatIndicator: func() wireType { return &p.payloadFormat },
+		MessageExpiryInterval:  func() wireType { return &p.messageExpiryInterval },
+		TopicAlias:             func() wireType { return &p.topicAlias },
+		ResponseTopic:          func() wireType { return &p.responseTopic },
+		CorrelationData:        func() wireType { return &p.correlationData },
+		ContentType:            func() wireType { return &p.contentType },
 	}
 }
