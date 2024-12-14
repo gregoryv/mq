@@ -10,7 +10,7 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
-func ExamplePublish_stringMalformed() {
+func ExamplePublish_String_malformed() {
 	fmt.Println(Pub(0, "", "gopher"))
 	fmt.Println(Pub(3, "a/b", "gopher"))
 	fmt.Println(Pub(1, "a/b", "gopher"))
@@ -37,7 +37,7 @@ func ExamplePublish_String() {
 	// 0 r   Retain
 }
 
-func ExamplePublish_StringWithoutCorrelation() {
+func ExamplePublish_String_withoutCorrelation() {
 	p := Pub(0, "a/b/1", "gopher")
 	fmt.Println(p)
 	// output:

@@ -17,7 +17,7 @@ func ExampleDisconnect_String() {
 	// 3-0 reserved
 }
 
-func ExampleDisconnect_StringWithReason() {
+func ExampleDisconnect_stringWithReason() {
 	p := NewDisconnect()
 	p.SetReasonCode(QoSNotSupported)
 

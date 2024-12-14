@@ -20,7 +20,7 @@ func ExampleSubscribe_String() {
 	// SUBSCRIBE --1- p0 a/b/c --r0pn2- 37 bytes
 }
 
-func ExampleSubscribe_Dump() {
+func ExampleSubscribe_dump() {
 	s := NewSubscribe()
 	s.AddUserProp("color", "purple")
 	s.AddFilters(
@@ -38,7 +38,7 @@ func ExampleSubscribe_Dump() {
 }
 
 func ExampleSubscribe_malformed() {
-	{// no filters
+	{ // no filters
 		fmt.Println(NewSubscribe())
 	}
 	{ // bad qos

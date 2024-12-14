@@ -11,7 +11,7 @@ import (
 	"github.com/eclipse/paho.golang/packets"
 )
 
-func ExampleDump_ConnAck() {
+func ExampleDump_connAck() {
 	a := NewConnAck()
 	a.SetSessionPresent(true)
 	a.SetReasonCode(NotAuthorized)
