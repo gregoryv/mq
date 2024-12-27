@@ -75,8 +75,8 @@ func (p *Connect) SetWill(will *Publish, delayInterval uint32) {
 	p.setWillQoS(will.QoS())
 }
 
-func (p *Connect) Will() *Publish {
-	return p.will
+func (p *Connect) Will() (*Publish, time.Duration) {
+	return p.will, time.Duration(p.willDelayInterval) * time.Second
 }
 
 func (p *Connect) HasFlag(v byte) bool { return p.flags.Has(v) }
