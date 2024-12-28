@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [0.28.1-dev]
 
+- Fix missing payload of Connect.Will
 - Connect.Will returns WillDelayInterval delay
 
 ## [0.28.0] 2024-09-21

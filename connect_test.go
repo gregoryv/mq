@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/eclipse/paho.golang/packets"
 	"github.com/gregoryv/asserter"
@@ -192,7 +191,7 @@ func TestCompareConnect(t *testing.T) {
 		//p.SetCorrelationData([]byte("11-22-33")) doesn't work in paho
 		our.SetWill(p, 3)
 	}
-	will, delay := our.Will()
+	will, wExp := our.Will()
 	the.WillRetain = will.Retain()
 	the.WillFlag = our.HasFlag(WillFlag)
 	the.WillTopic = will.TopicName()
@@ -206,7 +205,6 @@ func TestCompareConnect(t *testing.T) {
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
 	})
-	wExp := uint32(delay / time.Second) // seconds
 	the.WillProperties.WillDelayInterval = &wExp
 
 	// possible bug in Properties.Pack

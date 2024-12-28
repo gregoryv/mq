@@ -58,6 +58,7 @@ type Connect struct {
 
 	will        *Publish
 	willPayload bindata // as the one in Publish.payload is raw
+	// what does it mean, raw?
 }
 
 // Connect fields are exposed using methods to simplify the type
@@ -75,8 +76,8 @@ func (p *Connect) SetWill(will *Publish, delayInterval uint32) {
 	p.setWillQoS(will.QoS())
 }
 
-func (p *Connect) Will() (*Publish, time.Duration) {
-	return p.will, time.Duration(p.willDelayInterval) * time.Second
+func (p *Connect) Will() (*Publish, uint32) {
+	return p.will, uint32(p.willDelayInterval)
 }
 
 func (p *Connect) HasFlag(v byte) bool { return p.flags.Has(v) }
@@ -328,6 +329,7 @@ func (p *Connect) UnmarshalBinary(data []byte) error {
 		buf.getAny(p.willPropertyMap(), p.appendWillProperty)
 		get(&p.will.topicName)
 		get(&p.willPayload)
+		p.will.payload = rawdata(p.willPayload)
 	}
 	// username
 	if p.flags.Has(UsernameFlag) {
