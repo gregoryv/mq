@@ -14,7 +14,8 @@ func Example_packetReadWrite() {
 		p.SetClientID("pink")
 		p.SetUsername("gopher")
 		p.SetPassword([]byte("cute"))
-		p.SetWill(mq.Pub(1, "client/gone", "pink"), 7)
+		p.SetWill(mq.Pub(1, "client/gone", "pink"))
+		p.SetWillDelayInterval(7)
 		p.WriteTo(&buf)
 	}
 	{ // read the packet

@@ -31,7 +31,8 @@ func ExampleConnect_String() {
 	p.SetClientID("pink")
 	p.SetUsername("gopher")
 	p.SetPassword([]byte("cute"))
-	p.SetWill(Pub(1, "client/gone", "pink"), 3)
+	p.SetWill(Pub(1, "client/gone", "pink"))
+	p.SetWillDelayInterval(3)
 
 	fmt.Println(p.String())
 	fmt.Println(DocumentFlags(p))
@@ -72,12 +73,12 @@ func TestConnect(t *testing.T) {
 	if got := c.String(); !strings.Contains(got, "CONNECT") {
 		t.Error(got)
 	}
-	if v, _ := c.Will(); v != nil {
+	if v := c.Will(); v != nil {
 		t.Error("no will was set but got", v)
 	}
 	testControlPacket(t, c)
 
-	c.SetWill(Pub(1, "client/gone", "pink"), 3)
+	c.SetWill(Pub(1, "client/gone", "pink"))
 	testControlPacket(t, c)
 
 	// clears it
@@ -106,7 +107,7 @@ func TestDump_connect(t *testing.T) {
 	c.SetKeepAlive(299)
 	c.SetUsername("john.doe")
 	c.SetPassword([]byte("secret"))
-	c.SetWill(Pub(0, "client/gone", "macy"), 300)
+	c.SetWill(Pub(0, "client/gone", "macy"))
 	c.AddUserProp("color", "red")
 
 	var buf bytes.Buffer
@@ -189,9 +190,9 @@ func TestCompareConnect(t *testing.T) {
 		p.SetQoS(2)
 		p.AddUserProp("connected", "2022-01-01 14:44:32")
 		//p.SetCorrelationData([]byte("11-22-33")) doesn't work in paho
-		our.SetWill(p, 3)
+		our.SetWill(p)
 	}
-	will, wExp := our.Will()
+	will := our.Will()
 	the.WillRetain = will.Retain()
 	the.WillFlag = our.HasFlag(WillFlag)
 	the.WillTopic = will.TopicName()
@@ -205,6 +206,7 @@ func TestCompareConnect(t *testing.T) {
 		Key:   "connected",
 		Value: "2022-01-01 14:44:32",
 	})
+	wExp := our.WillDelayInterval()
 	the.WillProperties.WillDelayInterval = &wExp
 
 	// possible bug in Properties.Pack
@@ -318,8 +320,9 @@ func BenchmarkConnectWill(b *testing.B) {
 			w.AddUserProp("color", "red")
 			w.SetContentType("text/plain")
 			w.SetPayload([]byte("gopher"))
-			p.SetWill(w, 5)
 
+			p.SetWill(w)
+			p.SetWillDelayInterval(5)
 			p.WriteTo(&buf)
 			ReadPacket(&buf)
 		}

@@ -7,7 +7,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 ## [0.28.1-dev]
 
 - Fix missing payload of Connect.Will
-- Connect.Will returns WillDelayInterval delay
+- Connect.Will only sets the will, default delay interval is 0
+- Add Connect.SetWillDelayInterval
 
 ## [0.28.0] 2024-09-21
 

@@ -64,21 +64,26 @@ type Connect struct {
 // Connect fields are exposed using methods to simplify the type
 // conversion.
 
-// SetWill sets the will message and delay in seconds. The Server
-// delays publishing the Client’s Will Message until the Will Delay
-// Interval has passed or the Session ends, whichever happens first.
-func (p *Connect) SetWill(will *Publish, delayInterval uint32) {
+// SetWill sets the will message. The Server delays publishing the
+// Client’s Will Message until the Will Delay Interval has passed or
+// the Session ends, whichever happens first.
+func (p *Connect) SetWill(will *Publish) {
 	p.will = will
 	p.flags.toggle(WillFlag, true)
 	p.flags.toggle(WillRetain, will.Retain())
-	p.willDelayInterval = wuint32(delayInterval)
 	p.willPayload = bindata(will.payload)
 	p.setWillQoS(will.QoS())
 }
 
-func (p *Connect) Will() (*Publish, uint32) {
-	return p.will, uint32(p.willDelayInterval)
+func (p *Connect) SetWillDelayInterval(delayInterval uint32) {
+	p.willDelayInterval = wuint32(delayInterval)
 }
+func (p *Connect) WillDelayInterval() uint32 {
+	return uint32(p.willDelayInterval)
+}
+
+// Will returns the will publish message.
+func (p *Connect) Will() *Publish { return p.will }
 
 func (p *Connect) HasFlag(v byte) bool { return p.flags.Has(v) }
 
