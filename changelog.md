@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
-## [0.28.1-dev]
+## [0.29.0] 2024-12-28
 
-- Fix missing payload of Connect.Will
+- Fix missing payload of Connect.Will() message
 - Connect.Will only sets the will, default delay interval is 0
 - Add Connect.SetWillDelayInterval
 
